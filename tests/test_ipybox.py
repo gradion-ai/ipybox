@@ -1,7 +1,6 @@
 import asyncio
 import re
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import Generator
 
@@ -10,12 +9,6 @@ import pytest
 from PIL import Image
 
 from ipybox import DEFAULT_TAG, ExecutionClient, ExecutionContainer, ExecutionError
-
-
-@pytest.fixture(scope="module")
-async def workspace():
-    with tempfile.TemporaryDirectory() as temp_dir:
-        yield temp_dir
 
 
 @pytest.fixture(
