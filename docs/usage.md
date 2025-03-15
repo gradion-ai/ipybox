@@ -137,7 +137,10 @@ Environment variables can be set on the container for passing secrets or configu
 
 ## Manual container lifecycle management
 
-Instead of using `ExecutionContainer` as a context manager, you can also manually `run()` and `kill()` the container. This is useful for running the container on a separate host listening to a user-defined host port (e.g. `7777` in the example below).
+Instead of using `ExecutionContainer` as a context manager, you can also manually `run()` and `kill()` the container. Setting a user-defined port (e.g. `7777` in the example below) is optional.
+
+
+This is useful for running the container on a separate host listening to a user-defined host port (e.g. `7777` in the example below).
 
 ```python
 --8<-- "examples/08_manual_lifecycle.py:run-container"
@@ -150,3 +153,17 @@ Instead of using `ExecutionContainer` as a context manager, you can also manuall
 1. Create an `ExecutionContainer` instance using a fixed port.
 2. Run the container (detached).
 3. Cleanup.
+
+
+## Using a remote `DOCKER_HOST`
+
+If you want to run the execution container on a remote host but want to manage the container locally, you can set the `DOCKER_HOST` [environment variable](https://docs.docker.com/reference/cli/docker/#environment-variables) to the remote host. The following example assumes that the remote Docker daemon has been configured to accept `tcp` connections at port `2375`.
+
+```python
+--8<-- "examples/09_remote_docker_host.py:usage"
+```
+
+1. Example IP address of the remote Docker host
+2. Remote Docker daemon is accessible via `tcp` at port `2375`
+3. Creates a container on the remote host
+4. Create an IPython kernel in the remote container
