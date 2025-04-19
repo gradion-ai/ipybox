@@ -10,13 +10,13 @@ from ipybox import ExecutionClient, ExecutionContainer, ExecutionError
 async def main():
     # --8<-- [start:usage]
     async with ExecutionContainer() as container:
-        async with ExecutionClient(port=container.port) as client_1:  # (1)!
+        async with ExecutionClient(port=container.executor_port) as client_1:  # (1)!
             result = await client_1.execute("x = 1")  # (2)!
             assert result.text is None
             result = await client_1.execute("print(x)")  # (3)!
             assert result.text == "1"
 
-        async with ExecutionClient(port=container.port) as client_2:  # (4)!
+        async with ExecutionClient(port=container.executor_port) as client_2:  # (4)!
             try:
                 await client_2.execute("print(x)")  # (5)!
             except ExecutionError as e:

@@ -13,7 +13,7 @@ from ipybox import ExecutionClient, ExecutionContainer
 async def main():
     # --8<-- [start:usage]
     async with ExecutionContainer(tag="gradion-ai/ipybox") as container:  # (1)!
-        async with ExecutionClient(port=container.port) as client:  # (2)!
+        async with ExecutionClient(port=container.executor_port) as client:  # (2)!
             result = await client.execute("print('Hello, world!')")  # (3)!
             print(f"Output: {result.text}")  # (4)!
 

@@ -86,3 +86,4 @@ nav:
   - API Documentation:
     - ExecutionContainer: api/execution_container.md
     - ExecutionClient: api/execution_client.md
+    - ResourceClient: api/resource_client.md

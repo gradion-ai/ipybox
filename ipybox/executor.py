@@ -50,7 +50,7 @@ class ExecutionResult:
 
 
 class Execution:
-    """Represents a code execution in an IPython kernel.
+    """A code execution in an IPython kernel.
 
     Args:
         client: The client instance that created this execution
@@ -155,7 +155,7 @@ class ExecutionClient:
 
     Args:
         host: Hostname where the code execution container is running
-        port: Host port of the code execution container
+        port: Host port for the container's executor port
         heartbeat_interval: Interval in seconds between heartbeat pings. Defaults to 10.
 
     Example:
@@ -166,7 +166,7 @@ class ExecutionClient:
         env = {"API_KEY": "secret"}
 
         async with ExecutionContainer(binds=binds, env=env) as container:
-            async with ExecutionClient(host="localhost", port=container.port) as client:
+            async with ExecutionClient(host="localhost", port=container.executor_port) as client:
                 result = await client.execute("print('Hello, world!')")
                 print(result.text)
         ```
@@ -273,7 +273,7 @@ class ExecutionClient:
             code: Python code to execute
 
         Returns:
-            An Execution object to track the submitted code execution
+            An Execution object to track the code execution
         """
         req_id = uuid4().hex
         req = {
@@ -299,10 +299,6 @@ class ExecutionClient:
 
         await self._send_request(req)
         return Execution(client=self, req_id=req_id)
-
-    async def get_module_sources(self, module_names: list[str]) -> str | None:
-        result = await self.execute(f"print_module_sources({module_names})")
-        return result.text
 
     async def _send_request(self, req):
         await self._ws.write_message(json_encode(req))
@@ -330,4 +326,8 @@ class ExecutionClient:
             logger.error("Kernel disconnected", e)
 
     async def _init_kernel(self):
-        await self.execute(r"%colors nocolor" + "\nfrom ipybox.modinfo import print_module_sources, get_module_info")
+        await self.execute("""
+            import sys
+
+            sys.path.append("/app")
+            """)

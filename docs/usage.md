@@ -167,3 +167,40 @@ If you want to run the execution container on a remote host but want to manage t
 2. Remote Docker daemon is accessible via `tcp` at port `2375`
 3. Creates a container on the remote host
 4. Create an IPython kernel in the remote container
+
+## Using MCP servers
+
+`ipybox` can generate Python code from MCP server metadata. A Python function is generated per MCP tool with function parameters from the tool's input schema. When calling the function, the corresponding tool is executed on the MCP server.
+
+The generated Python code can be retrieved from the server and provided to an LLM for further processing. For example, this is exactly what [`freeact`](https://gradion-ai.github.io/freeact/) agents are doing when utilizing and composing MCP tools in code actions.
+
+`ipybox` supports both `stdio` based and `sse` based MCP servers. A `stdio` example is shown in the following. For `sse` based MCP server, provide a server URL as `server_params` e.g. `{"url": "https://<host>:<port>/sse"}`
+
+!!! note
+
+    `stdio` based MCP servers are always executed **inside** the `ipybox` Docker container.
+
+
+```python
+--8<-- "examples/10_mcp_support.py:import"
+--8<-- "examples/10_mcp_support.py:usage"
+```
+
+1. An MCP server that fetches content from URLs.
+2. A `ResourceClient` is used for generating MCP source code and retrieving it
+3. Generate client code (functions, inputs, ...) from MCP server metadata
+4. List of tool names provided bythe MCP server
+5. Retrieve generated code by reading it from the `ipybox` container filesystem
+6. Retrieve generated code by loading the corresponding Python module
+7. Execute code that imports and uses the generated MCP client code.
+8. Prints
+````
+```
+                         ___                    _
+   ____ __________ _____/ (_)___  ____   ____ _(_)
+  / __ `/ ___/ __ `/ __  / / __ \/ __ \ / __ `/ /
+ / /_/ / /  / /_/ / /_/ / / /_/ / / / // /_/ / /
+ \__, /_/   \__,_/\__,_/_/\____/_/ /_(_)__,_/_/
+/____/
+```
+````

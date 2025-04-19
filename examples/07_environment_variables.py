@@ -13,7 +13,7 @@ async def main():
     env = {"API_KEY": "secret-key-123", "DEBUG": "1"}  # (1)!
 
     async with ExecutionContainer(env=env) as container:
-        async with ExecutionClient(port=container.port) as client:
+        async with ExecutionClient(port=container.executor_port) as client:
             result = await client.execute("""
                 import os
 

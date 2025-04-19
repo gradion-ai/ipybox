@@ -24,7 +24,7 @@ async def main():
         await f.write("hello world")
 
     async with ExecutionContainer(binds=binds) as container:
-        async with ExecutionClient(port=container.port) as client:
+        async with ExecutionClient(port=container.executor_port) as client:
             await client.execute("""
                 with open('data/input.txt') as f:
                     data = f.read()

@@ -10,7 +10,7 @@ from ipybox import ExecutionClient, ExecutionContainer
 async def main():
     # --8<-- [start:usage]
     async with ExecutionContainer() as container:
-        async with ExecutionClient(port=container.port) as client:
+        async with ExecutionClient(port=container.executor_port) as client:
             execution = await client.submit("!pip install einops")  # (1)!
             async for chunk in execution.stream():  # (2)!
                 print(chunk, end="", flush=True)

@@ -9,12 +9,12 @@ from ipybox import ExecutionClient, ExecutionContainer
 
 async def main():
     # --8<-- [start:run-container]
-    container = ExecutionContainer(port=7777)  # (1)!
+    container = ExecutionContainer(executor_port=7777)  # (1)!
     await container.run()  # (2)!
-    assert container.port == 7777
+    assert container.executor_port == 7777
     # --8<-- [end:run-container]
 
-    async with ExecutionClient(port=container.port):
+    async with ExecutionClient(port=container.executor_port):
         await asyncio.sleep(1)
 
     # --8<-- [start:kill-container]

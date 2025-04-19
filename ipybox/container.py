@@ -22,15 +22,13 @@ class ExecutionContainer:
             Host paths may be relative or absolute. Container paths must be relative
             and are created as subdirectories of `/app` in the container.
         env: Environment variables to set in the container
-        port: Host port to map to the container's executor port. If not provided,
+        executor_port: Host port for the container's executor port. If not provided,
+            a random port will be allocated.
+        resource_port: Host port for the container's resource port. If not provided,
             a random port will be allocated.
         port_allocation_timeout: Timeout in seconds waiting for the container's host
             port to be allocated. This is only relevant on OSX when `port=None`.
         show_pull_progress: Whether to show progress when pulling the Docker image.
-
-    Attributes:
-        port: Host port mapped to the container's executor port. This port is dynamically
-            allocated when the container is started.
 
     Example:
         ```python
@@ -40,7 +38,7 @@ class ExecutionContainer:
         env = {"API_KEY": "secret"}
 
         async with ExecutionContainer(binds=binds, env=env) as container:
-            async with ExecutionClient(host="localhost", port=container.port) as client:
+            async with ExecutionClient(host="localhost", port=container.executor_port) as client:
                 result = await client.execute("print('Hello, world!')")
                 print(result.text)
         ```
@@ -52,7 +50,8 @@ class ExecutionContainer:
         tag: str = DEFAULT_TAG,
         binds: dict[str, str] | None = None,
         env: dict[str, str] | None = None,
-        port: int | None = None,
+        executor_port: int | None = None,
+        resource_port: int | None = None,
         port_allocation_timeout: float = 10,
         show_pull_progress: bool = True,
     ):
@@ -63,9 +62,9 @@ class ExecutionContainer:
 
         self._docker = None
         self._container = None
-        self._port = port
+        self._executor_port = executor_port
+        self._resource_port = resource_port
         self._port_allocation_timeout = port_allocation_timeout
-        self._executor_port = 8888
 
     async def __aenter__(self):
         try:
@@ -79,9 +78,9 @@ class ExecutionContainer:
         await self.kill()
 
     @property
-    def port(self) -> int:
+    def executor_port(self) -> int:
         """
-        The host port mapped to the container's executor port.
+        The host port for the container's executor port.
 
         This port is dynamically allocated when the container is started unless
         explicitly provided.
@@ -89,9 +88,24 @@ class ExecutionContainer:
         Raises:
             RuntimeError: If the container is not running
         """
-        if self._port is None:
+        if self._executor_port is None:
             raise RuntimeError("Container not running")
-        return self._port
+        return self._executor_port
+
+    @property
+    def resource_port(self) -> int:
+        """
+        The host port for the container's resource port.
+
+        This port is dynamically allocated when the container is started unless
+        explicitly provided.
+
+        Raises:
+            RuntimeError: If the container is not running
+        """
+        if self._resource_port is None:
+            raise RuntimeError("Container not running")
+        return self._resource_port
 
     async def kill(self):
         """
@@ -108,21 +122,30 @@ class ExecutionContainer:
         Create and start the Docker container.
         """
         self._docker = Docker()
-        await self._run(self._executor_port)
+        await self._run()
 
-    async def _run(self, executor_port: int = 8888):
-        host_port = {"HostPort": str(self._port)} if self._port else {}
-        executor_port_key = f"{executor_port}/tcp"
+    async def _run(self):
+        executor_host_port = {"HostPort": str(self._executor_port)} if self._executor_port else {}
+        resource_host_port = {"HostPort": str(self._resource_port)} if self._resource_port else {}
+
+        executor_port_key = f"{8888}/tcp"
+        resource_port_key = f"{8900}/tcp"
 
         config = {
             "Image": self.tag,
             "HostConfig": {
-                "PortBindings": {executor_port_key: [host_port]},
+                "PortBindings": {
+                    executor_port_key: [executor_host_port],
+                    resource_port_key: [resource_host_port],
+                },
                 "AutoRemove": True,
                 "Binds": await self._container_binds(),
             },
             "Env": self._container_env(),
-            "ExposedPorts": {executor_port_key: {}},
+            "ExposedPorts": {
+                executor_port_key: {},
+                resource_port_key: {},
+            },
         }
 
         if not await self._local_image():
@@ -132,7 +155,8 @@ class ExecutionContainer:
         await container.start()
 
         self._container = container
-        self._port = await self._host_port(container, executor_port_key)
+        self._executor_port = await self._host_port(container, executor_port_key)
+        self._resource_port = await self._host_port(container, resource_port_key)
 
         return container
 

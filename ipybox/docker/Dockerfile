@@ -9,9 +9,13 @@ RUN apt-get update && apt-get install -y \
     python3.10 \
     python3-pip \
     python3.10-venv \
+    ca-certificates \
     curl \
     wget \
     && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs
 
 RUN groupadd -g ${GID} appuser && \
     useradd -u ${UID} -g appuser -m -s /bin/bash appuser
@@ -25,6 +29,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     && rm miniconda.sh
 
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=${HOME}/poetry python3 -
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ENV PATH="${HOME}/conda/bin:${PATH}"
 ENV PATH="${HOME}/poetry/bin:${PATH}"
@@ -40,6 +46,8 @@ RUN conda run -n ipybox poetry install --only main
 COPY --chown=appuser:appuser server.sh ${HOME}/
 RUN chmod +x ${HOME}/server.sh
 
+COPY --chown=appuser:appuser ipybox/resource /app/ipybox/resource/
+COPY --chown=appuser:appuser ipybox/mcp /app/ipybox/mcp/
 COPY --chown=appuser:appuser ipybox/modinfo.py /app/ipybox/
 
 WORKDIR /app

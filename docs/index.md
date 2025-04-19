@@ -8,10 +8,11 @@
 
 ## Features
 
-- **Secure Execution**: Executes code in isolated Docker containers, preventing unauthorized access to the host system
-- **Stateful Execution**: Maintains variable and session state across commands using IPython kernels
-- **Real-Time Output Streaming**: Provides immediate feedback through direct output streaming
-- **Enhanced Plotting Support**: Enables downloading of plots created with Matplotlib and other visualization libraries
-- **Flexible Dependency Management**: Supports package installation and updates during runtime or at build time
-- **Resource Management**: Controls container lifecycle with built-in timeout and resource management features
+- **Secure Execution**: Executes code in Docker container locally or remotely
+- **Stateful Execution**: Maintains state across code executions using IPython kernels
+- **Output Streaming**: Provides immediate feedback through direct output streaming
+- **Plotting Support**: Enables downloading of plots created with visualization libraries
+- **MCP Support**: Generate Python functions from MCP tools and use them during code execution
+- **Dependency Management**: Supports package installation during runtime or at build time
+- **Resource Management**: Context manager based container and IPython kernel lifecycle management
 - **Reproducible Environments**: Ensures consistent execution environments across different systems

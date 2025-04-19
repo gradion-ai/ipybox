@@ -70,6 +70,8 @@ def build(
                 f"GID={os.getgid()}",
             ]
 
+        shutil.copytree(pkg_path / "mcp", tmp_path / "ipybox" / "mcp")
+        shutil.copytree(pkg_path / "resource", tmp_path / "ipybox" / "resource")
         shutil.copy(pkg_path / "modinfo.py", tmp_path / "ipybox")
         shutil.copy(pkg_path / "config" / "default" / "environment.yml", tmp_path)
         shutil.copy(pkg_path / "docker" / dockerfile, tmp_path)

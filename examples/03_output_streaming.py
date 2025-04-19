@@ -10,7 +10,7 @@ from ipybox import ExecutionClient, ExecutionContainer
 async def main():
     # --8<-- [start:usage]
     async with ExecutionContainer() as container:
-        async with ExecutionClient(port=container.port) as client:
+        async with ExecutionClient(port=container.executor_port) as client:
             code = """
             import time
             for i in range(5):
