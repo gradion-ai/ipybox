@@ -22,10 +22,10 @@ FUNCTION_TEMPLATE = '''
 from ipybox.mcp.run import run_sync
 from . import SERVER_PARAMS
 
-def {name}(params: Params) -> str:
+def {sanitized_name}(params: Params) -> str:
     """{description}
     """
-    return run_sync("{name}", params.model_dump(), SERVER_PARAMS)
+    return run_sync("{original_name}", params.model_dump(exclude_none=True), SERVER_PARAMS)
 '''
 
 
@@ -33,8 +33,12 @@ def generate_init_definition(server_params: dict[str, Any]):
     return INIT_TEMPLATE.format(server_params=server_params)
 
 
-def generate_function_definition(name: str, description: str):
-    return FUNCTION_TEMPLATE.format(name=name, description=description.replace('"""', '\\"\\"\\"'))
+def generate_function_definition(sanitized_name: str, original_name: str, description: str):
+    return FUNCTION_TEMPLATE.format(
+        sanitized_name=sanitized_name,
+        original_name=original_name,
+        description=description.replace('"""', '\\"\\"\\"'),
+    )
 
 
 def generate_input_definition(schema: dict[str, Any]):
@@ -72,13 +76,18 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
             result = []  # type: ignore
 
             for tool in (await session.list_tools()).tools:
-                tool_name = sanitize_name(tool.name)
-                result.append(tool_name)
+                original_name = tool.name
+                sanitized_name = sanitize_name(tool.name)
+                result.append(sanitized_name)
 
                 input_definition = generate_input_definition(tool.inputSchema)
-                function_definition = generate_function_definition(tool_name, tool.description)
+                function_definition = generate_function_definition(
+                    sanitized_name=sanitized_name,
+                    original_name=original_name,
+                    description=tool.description,
+                )
 
-                async with aiofiles.open(root_dir / server_name / f"{tool_name}.py", "w") as f:
+                async with aiofiles.open(root_dir / server_name / f"{sanitized_name}.py", "w") as f:
                     await f.write(f"{input_definition}\n\n{function_definition}")
 
             return result
