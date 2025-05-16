@@ -1,11 +1,12 @@
 import asyncio
+import shutil
 from pathlib import Path
 
 import aiofiles
 import pytest
 from PIL import Image
 
-from ipybox import ExecutionClient, ExecutionError
+from ipybox import ExecutionClient, ExecutionError, ResourceClient
 
 
 @pytest.mark.asyncio
@@ -23,6 +24,14 @@ print('third')
 """
     result = await execution_client.execute(code)
     assert result.text == "first\nsecond\nthird"
+
+
+@pytest.mark.asyncio
+async def test_stateful_execution(execution_client: ExecutionClient):
+    await execution_client.execute("x = 1")
+    await execution_client.execute("y = x + 1")
+    result = await execution_client.execute('print(f"{x},{y}")')
+    assert result.text == "1,2"
 
 
 @pytest.mark.asyncio
@@ -144,3 +153,25 @@ async def test_binds(execution_client: ExecutionClient, workspace: str):
 
     result = await execution_client.execute("import os; print(open('workspace/test_file').read())")
     assert result.text == "test_content"
+
+
+@pytest.mark.asyncio
+async def test_mcp_client_function(resource_client: ResourceClient, execution_client: ExecutionClient, workspace: str):
+    # Copy MCP server to /app/workspace/mcp_server.py into the container
+    mcp_server_path = Path(__file__).parent / "mcp_server.py"
+    shutil.copy(mcp_server_path, Path(workspace) / "mcp_server.py")
+
+    server_params = {
+        "command": "python",
+        "args": ["workspace/mcp_server.py"],
+    }
+
+    # generate MCP client sources in /app/mcpgen/test
+    await resource_client.generate_mcp_sources(relpath="mcpgen", server_name="test", server_params=server_params)
+
+    # Execute the MCP server via the generated function
+    exec_result = await execution_client.execute("""
+from mcpgen.test.tool_1 import tool_1, Params
+print(tool_1(Params(s="Hello")))
+""")
+    assert exec_result.text == "You passed to tool 1: Hello"

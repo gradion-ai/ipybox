@@ -1,19 +1,19 @@
 from mcp.server.fastmcp import FastMCP
 
 
-async def get_weather(city: str) -> str:
+async def tool_1(s: str) -> str:
     """
-    Get the weather for a city.
+    This is tool 1.
 
     Args:
-        city: The city to get the weather for
+        s: A string
     """
-    return f"The weather in {city} is sunny"
+    return f"You passed to tool 1: {s}"
 
 
 def main():
     server = FastMCP("Test MCP Server")
-    server.add_tool(get_weather)
+    server.add_tool(tool_1)
     server.run(transport="stdio")
 
 
