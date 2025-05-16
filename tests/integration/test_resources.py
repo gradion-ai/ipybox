@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from ipybox import ExecutionClient, ResourceClient
+from tests.mcp_server import MCP_SERVER_PATH
 
 
 @pytest.mark.asyncio
@@ -25,8 +26,7 @@ async def test_generate_and_get_mcp_sources(
     resource_client: ResourceClient, execution_client: ExecutionClient, workspace: str
 ):
     # Copy MCP server to /app/workspace/mcp_server.py into the container
-    mcp_server_path = Path(__file__).parent / "mcp_server.py"
-    shutil.copy(mcp_server_path, Path(workspace) / "mcp_server.py")
+    shutil.copy(MCP_SERVER_PATH, Path(workspace) / "mcp_server.py")
 
     server_params = {
         "command": "python",

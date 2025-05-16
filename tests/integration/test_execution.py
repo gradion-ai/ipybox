@@ -7,6 +7,7 @@ import pytest
 from PIL import Image
 
 from ipybox import ExecutionClient, ExecutionError, ResourceClient
+from tests.mcp_server import MCP_SERVER_PATH
 
 
 @pytest.mark.asyncio
@@ -158,8 +159,7 @@ async def test_binds(execution_client: ExecutionClient, workspace: str):
 @pytest.mark.asyncio
 async def test_mcp_client_function(resource_client: ResourceClient, execution_client: ExecutionClient, workspace: str):
     # Copy MCP server to /app/workspace/mcp_server.py into the container
-    mcp_server_path = Path(__file__).parent / "mcp_server.py"
-    shutil.copy(mcp_server_path, Path(workspace) / "mcp_server.py")
+    shutil.copy(MCP_SERVER_PATH, Path(workspace) / "mcp_server.py")
 
     server_params = {
         "command": "python",

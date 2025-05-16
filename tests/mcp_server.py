@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from mcp.server.fastmcp import FastMCP
+
+MCP_SERVER_PATH = Path(__file__)
 
 
 async def tool_1(s: str) -> str:
