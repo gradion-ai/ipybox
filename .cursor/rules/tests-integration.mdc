@@ -1,0 +1,22 @@
+---
+description: Rules for writing and running integration tests
+globs:
+alwaysApply: false
+---
+# Integration Tests Guidelines
+
+Integration tests in this project:
+
+- Should follow general guidelines in @tests-general.mdc
+- Should be placed in `tests/integration/` directory
+- Test how multiple components work together
+
+## MCP Integration Testing
+- For testing MCP (Model Context Protocol) features, use the test server in `tests/mcp_server.py`
+- Test error handling and edge cases in MCP interactions
+
+## Running
+- `pytest -xsv tests/integration` for running all integration tests
+- `pytest -xsv tests/integration --cov=ipybox --cov-report=term` for running all integration tests and generating a coverage report
+- `pytest -xsv tests/integration/test_[name].py` for running a single integration test file
+- `pytest -xsv tests/integration/test_[name].py::[test-name]` for running a single integration test

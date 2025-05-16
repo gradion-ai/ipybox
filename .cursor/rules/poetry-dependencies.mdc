@@ -1,0 +1,20 @@
+---
+description: Rules for adding or removing dependencies to the project
+globs:
+alwaysApply: false
+---
+# Poetry Dependencies Guide
+
+To add a dependency to the project, run the following command:
+
+```bash
+poetry add <dependency>
+```
+
+To remove a dependency from the project, run the following command:
+
+```bash
+poetry remove <dependency>
+```
+
+Add optional arguments like `--group`, for example, as needed.

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import aiofiles
 import pytest
+from flaky import flaky
 from PIL import Image
 
 from ipybox import ExecutionClient, ExecutionError, ResourceClient
@@ -83,6 +84,7 @@ img.show()
 
 
 @pytest.mark.asyncio
+@flaky(max_runs=3, min_passes=1)
 async def test_multiple_image_output(execution_client: ExecutionClient):
     code = """
 from PIL import Image

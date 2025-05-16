@@ -1,0 +1,36 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# General Testing Guidelines
+
+## Project Testing Structure
+- `tests/unit/`: For isolated component tests
+- `tests/integration/`: For tests that verify multiple components working together
+- Test files should follow the pattern `test_*.py`
+
+## Pytest Usage
+- Use pytest as the main testing framework
+- Use pytest-asyncio for async test functions
+- Use @pytest.mark.asyncio to mark async tests
+
+## Testing Best Practices
+- Test both success and failure conditions
+- Test edge cases and boundaries
+- Keep tests independent and idempotent
+- Include helpful error messages in assertions
+- Write clear, descriptive test names and docstrings
+- Use appropriate timeouts for operations that might block
+
+## Test Structure
+- Use parameterized tests when testing similar scenarios with different inputs
+
+## Test Coverage
+- Aim for high code coverage (>80%)
+- Focus on testing edge cases and error conditions
+- Don't just test the happy path
+
+## Running
+- `pytest -xsv tests/` for running unit and integration tests
+- `pytest -xsv tests/ --cov` for running unit and integration tests and generating a coverage report
