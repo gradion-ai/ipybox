@@ -37,19 +37,24 @@ async def test_generate_and_get_mcp_sources(
     gen_result = await resource_client.generate_mcp_sources(
         relpath="mcpgen", server_name="test", server_params=server_params
     )
-    assert gen_result == ["tool_1"]
+    assert gen_result == ["tool_1", "tool_2"]
 
     # retrieve the generated sources via ipybox filesystem
     get_result_1 = await resource_client.get_mcp_sources(relpath="mcpgen", server_name="test")
-    source_1 = get_result_1["tool_1"]
 
-    module_name = "mcpgen.test.tool_1"
+    module_name_1 = "mcpgen.test.tool_1"
+    module_name_2 = "mcpgen.test.tool_2"
 
     # get the generated sources via ipybox module loading
-    get_result_2 = await resource_client.get_module_sources([module_name])
+    get_result_2 = await resource_client.get_module_sources([module_name_1, module_name_2])
+
+    source_1 = get_result_1["tool_1"]
+    source_2 = get_result_1["tool_2"]
 
     # check if retrieval mechanisms are equivalent
-    assert get_result_1["tool_1"] == get_result_2[module_name]
+    assert source_1 == get_result_2[module_name_1]
+    assert source_2 == get_result_2[module_name_2]
 
     # check if it contains the generated function signature
     assert "tool_1(params: Params)" in source_1
+    assert "tool_2(params: Params)" in source_2
