@@ -25,7 +25,7 @@ poetry self add "poetry-dynamic-versioning[plugin]"
 Install dependencies with Poetry:
 
 ```bash
-poetry install --with dev --with docs
+poetry install --with docs
 ```
 
 Install pre-commit hooks:
@@ -34,7 +34,7 @@ Install pre-commit hooks:
 invoke precommit-install
 ```
 
-Enforce coding conventions (done automatically by pre-commit hooks):
+Enforce coding conventions (also enforced by pre-commit hooks):
 
 ```bash
 invoke cc

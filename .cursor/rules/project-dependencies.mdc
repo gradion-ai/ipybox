@@ -1,9 +1,9 @@
 ---
-description: Rules for adding or removing dependencies to the project
+description: Add, remove or sync project dependencies after initial setup
 globs:
 alwaysApply: false
 ---
-# Poetry Dependencies Guide
+# Dependency Management Guide
 
 To add a dependency to the project, run the following command:
 
@@ -18,3 +18,10 @@ poetry remove <dependency>
 ```
 
 Add optional arguments like `--group`, for example, as needed.
+
+For syncing dependencies after a manual change of `pyproject.toml`, run the following commands:
+
+```bash
+poetry lock --no-update
+poetry install --with docs
+```

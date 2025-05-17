@@ -1,0 +1,22 @@
+---
+description: Run unit or integration tests
+globs:
+alwaysApply: false
+---
+# Instructions for Running Tests
+
+## Running Tests
+
+### General
+- `pytest -xsv tests/` for running all unit and integration tests.
+- `pytest -xsv tests/ --cov=ipybox --cov-report=term` for running all unit and integration tests and generating a coverage report.
+
+### Unit Tests
+- `pytest -xsv tests/unit` for running unit tests.
+- `pytest -xsv tests/unit --cov=ipybox --cov-report=term` for running unit tests and generating a coverage report.
+
+### Integration Tests
+- `pytest -xsv tests/integration` for running all integration tests.
+- `pytest -xsv tests/integration --cov=ipybox --cov-report=term` for running all integration tests and generating a coverage report.
+- `pytest -xsv tests/integration/test_[name].py` for running a single integration test file.
+- `pytest -xsv tests/integration/test_[name].py::[test-name]` for running a single integration test.
