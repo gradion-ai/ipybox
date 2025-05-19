@@ -105,5 +105,5 @@ jobs:
       run: |
         pip install dist/*.whl
         pip install pytest pytest-asyncio
-        pytest tests/test_basic.py
+        pytest tests/unit/test_modinfo.py
         pip uninstall -y ipybox
