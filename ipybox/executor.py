@@ -118,6 +118,7 @@ class Execution:
             self._stream_consumed = True
 
     async def _stream(self) -> AsyncIterator[str | Image.Image]:
+        saved_error = None
         while True:
             msg_dict = await self.client._read_message()
             msg_type = msg_dict["msg_type"]
@@ -129,10 +130,10 @@ class Execution:
             if msg_type == "stream":
                 yield msg_dict["content"]["text"]
             elif msg_type == "error":
-                self._raise_error(msg_dict)
+                saved_error = msg_dict
             elif msg_type == "execute_reply":
                 if msg_dict["content"]["status"] == "error":
-                    self._raise_error(msg_dict)
+                    self._raise_error(saved_error or msg_dict)
                 break
             elif msg_type in ["execute_result", "display_data"]:
                 msg_data = msg_dict["content"]["data"]
