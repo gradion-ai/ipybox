@@ -8,16 +8,12 @@ from ipybox import ExecutionClient, ExecutionContainer
 
 async def main():
     # --8<-- [start:usage]
-    await aiofiles.os.makedirs("data", exist_ok=True)
-    await aiofiles.os.makedirs("output", exist_ok=True)
+    await aiofiles.os.makedirs("examples/output", exist_ok=True)
 
     binds = {  # (1)!
-        "./data": "data",  # (2)!
-        "./output": "output",  # (3)!
+        "./examples/data": "data",  # (2)!
+        "./examples/output": "output",  # (3)!
     }
-
-    async with aiofiles.open("data/input.txt", "w") as f:
-        await f.write("hello world")
 
     async with ExecutionContainer(binds=binds) as container:
         async with ExecutionClient(port=container.executor_port) as client:
@@ -31,7 +27,7 @@ async def main():
                     f.write(processed)
             """)  # (4)!
 
-    async with aiofiles.open("output/result.txt", "r") as f:  # (5)!
+    async with aiofiles.open("examples/output/result.txt", "r") as f:  # (5)!
         result = await f.read()
         assert result == "HELLO WORLD"
     # --8<-- [end:usage]

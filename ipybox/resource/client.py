@@ -1,6 +1,11 @@
 import asyncio
+import io
+import mimetypes
+import tarfile
+from pathlib import Path
 from typing import Any
 
+import aiofiles
 import aiohttp
 
 
@@ -113,3 +118,121 @@ class ResourceClient:
         async with self._session.get(url, params={"q": module_names}) as response:
             response.raise_for_status()
             return await response.json()
+
+    async def upload_file(self, relpath: str, local_path: Path) -> None:
+        """Upload a file to the container.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+            local_path: Local file path to upload
+
+        Raises:
+            FileNotFoundError: If the local file doesn't exist
+            HTTPError: If the upload fails
+        """
+        if not local_path.exists() or not local_path.is_file():
+            raise FileNotFoundError(f"Local file not found: {local_path}")
+
+        # Determine MIME type
+        mime_type, _ = mimetypes.guess_type(str(local_path))
+        headers = {"Content-Type": mime_type} if mime_type else {}
+
+        # Read and upload file
+        async with aiofiles.open(local_path, mode="rb") as f:
+            content = await f.read()
+
+        url = f"{self._base_url}/files/{relpath}"
+        async with self._session.post(url, data=content, headers=headers) as response:
+            response.raise_for_status()
+
+    async def download_file(self, relpath: str, local_path: Path) -> None:
+        """Download a file from the container.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+            local_path: Local file path to save to
+
+        Raises:
+            HTTPError: If the file doesn't exist or download fails
+        """
+        # Create parent directories if needed
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+
+        url = f"{self._base_url}/files/{relpath}"
+        async with self._session.get(url) as response:
+            response.raise_for_status()
+
+            # Stream content to file
+            async with aiofiles.open(local_path, mode="wb") as f:
+                async for chunk in response.content.iter_chunked(1024 * 1024):  # 1MB chunks
+                    await f.write(chunk)
+
+    async def delete_file(self, relpath: str) -> None:
+        """Delete a file from the container.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+
+        Raises:
+            HTTPError: If the file doesn't exist or deletion fails
+        """
+        url = f"{self._base_url}/files/{relpath}"
+        async with self._session.delete(url) as response:
+            response.raise_for_status()
+
+    async def upload_directory(self, relpath: str, local_path: Path) -> None:
+        """Upload a directory to the container as a tar archive.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+            local_path: Local directory path to upload
+
+        Raises:
+            FileNotFoundError: If the local directory doesn't exist
+            HTTPError: If the upload fails
+        """
+        if not local_path.exists() or not local_path.is_dir():
+            raise FileNotFoundError(f"Local directory not found: {local_path}")
+
+        # Create tar archive in memory
+        tar_buffer = io.BytesIO()
+        with tarfile.open(fileobj=tar_buffer, mode="w:gz") as tar:
+            # Add directory contents to archive
+            for item in local_path.rglob("*"):
+                if item.is_file():
+                    # Calculate relative path for archive
+                    arcname = item.relative_to(local_path)
+                    tar.add(item, arcname=str(arcname))
+
+        # Upload tar archive
+        tar_buffer.seek(0)
+        url = f"{self._base_url}/directories/{relpath}"
+        headers = {"Content-Type": "application/x-gzip"}
+        async with self._session.post(url, data=tar_buffer.getvalue(), headers=headers) as response:
+            response.raise_for_status()
+
+    async def download_directory(self, relpath: str, local_path: Path) -> None:
+        """Download a directory from the container as a tar archive.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+            local_path: Local directory path to extract to
+
+        Raises:
+            HTTPError: If the directory doesn't exist or download fails
+        """
+        # Create target directory
+        local_path.mkdir(parents=True, exist_ok=True)
+
+        url = f"{self._base_url}/directories/{relpath}"
+        async with self._session.get(url) as response:
+            response.raise_for_status()
+
+            # Download tar content
+            content = await response.read()
+
+            # Extract tar archive
+            with io.BytesIO(content) as tar_buffer:
+                with tarfile.open(fileobj=tar_buffer, mode="r:gz") as tar:
+                    # Extract all files
+                    tar.extractall(path=local_path)

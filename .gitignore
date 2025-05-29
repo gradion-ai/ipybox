@@ -7,7 +7,7 @@ __pycache__
 .vscode
 .idea
 auth.toml
-data
 dist
 output
 site/
+examples/output

@@ -127,6 +127,21 @@ Plots generated with `matplotlib` and other visualization libraries are returned
 2. Stream output text (installation progress and `print` statement)
 3. Get attached image from execution result and save it as [sine.png](img/sine.png)
 
+## File operations
+
+Files and directories can be transferred between the host and container using the [`ResourceClient`][ipybox.resource.client.ResourceClient].
+
+```python
+--8<-- "examples/11_file_operations.py:usage"
+```
+
+1. Upload a single file to the container
+2. Upload an entire directory to the container
+3. Copy files within the container
+4. Download a file from the container
+5. Download a directory from the container
+6. Delete a file in the container
+
 ## Environment variables
 
 Environment variables for the container can be passed to the [`ExecutionContainer`][ipybox.container.ExecutionContainer] constructor.
