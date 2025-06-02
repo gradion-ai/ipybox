@@ -11,8 +11,7 @@ from ipybox.mcp.gen import (
     generate_mcp_sources,
     sanitize_name,
 )
-from ipybox.mcp.run import mcp_client, run_async, run_sync
-from tests.mcp_server import MCP_SERVER_PATH
+from ipybox.mcp.run import mcp_client, run_async
 
 # Test constants
 TOOL1_NAME = "tool-1"
@@ -26,15 +25,6 @@ def temp_dir():
     """Create a temporary directory for the tests."""
     with tempfile.TemporaryDirectory() as temp_dir:
         yield Path(temp_dir)
-
-
-@pytest.fixture
-def server_params():
-    """Return the server parameters for the MCP server."""
-    return {
-        "command": "python",
-        "args": [str(MCP_SERVER_PATH)],
-    }
 
 
 @pytest.mark.parametrize(
@@ -57,8 +47,16 @@ def test_generate_init_definition(server_params):
 
     # Check that the required elements are in the init content
     assert "SERVER_PARAMS = " in init_content
-    assert f"'command': '{server_params['command']}'" in init_content
-    assert f"'args': {server_params['args']}" in init_content
+
+    # Check for stdio transport parameters
+    if "command" in server_params:
+        assert f"'command': '{server_params['command']}'" in init_content
+        assert f"'args': {server_params['args']}" in init_content
+
+    # Check for HTTP/SSE transport parameters
+    if "url" in server_params:
+        assert f"'url': '{server_params['url']}'" in init_content
+        assert f"'type': '{server_params['type']}'" in init_content
 
 
 @pytest.mark.parametrize(
@@ -137,8 +135,14 @@ async def test_generate_mcp_sources(temp_dir, server_params):
     with open(init_file) as f:
         init_content = f.read()
         assert "SERVER_PARAMS = " in init_content
-        assert "command" in init_content
-        assert "python" in init_content
+
+        # Check for transport-specific parameters
+        if "command" in server_params:
+            assert "command" in init_content
+            assert "python" in init_content
+        elif "url" in server_params:
+            assert "url" in init_content
+            assert server_params["type"] in init_content
 
     # Check that tool_1.py was created and contains the correct elements
     tool1_file = server_dir / "tool_1.py"
@@ -208,22 +212,3 @@ async def test_run_async_nonexistent_tool(server_params):
     """Test that run_async raises an exception for non-existent tools."""
     with pytest.raises(Exception):
         await run_async(tool_name=NONEXISTENT_TOOL, params={}, server_params=server_params)
-
-
-@pytest.mark.parametrize(
-    "tool_name,input_str,expected",
-    [
-        (TOOL1_NAME, "test_sync_1", "You passed to tool 1: test_sync_1"),
-        (TOOL2_NAME, "test_sync_2", "You passed to tool 2: test_sync_2"),
-    ],
-)
-def test_run_sync(server_params, tool_name, input_str, expected):
-    """Test the run_sync function."""
-    result = run_sync(tool_name=tool_name, params={"s": input_str}, server_params=server_params)
-    assert result == expected
-
-
-def test_run_sync_nonexistent_tool(server_params):
-    """Test that run_sync raises an exception for non-existent tools."""
-    with pytest.raises(Exception):
-        run_sync(tool_name=NONEXISTENT_TOOL, params={}, server_params=server_params)

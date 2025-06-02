@@ -9,7 +9,7 @@ import uvicorn
 
 from ipybox import ResourceClient
 from ipybox.resource.server import ResourceServer
-from tests.mcp_server import MCP_SERVER_PATH
+from tests.mcp_server import STDIO_SERVER_PATH
 
 
 @pytest.fixture
@@ -76,7 +76,7 @@ async def test_generate_mcp_with_real_server(resource_client, temp_dir):
     # Copy MCP server to test directory in temporary root
     test_mcp_dir = temp_dir / "test_mcp_servers"
     test_mcp_dir.mkdir(exist_ok=True)
-    shutil.copy(MCP_SERVER_PATH, test_mcp_dir / "mcp_server.py")
+    shutil.copy(STDIO_SERVER_PATH, test_mcp_dir / "mcp_server.py")
 
     server_params = {
         "command": "python",
