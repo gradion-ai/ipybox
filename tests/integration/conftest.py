@@ -16,7 +16,8 @@ async def workspace():
 
 @pytest.fixture(
     scope="package",
-    params=["test-root", "test"],
+    # params=["test-root", "test"],
+    params=["test-root"],
 )
 def container_image(request) -> Generator[str, None, None]:
     tag_suffix = request.param

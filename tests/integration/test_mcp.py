@@ -12,7 +12,7 @@ from ipybox.mcp.gen import (
     sanitize_name,
 )
 from ipybox.mcp.run import mcp_client, run_async, run_sync
-from tests.mcp_server import MCP_SERVER_PATH
+from tests.mcp_server import STDIO_SERVER_PATH
 
 # Test constants
 TOOL1_NAME = "tool-1"
@@ -33,7 +33,7 @@ def server_params():
     """Return the server parameters for the MCP server."""
     return {
         "command": "python",
-        "args": [str(MCP_SERVER_PATH)],
+        "args": [str(STDIO_SERVER_PATH)],
     }
 
 

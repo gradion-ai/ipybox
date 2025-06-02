@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from ipybox import ExecutionClient, ResourceClient
-from tests.mcp_server import MCP_SERVER_PATH
+from ipybox import ResourceClient
+from tests.mcp_server import STDIO_SERVER_PATH
 
 
 @pytest.mark.asyncio
@@ -23,11 +23,9 @@ async def test_get_module_source(resource_client: ResourceClient):
 
 
 @pytest.mark.asyncio
-async def test_generate_and_get_mcp_sources(
-    resource_client: ResourceClient, execution_client: ExecutionClient, workspace: str
-):
+async def test_generate_and_get_mcp_sources(resource_client: ResourceClient, workspace: str):
     # Copy MCP server to /app/workspace/mcp_server.py into the container
-    shutil.copy(MCP_SERVER_PATH, Path(workspace) / "mcp_server.py")
+    shutil.copy(STDIO_SERVER_PATH, Path(workspace) / "mcp_server.py")
 
     server_params = {
         "command": "python",

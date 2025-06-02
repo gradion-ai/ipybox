@@ -6,6 +6,7 @@ from typing import Any
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamablehttp_client
 from mcp.types import TextContent
 
 
@@ -14,12 +15,23 @@ async def mcp_client(server_params: dict[str, Any]):
     if "command" in server_params:
         mgr = stdio_client(StdioServerParameters(**server_params))
     elif "url" in server_params:
-        mgr = sse_client(**server_params)
+        url = server_params["url"]
+        kwargs = {k: v for k, v in server_params.items() if k not in ["url", "type"]}
+
+        if "/mcp" in url or server_params.get("type") == "streamable_http":
+            mgr = streamablehttp_client(url, **kwargs)
+        elif "/sse" in url or server_params.get("type") == "sse":
+            mgr = sse_client(url, **kwargs)
+        else:
+            raise ValueError(
+                f"Unable to determine MCP client type from URL: {url}. "
+                "URL should contain '/mcp' or '/sse', or specify 'type' as 'streamable_http' or 'sse'."
+            )
     else:
         raise ValueError(f'Neither a "command" nor a "url" key in server_params: {server_params}')
 
-    async with mgr as streams:
-        yield streams
+    async with mgr as (read, write, *_):
+        yield read, write
 
 
 async def run_async(
@@ -50,4 +62,4 @@ def run_sync(
             return future.result()
 
     except RuntimeError:
-        return asyncio.run(run_async(tool_name, params, server_params))
+        return asyncio.run(run_async(tool_name, params, server_params, connect_timeout))

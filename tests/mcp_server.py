@@ -1,8 +1,13 @@
+import asyncio
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import AsyncIterator
 
 from mcp.server.fastmcp import FastMCP
 
-MCP_SERVER_PATH = Path(__file__)
+STDIO_SERVER_PATH = Path(__file__)
+HTTP_SERVER_PORT = 8710
+SSE_SERVER_PORT = 8711
 
 
 async def tool_1(s: str) -> str:
@@ -22,13 +27,57 @@ async def tool_2(s: str) -> str:
     return f"You passed to tool 2: {s}"
 
 
-def main():
-    server = FastMCP("Test MCP Server")
-    # This tool name is sanitized to "tool_1"
+def create_server(**kwargs) -> FastMCP:
+    server = FastMCP("Test MCP Server", **kwargs)
     server.add_tool(tool_1, name="tool-1")
-    # This tool name remains unchanged
     server.add_tool(tool_2)
-    server.run(transport="stdio")
+    return server
+
+
+@asynccontextmanager
+async def streamable_http_server(
+    host: str = "localhost",
+    port: int = 8710,
+    json_response: bool = True,
+) -> AsyncIterator[FastMCP]:
+    server = create_server(host=host, port=port, json_response=json_response)
+    async with _server(server.streamable_http_app(), server.settings):
+        yield server
+
+
+@asynccontextmanager
+async def sse_server(
+    host: str = "localhost",
+    port: int = 8711,
+) -> AsyncIterator[FastMCP]:
+    server = create_server(host=host, port=port)
+    async with _server(server.sse_app(), server.settings):
+        yield server
+
+
+@asynccontextmanager
+async def _server(app, settings):
+    import uvicorn
+
+    cfg = uvicorn.Config(
+        app,
+        host=settings.host,
+        port=settings.port,
+        log_level=settings.log_level.lower(),
+    )
+    server = uvicorn.Server(cfg)
+    task = asyncio.create_task(server.serve())
+    while not server.started:
+        await asyncio.sleep(0.01)
+
+    yield
+
+    server.should_exit = True
+    await task
+
+
+def main():
+    create_server().run(transport="stdio")
 
 
 if __name__ == "__main__":
