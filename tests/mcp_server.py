@@ -36,7 +36,7 @@ def create_server(**kwargs) -> FastMCP:
 
 @asynccontextmanager
 async def streamable_http_server(
-    host: str = "localhost",
+    host: str = "0.0.0.0",
     port: int = 8710,
     json_response: bool = True,
 ) -> AsyncIterator[FastMCP]:
@@ -47,7 +47,7 @@ async def streamable_http_server(
 
 @asynccontextmanager
 async def sse_server(
-    host: str = "localhost",
+    host: str = "0.0.0.0",
     port: int = 8711,
 ) -> AsyncIterator[FastMCP]:
     server = create_server(host=host, port=port)

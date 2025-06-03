@@ -23,14 +23,11 @@ async def test_get_module_source(resource_client: ResourceClient):
 
 
 @pytest.mark.asyncio
-async def test_generate_and_get_mcp_sources(resource_client: ResourceClient, workspace: str):
-    # Copy MCP server to /app/workspace/mcp_server.py into the container
-    shutil.copy(STDIO_SERVER_PATH, Path(workspace) / "mcp_server.py")
-
-    server_params = {
-        "command": "python",
-        "args": ["workspace/mcp_server.py"],
-    }
+async def test_generate_and_get_mcp_sources(resource_client: ResourceClient, workspace: str, server_params: dict):
+    if "command" in server_params:
+        # Copy MCP server to /app/workspace/mcp_server.py in the container
+        shutil.copy(STDIO_SERVER_PATH, Path(workspace) / "mcp_server.py")
+        server_params["args"] = ["workspace/mcp_server.py"]
 
     # generate MCP client sources in /app/mcpgen/test
     gen_result = await resource_client.generate_mcp_sources(
