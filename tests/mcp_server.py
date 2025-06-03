@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -77,7 +78,21 @@ async def _server(app, settings):
 
 
 def main():
-    create_server().run(transport="stdio")
+    parser = argparse.ArgumentParser(description="Test MCP Server with configurable transport")
+    parser.add_argument(
+        "--transport",
+        "-t",
+        choices=["stdio", "streamable-http", "sse"],
+        default="stdio",
+        help="Transport type to use (default: stdio)",
+    )
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)")
+    parser.add_argument("--port", "-p", type=int, default=8000, help="Port to bind to (default: 8000)")
+
+    args = parser.parse_args()
+
+    server = create_server(host=args.host, port=args.port)
+    server.run(transport=args.transport)
 
 
 if __name__ == "__main__":
