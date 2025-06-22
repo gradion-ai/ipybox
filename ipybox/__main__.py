@@ -60,9 +60,11 @@ def build(
 
         if root:
             dockerfile = "Dockerfile.root"
+            firewall_script = "init-firewall-root.sh"
             build_cmd_args = []
         else:
             dockerfile = "Dockerfile"
+            firewall_script = "init-firewall.sh"
             build_cmd_args = [
                 "--build-arg",
                 f"UID={os.getuid()}",
@@ -76,7 +78,7 @@ def build(
         shutil.copy(pkg_path / "config" / "default" / "environment.yml", tmp_path)
         shutil.copy(pkg_path / "docker" / dockerfile, tmp_path)
         shutil.copy(pkg_path / "scripts" / "server.sh", tmp_path)
-        shutil.copy(pkg_path / "docker" / "init-firewall.sh", tmp_path)
+        shutil.copy(pkg_path / "docker" / firewall_script, tmp_path)
 
         build_cmd = [
             "docker",

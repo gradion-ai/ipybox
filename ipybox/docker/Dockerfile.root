@@ -38,6 +38,9 @@ RUN conda run -n ipybox poetry install --only main
 COPY server.sh ${HOME}/
 RUN chmod +x ${HOME}/server.sh
 
+COPY init-firewall-root.sh /usr/local/bin/init-firewall.sh
+RUN chmod +x /usr/local/bin/init-firewall.sh
+
 COPY ipybox/resource /app/ipybox/resource/
 COPY ipybox/mcp /app/ipybox/mcp/
 COPY ipybox/modinfo.py /app/ipybox/

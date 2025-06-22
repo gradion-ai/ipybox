@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from collections import defaultdict
 from pathlib import Path
 
@@ -8,6 +9,8 @@ from aiodocker.containers import DockerContainer
 from ipybox.utils import arun
 
 DEFAULT_TAG = "gradion-ai/ipybox"
+
+logger = logging.getLogger(__name__)
 
 
 class ExecutionContainer:
@@ -143,7 +146,6 @@ class ExecutionContainer:
             )
 
             output_chunks: list[bytes] = []
-
             async with exec_instance.start(detach=False) as stream:
                 # Read frames until the exec session closes (`read_out` returns `None`).
                 while True:
@@ -156,16 +158,20 @@ class ExecutionContainer:
                     if msg.data:
                         output_chunks.append(msg.data)
 
-            text_output = b"".join(output_chunks).decode(errors="replace")
-            if text_output:
-                print(text_output.rstrip())
+            output_text = b"".join(output_chunks).decode(errors="replace")
 
             # Check the exit status to ensure the firewall script completed successfully.
+            # If the script fails, raise an error with the exit code and the output text.
             inspect_data = await exec_instance.inspect()
             exit_code = inspect_data.get("ExitCode")
 
             if exit_code not in (0, None):
-                raise RuntimeError(f"Firewall initialization script failed with exit code {exit_code}.")
+                error_message = f"init script returned exit code {exit_code}."
+                error_message = error_message + f"\n{output_text}" if output_text else ""
+                raise RuntimeError(error_message)
+            else:
+                for line in output_text.splitlines():
+                    logger.info(line)
 
         except Exception as e:
             raise RuntimeError(f"Failed to initialize firewall: {str(e)}") from e
