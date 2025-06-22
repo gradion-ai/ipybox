@@ -26,30 +26,27 @@ async def workspace():
         yield temp_dir
 
 
-@pytest.fixture(scope="package")
-def container_image_root() -> Generator[str, None, None]:
-    tag = f"{DEFAULT_TAG}-test-root"
+def build_container_image(suffix: str, root: bool = False) -> str:
+    """Helper function to build container images."""
+    tag = f"{DEFAULT_TAG}-{suffix}"
     deps_path = Path(__file__).parent / "dependencies.txt"
 
-    cmd = ["python", "-m", "ipybox", "build", "-t", tag, "-d", str(deps_path), "-r"]
+    cmd = ["python", "-m", "ipybox", "build", "-t", tag, "-d", str(deps_path)]
+    if root:
+        cmd.append("-r")
 
-    # Build the image using the CLI
     subprocess.run(cmd, check=True)
+    return tag
 
-    yield tag
+
+@pytest.fixture(scope="package")
+def container_image_root() -> Generator[str, None, None]:
+    yield build_container_image("test-root", root=True)
 
 
 @pytest.fixture(scope="package")
 def container_image_user() -> Generator[str, None, None]:
-    tag = f"{DEFAULT_TAG}-test"
-    deps_path = Path(__file__).parent / "dependencies.txt"
-
-    cmd = ["python", "-m", "ipybox", "build", "-t", tag, "-d", str(deps_path)]
-
-    # Build the image using the CLI
-    subprocess.run(cmd, check=True)
-
-    yield tag
+    yield build_container_image("test", root=False)
 
 
 @pytest.fixture(
