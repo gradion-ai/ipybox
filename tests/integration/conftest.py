@@ -26,24 +26,41 @@ async def workspace():
         yield temp_dir
 
 
-@pytest.fixture(
-    scope="package",
-    params=["test-root", "test"],
-)
-def container_image(request) -> Generator[str, None, None]:
-    tag_suffix = request.param
-    tag = f"{DEFAULT_TAG}-{tag_suffix}"
+@pytest.fixture(scope="package")
+def container_image_root() -> Generator[str, None, None]:
+    tag = f"{DEFAULT_TAG}-test-root"
     deps_path = Path(__file__).parent / "dependencies.txt"
 
-    cmd = ["python", "-m", "ipybox", "build", "-t", tag, "-d", str(deps_path)]
-
-    if tag_suffix == "test-root":
-        cmd.append("-r")
+    cmd = ["python", "-m", "ipybox", "build", "-t", tag, "-d", str(deps_path), "-r"]
 
     # Build the image using the CLI
     subprocess.run(cmd, check=True)
 
     yield tag
+
+
+@pytest.fixture(scope="package")
+def container_image_user() -> Generator[str, None, None]:
+    tag = f"{DEFAULT_TAG}-test"
+    deps_path = Path(__file__).parent / "dependencies.txt"
+
+    cmd = ["python", "-m", "ipybox", "build", "-t", tag, "-d", str(deps_path)]
+
+    # Build the image using the CLI
+    subprocess.run(cmd, check=True)
+
+    yield tag
+
+
+@pytest.fixture(
+    scope="package",
+    params=["test-root", "test"],
+)
+def container_image(request, container_image_root, container_image_user) -> Generator[str, None, None]:
+    if request.param == "test-root":
+        yield container_image_root
+    else:
+        yield container_image_user
 
 
 @pytest.fixture(scope="package")

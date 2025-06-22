@@ -122,7 +122,8 @@ class ExecutionContainer:
                 If None or empty, only essential services (DNS, SSH, localhost, ipybox ports) are allowed.
 
         Raises:
-            RuntimeError: If the container is not running or firewall initialization fails.
+            RuntimeError: If the container is not running, firewall initialization fails,
+                or if the container is running as root (ipybox images built with -r flag).
         """
         if not self._container:
             raise RuntimeError("Container not running")
