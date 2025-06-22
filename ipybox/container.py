@@ -100,6 +100,76 @@ class ExecutionContainer:
         if self._docker:
             await self._docker.close()
 
+    async def init_firewall(self, allowed_domains: list[str] | None = None) -> None:
+        """Initialize firewall rules to restrict internet access to allowed domains only.
+
+        The firewall allows:
+        - DNS resolution (port 53)
+        - SSH access (port 22)
+        - Localhost traffic
+        - Host network access
+        - Bidirectional traffic on executor (8888) and resource (8900) ports
+        - Outbound access only to specified allowed domains
+
+        All other internet access is blocked. DNS resolution failures for allowed
+        domains result in warnings but do not stop the firewall initialization.
+
+        Args:
+            allowed_domains: List of domains that should be accessible from the container.
+                If None or empty, only essential services (DNS, SSH, localhost, ipybox ports) are allowed.
+
+        Raises:
+            RuntimeError: If the container is not running or firewall initialization fails.
+        """
+        if not self._container:
+            raise RuntimeError("Container not running")
+
+        if allowed_domains is None:
+            allowed_domains = []
+
+        # Build command arguments
+        cmd_args = ["/usr/local/bin/init-firewall.sh"]
+        cmd_args.extend(allowed_domains)
+        cmd_args.extend(["--executor-port", str(8888), "--resource-port", str(8900)])
+
+        try:
+            # Execute firewall initialization script as root
+            exec_instance = await self._container.exec(
+                cmd=cmd_args,
+                stdout=True,
+                stderr=True,
+                tty=False,
+                user="root",
+            )
+
+            output_chunks: list[bytes] = []
+
+            async with exec_instance.start(detach=False) as stream:
+                # Read frames until the exec session closes (`read_out` returns `None`).
+                while True:
+                    msg = await stream.read_out()
+                    if msg is None:
+                        break
+
+                    # Append both stdout (stream==1) and stderr (stream==2)
+                    # data so we don't lose any diagnostic information.
+                    if msg.data:
+                        output_chunks.append(msg.data)
+
+            text_output = b"".join(output_chunks).decode(errors="replace")
+            if text_output:
+                print(text_output.rstrip())
+
+            # Check the exit status to ensure the firewall script completed successfully.
+            inspect_data = await exec_instance.inspect()
+            exit_code = inspect_data.get("ExitCode")
+
+            if exit_code not in (0, None):
+                raise RuntimeError(f"Firewall initialization script failed with exit code {exit_code}.")
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize firewall: {str(e)}") from e
+
     async def run(self):
         """Creates and starts a code execution Docker container."""
         self._docker = Docker()
@@ -115,6 +185,10 @@ class ExecutionContainer:
         config = {
             "Image": self.tag,
             "HostConfig": {
+                "CapAdd": [
+                    "NET_ADMIN",
+                    "NET_RAW",
+                ],
                 "PortBindings": {
                     executor_port_key: [executor_host_port],
                     resource_port_key: [resource_host_port],

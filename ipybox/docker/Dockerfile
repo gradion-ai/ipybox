@@ -12,6 +12,13 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     wget \
+    iptables \
+    ipset \
+    dnsutils \
+    iproute2 \
+    aggregate \
+    netcat-openbsd \
+    libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -49,6 +56,13 @@ RUN chmod +x ${HOME}/server.sh
 COPY --chown=appuser:appuser ipybox/resource /app/ipybox/resource/
 COPY --chown=appuser:appuser ipybox/mcp /app/ipybox/mcp/
 COPY --chown=appuser:appuser ipybox/modinfo.py /app/ipybox/
+
+USER root
+
+COPY init-firewall.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/init-firewall.sh
+
+USER appuser
 
 WORKDIR /app
 

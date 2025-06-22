@@ -76,6 +76,7 @@ def build(
         shutil.copy(pkg_path / "config" / "default" / "environment.yml", tmp_path)
         shutil.copy(pkg_path / "docker" / dockerfile, tmp_path)
         shutil.copy(pkg_path / "scripts" / "server.sh", tmp_path)
+        shutil.copy(pkg_path / "docker" / "init-firewall.sh", tmp_path)
 
         build_cmd = [
             "docker",
