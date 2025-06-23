@@ -25,7 +25,7 @@ class ExecutionContainer:
       Clients connect to it via [`ResourceClient`][ipybox.resource.client.ResourceClient] on
       the container's [resource host port][ipybox.container.ExecutionContainer.resource_port].
     - a firewall that can be enabled with [init_firewall][ipybox.container.ExecutionContainer.init_firewall]
-      to restrict internet access to allowed domains only.
+      to restrict network access to allowed domains, IPv4 addresses, or CIDR ranges.
 
     Args:
         tag: Name and optionally tag of the `ipybox` Docker image to use (format: `name:tag`)
