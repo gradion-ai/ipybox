@@ -94,6 +94,24 @@ Instead of waiting for code execution to complete, output can also be streamed a
     Processing step 4
     ```
 
+## Restrict network access
+
+A container allows all outbound internet traffic by default. This can be restricted with the [`init_firewall`][ipybox.container.ExecutionContainer.init_firewall] method to a list of domain names, IP addresses, or CIDR ranges.
+
+```python
+--8<-- "examples/12_firewall_activation.py:import"
+
+--8<-- "examples/12_firewall_activation.py:usage"
+```
+
+1. Internet access is not restricted before firewall initialization
+2. Restrict internet access to domain `gradion.ai`
+3. Allowed by firewall
+4. Blocked by firewall. May take longer than the 1 configured second timeout because `example.com` resolves to multiple IP addresses and all are tried before failing.
+
+!!! Note
+    The firewall can only be initialized on containers running as a non-root user i.e. containers of `ipybox` images that were [built](docker.md#custom-images) **without** the `-r` or `-root` flag. An attempt to initialize the firewall on a container running as root will raise an error.
+
 ## Install packages at runtime
 
 Python packages can be installed at runtime by executing `!pip install <package>`:

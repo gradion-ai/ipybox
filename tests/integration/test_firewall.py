@@ -1,5 +1,3 @@
-"""Integration tests for container firewall functionality."""
-
 import pytest
 import pytest_asyncio
 
@@ -9,14 +7,12 @@ from ipybox.resource.client import ResourceClient
 
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def container_user(container_image_user: str):
-    """Module-scoped fixture providing a user container."""
     async with ExecutionContainer(tag=container_image_user) as container:
         yield container
 
 
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def container_root(container_image_root: str):
-    """Module-scoped fixture providing a root container."""
     async with ExecutionContainer(tag=container_image_root) as container:
         yield container
 
@@ -24,38 +20,47 @@ async def container_root(container_image_root: str):
 @pytest.mark.asyncio(loop_scope="module")
 async def test_allowed_domain_access(container_user: ExecutionContainer):
     """Test that allowed domains are accessible after firewall init."""
-    # Initialize firewall with gradion.ai
     await container_user.init_firewall(["gradion.ai"])
 
     async with ExecutionClient(port=container_user.executor_port) as client:
-        # Execute request to gradion.ai
-        code = """
-import urllib.request
+        code = """import urllib.request
 response = urllib.request.urlopen('https://gradion.ai', timeout=2)
 print(response.read().decode('utf-8'))
 """
         result = await client.execute(code)
 
-        # Verify response contains "martin" and "christoph" (case-insensitive)
         assert "martin" in result.text.lower()
         assert "christoph" in result.text.lower()
 
 
 @pytest.mark.asyncio(loop_scope="module")
+async def test_allowed_ip_access(container_user: ExecutionContainer):
+    """Test that an allowed IP address is accessible after firewall init."""
+    await container_user.init_firewall(["8.8.8.8"])  # Google Public DNS
+
+    async with ExecutionClient(port=container_user.executor_port) as client:
+        code = """
+import socket
+s = socket.create_connection(('8.8.8.8', 53), timeout=3)
+print('connected')
+s.close()
+"""
+        result = await client.execute(code)
+        assert "connected" in result.text
+
+
+@pytest.mark.asyncio(loop_scope="module")
 async def test_blocked_domain_access(container_user: ExecutionContainer):
     """Test that non-allowed domains are blocked with specific error."""
-    # Initialize firewall with gradion.ai only
     await container_user.init_firewall(["gradion.ai"])
 
     async with ExecutionClient(port=container_user.executor_port) as client:
-        # Execute request to example.com
         code = """
 import urllib.request
 response = urllib.request.urlopen('https://example.com', timeout=2)
 print(response.read().decode('utf-8'))
 """
 
-        # Verify ExecutionError with "Network is unreachable" message
         with pytest.raises(ExecutionError) as exc_info:
             await client.execute(code)
 
@@ -65,11 +70,9 @@ print(response.read().decode('utf-8'))
 @pytest.mark.asyncio(loop_scope="module")
 async def test_empty_allowed_domains(container_user: ExecutionContainer):
     """Test firewall with empty allowed domains list."""
-    # Initialize firewall with []
     await container_user.init_firewall([])
 
     async with ExecutionClient(port=container_user.executor_port) as client:
-        # Verify all external domains are blocked
         code = """
 import urllib.request
 response = urllib.request.urlopen('https://example.com', timeout=2)
@@ -81,7 +84,6 @@ print(response.read().decode('utf-8'))
 
         assert "Network is unreachable" in str(exc_info.value)
 
-        # Verify localhost still works
         localhost_code = """
 import urllib.request
 response = urllib.request.urlopen('http://localhost:8900/status/', timeout=2)
@@ -94,11 +96,9 @@ print("Localhost accessible")
 @pytest.mark.asyncio(loop_scope="module")
 async def test_multiple_allowed_domains(container_user: ExecutionContainer):
     """Test firewall with multiple allowed domains."""
-    # Initialize firewall with ["gradion.ai", "httpbin.org", "api.github.com"]
     await container_user.init_firewall(["gradion.ai", "httpbin.org", "api.github.com"])
 
     async with ExecutionClient(port=container_user.executor_port) as client:
-        # Test access to each domain
         domains_to_test = [
             ("https://gradion.ai", "martin"),  # Check for expected content
             ("https://httpbin.org/get", "headers"),  # httpbin returns JSON with headers
@@ -131,8 +131,6 @@ print(response.read().decode('utf-8'))
 @pytest.mark.asyncio(loop_scope="module")
 async def test_firewall_fails_on_root_container(container_root: ExecutionContainer):
     """Test that firewall init fails on root container."""
-    # Call init_firewall()
-    # Verify RuntimeError with "container runs as root" message
     with pytest.raises(RuntimeError) as exc_info:
         await container_root.init_firewall()
 
@@ -142,32 +140,25 @@ async def test_firewall_fails_on_root_container(container_root: ExecutionContain
 @pytest.mark.asyncio(loop_scope="module")
 async def test_executor_works_after_firewall(container_user: ExecutionContainer):
     """Test that executor functionality remains after firewall init."""
-    # Initialize firewall
     await container_user.init_firewall(["gradion.ai"])
 
     async with ExecutionClient(port=container_user.executor_port) as client:
-        # Execute simple code
         code = """
 x = 42
 print(f"The answer is {x}")
 """
         result = await client.execute(code)
-
-        # Verify execution works
         assert result.text == "The answer is 42"
 
 
 @pytest.mark.asyncio(loop_scope="module")
 async def test_resource_client_works_after_firewall(container_user: ExecutionContainer):
     """Test that resource client functionality remains after firewall init."""
-    # Initialize firewall
     await container_user.init_firewall(["gradion.ai"])
 
-    # Call get_module_sources()
     async with ResourceClient(port=container_user.resource_port) as resource_client:
         modules = await resource_client.get_module_sources(["ipybox.modinfo"])
 
-        # Verify it returns results
         assert isinstance(modules, dict)
         assert "ipybox.modinfo" in modules
         assert len(modules["ipybox.modinfo"]) > 0
@@ -176,60 +167,9 @@ async def test_resource_client_works_after_firewall(container_user: ExecutionCon
 @pytest.mark.asyncio(loop_scope="module")
 async def test_firewall_on_stopped_container():
     """Test init_firewall raises error when container not running."""
-    # Create container but don't start it
     container = ExecutionContainer()
 
-    # Call init_firewall()
-    # Verify RuntimeError "Container not running"
     with pytest.raises(RuntimeError) as exc_info:
         await container.init_firewall()
 
     assert "Container not running" in str(exc_info.value)
-
-
-@pytest.mark.asyncio(loop_scope="module")
-async def test_firewall_with_fresh_container(container_user: ExecutionContainer):
-    """Test firewall initialization with a fresh container."""
-    # Initialize firewall
-    await container_user.init_firewall(["gradion.ai"])
-
-    # Create execution client and test
-    async with ExecutionClient(port=container_user.executor_port) as client:
-        # Test simple execution works
-        result = await client.execute("print('Firewall initialized!')")
-        assert result.text == "Firewall initialized!"
-
-        # Test allowed domain access
-        code = """
-import urllib.request, urllib.error
-try:
-    response = urllib.request.urlopen('https://gradion.ai', timeout=2)
-    print('SUCCESS: Reached gradion.ai')
-except Exception as e:
-    print(f'FAILED: {e}')
-"""
-        result = await client.execute(code)
-        assert "SUCCESS" in result.text
-
-
-@pytest.mark.asyncio(loop_scope="module")
-async def test_connection_error_format(container_user: ExecutionContainer):
-    """Test the specific format of connection errors when blocked."""
-    # Initialize firewall without example.com
-    await container_user.init_firewall([])
-
-    async with ExecutionClient(port=container_user.executor_port) as client:
-        # Try to access example.com
-        code = """
-import urllib.request
-response = urllib.request.urlopen('https://example.com', timeout=2)
-print(response.read().decode('utf-8'))
-"""
-
-        # Verify error contains "URLError" and "Network is unreachable"
-        with pytest.raises(ExecutionError) as exc_info:
-            await client.execute(code)
-
-        error_str = str(exc_info.value)
-        assert "URLError" in error_str
-        assert "Network is unreachable" in error_str

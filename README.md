@@ -20,6 +20,7 @@ Designed for AI agents that interact with their environment through code executi
 ## Features
 
 - Secure code execution inside Docker containers
+- [Restrict network access](https://gradion-ai.github.io/ipybox/usage/#restrict-network-access) with a configurable firewall
 - Stateful code execution with IPython kernels
 - Stream code execution output as it is generated
 - Install Python packages at build time or runtime

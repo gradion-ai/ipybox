@@ -24,6 +24,8 @@ class ExecutionContainer:
     - a *resource server* for downloading Python module sources and registering MCP servers.
       Clients connect to it via [`ResourceClient`][ipybox.resource.client.ResourceClient] on
       the container's [resource host port][ipybox.container.ExecutionContainer.resource_port].
+    - a firewall that can be enabled with [init_firewall][ipybox.container.ExecutionContainer.init_firewall]
+      to restrict internet access to allowed domains only.
 
     Args:
         tag: Name and optionally tag of the `ipybox` Docker image to use (format: `name:tag`)
@@ -104,22 +106,29 @@ class ExecutionContainer:
             await self._docker.close()
 
     async def init_firewall(self, allowed_domains: list[str] | None = None) -> None:
-        """Initialize firewall rules to restrict internet access to allowed domains only.
+        """Initialize firewall rules to restrict internet access to a whitelist of
+        allowed domains, IPv4 addresses, or CIDR ranges.
 
-        The firewall allows:
-        - DNS resolution (port 53)
-        - SSH access (port 22)
-        - Localhost traffic
-        - Host network access
-        - Bidirectional traffic on executor (8888) and resource (8900) ports
-        - Outbound access only to specified allowed domains
+        Traffic policy inside the container after initialisation:
+        - DNS resolution (UDP/53) is always permitted so that the script itself can resolve
+          domains and regular runtime code can still perform look-ups.
+        - SSH (TCP/22) is permitted for interaction with the host.
+        - Loopback traffic is unrestricted.
+        - The host network (\*/24 derived from the default gateway) is allowed bidirectionally.
+        - Bidirectional traffic on the ipybox *executor* (8888) and *resource* (8900) ports
+          is always allowed.
+        - Outbound traffic is allowed only to the specified whitelist entries.
 
-        All other internet access is blocked. DNS resolution failures for allowed
-        domains result in warnings but do not stop the firewall initialization.
+        DNS failures when resolving an allowed domain yield a warning but do not stop
+        the firewall initialization.
+
+        A firewall can be initialized multiple times per container. Subsequent calls will
+        clear previous firewall rules and enforce the new `allowed_domains` list.
 
         Args:
-            allowed_domains: List of domains that should be accessible from the container.
-                If None or empty, only essential services (DNS, SSH, localhost, ipybox ports) are allowed.
+            allowed_domains: List of domains, IP addresses, or CIDR ranges that should be
+                reachable from the container. If None or empty, only essential services are
+                allowed.
 
         Raises:
             RuntimeError: If the container is not running, firewall initialization fails,
@@ -148,7 +157,6 @@ class ExecutionContainer:
 
             output_chunks: list[bytes] = []
             async with exec_instance.start(detach=False) as stream:
-                # Read frames until the exec session closes (`read_out` returns `None`).
                 while True:
                     msg = await stream.read_out()
                     if msg is None:

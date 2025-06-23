@@ -18,8 +18,8 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --help)
-            echo "Usage: $0 [domain1 domain2 ...] [--executor-port PORT] [--resource-port PORT]"
-            echo "  domain1, domain2, etc.: Allowed domains for internet access"
+            echo "Usage: $0 [domain1|ip1 domain2|ip2 ...] [--executor-port PORT] [--resource-port PORT]"
+            echo "  domain1, ip1, etc.: Allowed domain names or IPv4(/CIDR) addresses for internet access"
             echo "  --executor-port PORT: Executor port (default: 8888)"
             echo "  --resource-port PORT: Resource port (default: 8900)"
             exit 0
@@ -36,7 +36,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "Initializing firewall with executor port $EXECUTOR_PORT and resource port $RESOURCE_PORT"
-echo "Allowed domains: ${ALLOWED_DOMAINS[*]}"
+echo "Allowed domains/IPs: ${ALLOWED_DOMAINS[*]}"
 
 if ! command -v iptables &> /dev/null || ! command -v ipset &> /dev/null; then
     echo "ERROR: Required packages (iptables, ipset) not found. Please rebuild the Docker image."
@@ -86,20 +86,27 @@ HOST_NETWORK=$(echo "$HOST_IP" | sed "s/\.[0-9]*$/.0\/24/")
 echo "Host network detected as: $HOST_NETWORK"
 ipset add allowed-domains "$HOST_NETWORK"
 
-for domain in "${ALLOWED_DOMAINS[@]}"; do
-    echo "Resolving $domain..."
-    ips=$(dig +short A "$domain")
+for entry in "${ALLOWED_DOMAINS[@]}"; do
+    # If the argument is already an IPv4 address or CIDR range, add it directly
+    if [[ "$entry" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}(/([0-9]|[12][0-9]|3[0-2]))?$ ]]; then
+        echo "Adding IP/CIDR $entry"
+        ipset add allowed-domains "$entry"
+        continue
+    fi
+
+    echo "Resolving $entry..."
+    ips=$(dig +short A "$entry")
     if [ -z "$ips" ]; then
-        echo "WARNING: Failed to resolve $domain, skipping"
+        echo "WARNING: Failed to resolve $entry, skipping"
         continue
     fi
 
     while read -r ip; do
         if [[ ! "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            echo "WARNING: Invalid IP from DNS for $domain: $ip, skipping"
+            echo "WARNING: Invalid IP from DNS for $entry: $ip, skipping"
             continue
         fi
-        echo "Adding $ip for $domain"
+        echo "Adding $ip for $entry"
         ipset add allowed-domains "$ip"
     done < <(echo "$ips")
 done
