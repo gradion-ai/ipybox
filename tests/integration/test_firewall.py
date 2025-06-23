@@ -108,7 +108,7 @@ async def test_multiple_allowed_domains(container_user: ExecutionContainer):
         for url, expected_content in domains_to_test:
             code = f"""
 import urllib.request
-response = urllib.request.urlopen('{url}', timeout=3)
+response = urllib.request.urlopen('{url}', timeout=5)
 print(response.read().decode('utf-8'))
 """
             result = await client.execute(code)

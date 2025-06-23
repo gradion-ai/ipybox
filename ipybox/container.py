@@ -114,7 +114,7 @@ class ExecutionContainer:
           domains and regular runtime code can still perform look-ups.
         - SSH (TCP/22) is permitted for interaction with the host.
         - Loopback traffic is unrestricted.
-        - The host network (\*/24 derived from the default gateway) is allowed bidirectionally.
+        - The host network (\\*/24 derived from the default gateway) is allowed bidirectionally.
         - Bidirectional traffic on the ipybox *executor* (8888) and *resource* (8900) ports
           is always allowed.
         - Outbound traffic is allowed only to the specified whitelist entries.
