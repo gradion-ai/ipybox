@@ -1,9 +1,9 @@
 default_language_version:
-  python: python3.11
+  python: python
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.3.0
+  rev: v5.0.0
   hooks:
     - id: check-yaml
     - id: end-of-file-fixer
@@ -23,9 +23,11 @@ repos:
     - id: mypy
       exclude: ^docs/
 
-- repo: https://github.com/python-poetry/poetry
-  rev: 1.8.3
+- repo: local
   hooks:
-    - id: poetry-check
-    - id: poetry-lock
-      args: ["--check"]
+    - id: uv-lock-check
+      name: Check uv.lock is up to date
+      entry: uv lock --check
+      language: system
+      files: pyproject.toml
+      pass_filenames: false

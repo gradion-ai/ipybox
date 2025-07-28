@@ -2,6 +2,7 @@ __pycache__
 .mypy_cache
 .ruff_cache
 .pytest_cache
+.venv
 .cursorignore
 .env
 .vscode

@@ -1,22 +1,23 @@
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
+[project]
 name = "ipybox"
 version = "0.0.1"
-package-mode = false
 description = "Python code execution sandbox based on IPython and Docker"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "aiofiles>=24.1.0,<25",
+    "datamodel-code-generator>=0.28.5,<0.29",
+    "fastapi>=0.115.12,<0.116",
+    "ipykernel>=6.29.0,<7",
+    "jupyter-kernel-gateway>=3.0.0,<4",
+    "mcp>=1.8.1,<2",
+    "pydantic>=2.11.0,<3",
+    "python-multipart>=0.0.20,<0.1",
+    "uvicorn>=0.34.1,<0.35"{dependencies}
+]
 
-[tool.poetry.dependencies]
-aiofiles = "^24.1"
-datamodel-code-generator = "^0.28.5"
-fastapi = "^0.115.12"
-ipykernel = "^6.29"
-jupyter-kernel-gateway = "^3.0"
-mcp = "^1.8.1"
-pydantic = "^2.11"
-python = "^3.11,<3.14"
-python-multipart = "^0.0.20"
-uvicorn = "^0.34.1"
-{dependencies}
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = []

@@ -47,7 +47,10 @@ def build(
         tmp_path = Path(tmp_dir)
 
         with open(dependencies, "r") as f:
-            dependencies_spec = f.read()
+            if dependencies_spec := f.read():
+                dependencies_spec = dependencies_spec.strip()
+                if dependencies_spec:
+                    dependencies_spec = f",\n{dependencies_spec}"
 
         with open(pkg_path / "config" / "default" / "pyproject.toml", "r") as f:
             project_spec = f.read()
@@ -75,7 +78,7 @@ def build(
         shutil.copytree(pkg_path / "mcp", tmp_path / "ipybox" / "mcp")
         shutil.copytree(pkg_path / "resource", tmp_path / "ipybox" / "resource")
         shutil.copy(pkg_path / "modinfo.py", tmp_path / "ipybox")
-        shutil.copy(pkg_path / "config" / "default" / "environment.yml", tmp_path)
+        shutil.copy(pkg_path.parent / ".python-version", tmp_path)  # Copy .python-version from project root
         shutil.copy(pkg_path / "docker" / dockerfile, tmp_path)
         shutil.copy(pkg_path / "scripts" / "server.sh", tmp_path)
         shutil.copy(pkg_path / "docker" / firewall_script, tmp_path)

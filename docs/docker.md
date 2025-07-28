@@ -12,12 +12,12 @@ python -m ipybox build
 
 ### Custom image
 
-To build a custom `ipybox` Docker image with additional Python packages preinstalled, create a `dependencies.txt` file that follows the [Poetry dependency specification format](https://python-poetry.org/docs/dependency-specification/). For example:
+To build a custom `ipybox` Docker image with additional Python packages preinstalled, create a `dependencies.txt` file that follows the [PEP 631](https://peps.python.org/pep-0631/) dependency specification format. For example:
 
-```toml title="dependencies.txt"
-pandas = "^2.2"
-scikit-learn = "^1.5"
-matplotlib = "^3.9"
+```txt title="dependencies.txt"
+"pandas>=2.2,<3",
+"scikit-learn>=1.5,<2",
+"matplotlib>=3.9,<4"
 ```
 
 Then build the image by referencing the `dependencies.txt` file and optionally providing a custom tag:

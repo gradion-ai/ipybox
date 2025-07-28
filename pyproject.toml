@@ -1,52 +1,67 @@
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
-build-backend = "poetry_dynamic_versioning.backend"
-
-[tool.poetry]
+[project]
 name = "ipybox"
-version = "0.0.0"
+dynamic = ["version"]
 description = "Python code execution sandbox based on IPython and Docker"
-homepage = "https://github.com/gradion-ai/ipybox"
+authors = [
+    { name = "Martin Krasser", email = "martin@gradion.ai" },
+    { name = "Christoph Stumpf", email = "chris@gradion.ai" },
+]
+requires-python = ">=3.11,<3.14"
 readme = "README.md"
 license = "Apache-2.0"
-authors = [
-    "Martin Krasser <martin@gradion.ai>",
-    "Christoph Stumpf <chris@gradion.ai>",
+dependencies = [
+    "aiodocker>=0.24.0,<0.25",
+    "aiofiles>=24.1.0,<25",
+    "aiohttp>=3.12.0,<4",
+    "pillow>=11.0.0,<12",
+    "tornado>=6.4.0,<7",
+    "typer>=0.12.5,<0.13",
 ]
-packages = [
-    { include = "ipybox" },
+
+[tool.uv]
+default-groups = [
+    "docs",
+    "dev",
 ]
 
-[tool.poetry.dependencies]
-aiodocker = "^0.24.0"
-aiofiles = "^24.1"
-aiohttp = "^3.12"
-pillow = "^11.0"
-python = "^3.11,<3.14"
-tornado = "^6.4"
-typer = "^0.12.5"
+[dependency-groups]
+docs = [
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.5.48,<10",
+    "mkdocstrings-python>=1.12.2,<2",
+]
+dev = [
+    "datamodel-code-generator>=0.28.5,<0.29",
+    "fastapi>=0.115.12,<0.116",
+    "invoke~=2.2",
+    "mcp>=1.9.2,<2",
+    "pre-commit~=4.0",
+    "pydantic>=2.11.0,<3",
+    "pytest~=8.3",
+    "pytest-asyncio>=0.26.0,<0.27",
+    "pytest-cov>=6.1.0,<7",
+    "python-multipart>=0.0.20,<0.1",
+    "uvicorn>=0.34.1,<0.35",
+    "flaky>=3.8.1,<4",
+]
 
-[tool.poetry.group.docs]
-optional = true
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
 
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.5.48"
-mkdocstrings-python = "^1.12.2"
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
 
-[tool.poetry.group.dev.dependencies]
-datamodel-code-generator = "^0.28.5"
-fastapi = "^0.115.12"
-invoke = "^2.2"
-mcp = "^1.9.2"
-pre-commit = "^4.0"
-pydantic = "^2.11"
-pytest = "^8.3"
-pytest-asyncio = "^0.26.0"
-pytest-cov="^6.1"
-python-multipart = "^0.0.20"
-uvicorn = "^0.34.1"
-flaky = "^3.8.1"
+[tool.uv-dynamic-versioning]
+vcs = "git"
+pattern = "default-unprefixed"
+style = "pep440"
+
+[tool.hatch.build.targets.sdist]
+include = ["ipybox"]
+
+[tool.hatch.build.targets.wheel]
+include = ["ipybox"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -58,7 +73,6 @@ line-length = 120
 "**/__init__.py" = ["F401"]
 
 [tool.mypy]
-python_version = 3.11
 check_untyped_defs = true
 ignore_missing_imports = true
 
@@ -68,9 +82,3 @@ module = [
     "aiofiles.os",
 ]
 ignore_missing_imports = true
-
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-pattern = "default-unprefixed"
-style = "pep440"

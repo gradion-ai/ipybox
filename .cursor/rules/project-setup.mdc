@@ -5,17 +5,16 @@ alwaysApply: false
 ---
 # Project Setup Guide
 
-Create a new Conda environment and activate it:
+Install dependencies and create virtual environment:
 
 ```bash
-conda env create -f environment.yml -n gradion-ipybox
-conda activate gradion-ipybox
+uv sync
 ```
 
-Install dependencies with Poetry:
+Activate the virtual environment:
 
 ```bash
-poetry install --with docs
+source .venv/bin/activate
 ```
 
 Install pre-commit hooks:
