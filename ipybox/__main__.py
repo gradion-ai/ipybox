@@ -122,5 +122,28 @@ def cleanup(
     subprocess.run(["bash", str(cleanup_script), ancestor], capture_output=True, text=True)
 
 
+@app.command()
+def mcp_server(
+    host: str = typer.Option("0.0.0.0", help="Host to bind to"),
+    port: int = typer.Option(8080, help="Port to bind to"),
+    log_level: str = typer.Option("INFO", help="Log level"),
+):
+    """Start the ipybox MCP server."""
+    import logging
+
+    import uvicorn
+
+    from ipybox.mcp_server import mcp, setup_server, shutdown_server
+
+    # Configure logging
+    logging.basicConfig(level=getattr(logging, log_level.upper()))
+
+    # Setup lifecycle events
+    mcp.app.add_event_handler("startup", setup_server)
+    mcp.app.add_event_handler("shutdown", shutdown_server)
+    # Run the server
+    uvicorn.run(mcp.app, host=host, port=port)
+
+
 if __name__ == "__main__":
     app()
