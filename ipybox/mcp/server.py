@@ -4,14 +4,14 @@
 import argparse
 import asyncio
 import logging
-import sys
 from pathlib import Path
-from time import perf_counter
 from typing import Any, Optional
 
 from mcp.server.fastmcp import FastMCP
 
 from ipybox import ExecutionClient, ExecutionContainer, ResourceClient
+
+logger = logging.getLogger(__name__)
 
 
 class PathSecurity:
@@ -42,21 +42,15 @@ class IpyboxMCPServer:
         allowed_dirs: list[Path],
         default_images_dir: Path,
         container_config: dict[str, Any],
-        log_file: Path,
     ):
         self.path_security = PathSecurity(allowed_dirs)
         self.default_images_dir = default_images_dir
         self.container_config = container_config
-        self.log_file = log_file
 
         # These will be initialized in setup()
-        self.container: Optional[ExecutionContainer] = None
-        self.execution_client: Optional[ExecutionClient] = None
-        self.resource_client: Optional[ResourceClient] = None
-
-        # Setup logging
-        self._setup_logging()
-        self.logger = logging.getLogger(__name__)
+        self.container: ExecutionContainer
+        self.execution_client: ExecutionClient
+        self.resource_client: ResourceClient
 
         # Create FastMCP server
         self.mcp = FastMCP("ipybox")
@@ -67,43 +61,29 @@ class IpyboxMCPServer:
         self.mcp.tool()(self.upload_file)
         self.mcp.tool()(self.download_file)
 
-    def _setup_logging(self) -> None:
-        """Configure logging to file."""
-        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+        self.setup_task: asyncio.Task = asyncio.create_task(self._setup())
+        self.executor_lock = asyncio.Lock()
 
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[
-                logging.FileHandler(self.log_file),
-                logging.StreamHandler(sys.stderr),
-            ],
-        )
-
-    async def setup(self) -> None:
+    async def _setup(self) -> None:
         """Initialize container and execution client."""
-        self.logger.info("Starting ipybox container")
+        logger.info("Starting ipybox")
         self.container = ExecutionContainer(**self.container_config)
-        await self.container.__aenter__()
+        await self.container.run()
 
-        # Create and connect the single execution client
         self.execution_client = ExecutionClient(port=self.container.executor_port)
         await self.execution_client.connect()
-
-        # Add /app to Python path for the kernel
-        await self.execution_client.execute("import sys; sys.path.insert(0, '/app')")
 
         self.resource_client = ResourceClient(port=self.container.resource_port)
         await self.resource_client.connect()
 
-        self.logger.info(
-            f"Container started - executor port: {self.container.executor_port}, "
+        logger.info(
+            f"ipybox started - executor port: {self.container.executor_port}, "
             f"resource port: {self.container.resource_port}"
         )
 
-    async def cleanup(self) -> None:
+    async def _cleanup(self) -> None:
         """Clean up resources."""
-        self.logger.info("Cleaning up ipybox MCP server")
+        logger.info("Cleaning up ipybox")
 
         if self.execution_client:
             await self.execution_client.disconnect()
@@ -112,32 +92,24 @@ class IpyboxMCPServer:
             await self.resource_client.disconnect()
 
         if self.container:
-            await self.container.__aexit__(None, None, None)
+            await self.container.kill()
 
-        self.logger.info("Cleanup complete")
-
-    def _register_tools(self) -> None:
-        """Register all MCP tools with the FastMCP server."""
+        logger.info("Cleanup complete")
 
     async def reset(self) -> dict[str, str]:
         """Reset the IPython kernel by disconnecting and creating a new one."""
-        assert self.execution_client is not None
-        assert self.container is not None
+        await self.setup_task
 
-        self.logger.info("Resetting IPython kernel")
+        async with self.executor_lock:
+            logger.info("Resetting IPython kernel")
 
-        # Disconnect current client
-        await self.execution_client.disconnect()
+            await self.execution_client.disconnect()
 
-        # Create and connect new client
-        self.execution_client = ExecutionClient(port=self.container.executor_port)
-        await self.execution_client.connect()
+            self.execution_client = ExecutionClient(port=self.container.executor_port)
+            await self.execution_client.connect()
 
-        # Add /app to Python path for the kernel
-        await self.execution_client.execute("import sys; sys.path.insert(0, '/app')")
-
-        self.logger.info("Kernel reset complete")
-        return {"status": "success"}
+            logger.info("Kernel reset complete")
+            return {"status": "success"}
 
     async def execute_ipython_cell(self, code: str, images_dir: Optional[str] = None) -> dict[str, Any]:
         """Execute Python code in the IPython kernel.
@@ -146,7 +118,7 @@ class IpyboxMCPServer:
             code: Python code to execute
             images_dir: Local host directory for saving generated images (optional)
         """
-        assert self.execution_client is not None
+        await self.setup_task
 
         # Determine images directory
         if images_dir is not None:
@@ -167,7 +139,8 @@ class IpyboxMCPServer:
         }
 
         try:
-            exec_result = await self.execution_client.execute(code)
+            async with self.executor_lock:
+                exec_result = await self.execution_client.execute(code)
 
             # Set text output
             if exec_result.text:
@@ -182,7 +155,7 @@ class IpyboxMCPServer:
                 # Save PIL image
                 image.save(image_path, "PNG")
                 result["images"].append(str(image_path))
-                self.logger.info(f"Saved image to {image_path}")
+                logger.info(f"Saved image to {image_path}")
 
         except Exception as e:
             # Import ExecutionError to handle it properly
@@ -207,9 +180,8 @@ class IpyboxMCPServer:
             relpath: Path relative to container's /app directory
             local_path: Absolute path to file on host filesystem
         """
-        assert self.resource_client is not None
+        await self.setup_task
 
-        # Validate host path
         local_path_obj = Path(local_path)
         self.path_security.validate(local_path_obj, "upload")
 
@@ -219,9 +191,7 @@ class IpyboxMCPServer:
         if not local_path_obj.is_file():
             raise ValueError(f"Not a file: {local_path_obj}")
 
-        # Upload file
         await self.resource_client.upload_file(relpath, local_path_obj)
-        self.logger.info(f"Uploaded {local_path_obj} to container:{relpath}")
         return {"status": "success"}
 
     async def download_file(self, relpath: str, local_path: str) -> dict[str, str]:
@@ -231,7 +201,7 @@ class IpyboxMCPServer:
             relpath: Path relative to container's /app directory
             local_path: Absolute path for saving on host filesystem
         """
-        assert self.resource_client is not None
+        await self.setup_task
 
         # Validate host path
         local_path_obj = Path(local_path)
@@ -242,40 +212,18 @@ class IpyboxMCPServer:
 
         # Download file
         await self.resource_client.download_file(relpath, local_path_obj)
-        self.logger.info(f"Downloaded container:{relpath} to {local_path_obj}")
         return {"status": "success"}
 
-    def run(self, transport: str = "stdio") -> None:
-        """Run the MCP server."""
-
-        async def run_async():
-            setup_start = perf_counter()
-            await self.setup()
-            setup_duration_s = perf_counter() - setup_start
-            self.logger.info(f"----- Setup completed in {setup_duration_s:.3f}s -----")
-            try:
-                self.logger.info("MCP server ready")
-                if transport == "stdio":
-                    await self.mcp.run_stdio_async()
-                elif transport == "sse":
-                    await self.mcp.run_sse_async()
-                elif transport == "streamable-http":
-                    await self.mcp.run_streamable_http_async()
-                else:
-                    raise ValueError(f"Unsupported transport: {transport}")
-            finally:
-                cleanup_start = perf_counter()
-                await self.cleanup()
-                cleanup_duration_s = perf_counter() - cleanup_start
-                self.logger.info(f"----- Cleanup completed in {cleanup_duration_s:.3f}s -----")
-
-        asyncio.run(run_async())
+    async def run(self):
+        try:
+            await self.mcp.run_stdio_async()
+        finally:
+            await self._cleanup()
 
 
 def parse_args():
-    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description="ipybox MCP Server - Secure Python code execution via Docker",
+        description="ipybox MCP Server",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -317,75 +265,38 @@ def parse_args():
         help="Bind mounts for container (format: host_path:container_path)",
     )
 
-    parser.add_argument(
-        "--executor-port",
-        type=int,
-        help="Host port for executor service (random if not specified)",
-    )
-
-    parser.add_argument(
-        "--resource-port",
-        type=int,
-        help="Host port for resource service (random if not specified)",
-    )
-
-    # Logging
-    parser.add_argument(
-        "--log-file",
-        type=Path,
-        default=Path("./logs/mcp-ipybox.log"),
-        help="Path to log file",
-    )
-
-    # Transport
-    parser.add_argument(
-        "--transport",
-        "-t",
-        choices=["stdio", "sse", "streamable-http"],
-        default="stdio",
-        help="Transport type to use",
-    )
-
     return parser.parse_args()
 
 
-def main():
-    """Main entry point."""
+async def main():
     args = parse_args()
 
-    # Parse environment variables
     env = {}
     for env_str in args.container_env:
         if "=" in env_str:
             key, value = env_str.split("=", 1)
             env[key] = value
 
-    # Parse bind mounts
     binds = {}
     for bind_str in args.container_binds:
         if ":" in bind_str:
             host_path, container_path = bind_str.split(":", 1)
             binds[host_path] = container_path
 
-    # Container configuration
     container_config = {
         "tag": args.container_tag,
         "env": env,
         "binds": binds,
-        "executor_port": args.executor_port,
-        "resource_port": args.resource_port,
     }
 
-    # Create and run server
     server = IpyboxMCPServer(
         allowed_dirs=args.allowed_dirs,
         default_images_dir=args.images_dir,
         container_config=container_config,
-        log_file=args.log_file,
     )
 
-    server.run(transport=args.transport)
+    await server.run()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

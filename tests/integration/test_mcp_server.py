@@ -24,13 +24,9 @@ def mcp_server_workspace():
         images_dir = temp_path / "images"
         images_dir.mkdir()
 
-        logs_dir = temp_path / "logs"
-        logs_dir.mkdir()
-
         yield {
             "temp_dir": temp_path,
             "images_dir": images_dir,
-            "logs_dir": logs_dir,
         }
 
 
@@ -49,8 +45,6 @@ def mcp_server_params(mcp_server_workspace):
             str(Path.home()),
             "--images-dir",
             str(workspace["images_dir"]),
-            "--log-file",
-            str(workspace["logs_dir"] / "mcp-server.log"),
         ],
     }
 
