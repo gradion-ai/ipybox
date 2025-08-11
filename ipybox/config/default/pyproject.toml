@@ -4,6 +4,7 @@ version = "0.0.1"
 description = "Python code execution sandbox based on IPython and Docker"
 requires-python = ">=3.11,<3.14"
 dependencies = [
+    "pip",
     "aiofiles>=24.1.0,<25",
     "datamodel-code-generator>=0.28.5,<0.29",
     "fastapi>=0.115.12,<0.116",
