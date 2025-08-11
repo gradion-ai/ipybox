@@ -3,15 +3,13 @@
 
 import argparse
 import asyncio
-import logging
+import uuid
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-from ipybox import ExecutionClient, ExecutionContainer, ResourceClient
-
-logger = logging.getLogger(__name__)
+from ipybox import ExecutionClient, ExecutionContainer, ExecutionError, ResourceClient
 
 
 class PathSecurity:
@@ -40,11 +38,11 @@ class IpyboxMCPServer:
     def __init__(
         self,
         allowed_dirs: list[Path],
-        default_images_dir: Path,
+        images_dir: Path,
         container_config: dict[str, Any],
     ):
         self.path_security = PathSecurity(allowed_dirs)
-        self.default_images_dir = default_images_dir
+        self.images_dir = images_dir
         self.container_config = container_config
 
         # These will be initialized in setup()
@@ -66,7 +64,6 @@ class IpyboxMCPServer:
 
     async def _setup(self) -> None:
         """Initialize container and execution client."""
-        logger.info("Starting ipybox")
         self.container = ExecutionContainer(**self.container_config)
         await self.container.run()
 
@@ -76,15 +73,8 @@ class IpyboxMCPServer:
         self.resource_client = ResourceClient(port=self.container.resource_port)
         await self.resource_client.connect()
 
-        logger.info(
-            f"ipybox started - executor port: {self.container.executor_port}, "
-            f"resource port: {self.container.resource_port}"
-        )
-
     async def _cleanup(self) -> None:
         """Clean up resources."""
-        logger.info("Cleaning up ipybox")
-
         if self.execution_client:
             await self.execution_client.disconnect()
 
@@ -94,24 +84,17 @@ class IpyboxMCPServer:
         if self.container:
             await self.container.kill()
 
-        logger.info("Cleanup complete")
-
-    async def reset(self) -> dict[str, str]:
+    async def reset(self):
         """Reset the IPython kernel by disconnecting and creating a new one."""
         await self.setup_task
 
         async with self.executor_lock:
-            logger.info("Resetting IPython kernel")
-
             await self.execution_client.disconnect()
 
             self.execution_client = ExecutionClient(port=self.container.executor_port)
             await self.execution_client.connect()
 
-            logger.info("Kernel reset complete")
-            return {"status": "success"}
-
-    async def execute_ipython_cell(self, code: str, images_dir: Optional[str] = None) -> dict[str, Any]:
+    async def execute_ipython_cell(self, code: str, timeout: float = 120) -> dict[str, Any]:
         """Execute Python code in the IPython kernel.
 
         Args:
@@ -120,17 +103,8 @@ class IpyboxMCPServer:
         """
         await self.setup_task
 
-        # Determine images directory
-        if images_dir is not None:
-            img_dir = Path(images_dir)
-        else:
-            img_dir = self.default_images_dir
-
         # Validate images directory
-        self.path_security.validate(img_dir, "save images")
-        img_dir.mkdir(parents=True, exist_ok=True)
-
-        # Execute code
+        self.images_dir.mkdir(parents=True, exist_ok=True)
 
         # Process results
         result: dict[str, Any] = {
@@ -140,40 +114,27 @@ class IpyboxMCPServer:
 
         try:
             async with self.executor_lock:
-                exec_result = await self.execution_client.execute(code)
-
-            # Set text output
+                exec_result = await self.execution_client.execute(code, timeout=timeout)
+        except Exception as e:
+            match e:
+                case ExecutionError():
+                    raise ExecutionError(e.args[0] + "\n" + e.trace)
+                case _:
+                    raise e
+        else:
             if exec_result.text:
                 result["text"] = exec_result.text
 
-            # Save images
-            for i, image in enumerate(exec_result.images):
-                timestamp = int(asyncio.get_event_loop().time() * 1000)
-                filename = f"ipybox_{timestamp}_{i}.png"
-                image_path = img_dir / filename
-
-                # Save PIL image
-                image.save(image_path, "PNG")
-                result["images"].append(str(image_path))
-                logger.info(f"Saved image to {image_path}")
-
-        except Exception as e:
-            # Import ExecutionError to handle it properly
-            from ipybox.executor import ExecutionError
-
-            if isinstance(e, ExecutionError):
-                # Python execution error - include in output text
-                error_text = str(e)
-                if e.trace:
-                    error_text += f"\n{e.trace}"
-                result["text"] = error_text
-            else:
-                # Other error - re-raise to become MCP error
-                raise
+            if exec_result.images:
+                uid = uuid.uuid4().hex[:8]
+                for i, image in enumerate(exec_result.images):
+                    image_path = self.images_dir / f"ipybox_{uid}_{i}.png"
+                    image.save(image_path, "PNG")
+                    result["images"].append(str(image_path))
 
         return result
 
-    async def upload_file(self, relpath: str, local_path: str) -> dict[str, str]:
+    async def upload_file(self, relpath: str, local_path: str):
         """Upload a file from host to container.
 
         Args:
@@ -192,9 +153,8 @@ class IpyboxMCPServer:
             raise ValueError(f"Not a file: {local_path_obj}")
 
         await self.resource_client.upload_file(relpath, local_path_obj)
-        return {"status": "success"}
 
-    async def download_file(self, relpath: str, local_path: str) -> dict[str, str]:
+    async def download_file(self, relpath: str, local_path: str):
         """Download a file from container to host.
 
         Args:
@@ -212,7 +172,6 @@ class IpyboxMCPServer:
 
         # Download file
         await self.resource_client.download_file(relpath, local_path_obj)
-        return {"status": "success"}
 
     async def run(self):
         try:
@@ -291,7 +250,7 @@ async def main():
 
     server = IpyboxMCPServer(
         allowed_dirs=args.allowed_dirs,
-        default_images_dir=args.images_dir,
+        images_dir=args.images_dir,
         container_config=container_config,
     )
 

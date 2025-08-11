@@ -50,7 +50,7 @@ def mcp_server_params(mcp_server_workspace):
 
 
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
-async def session(mcp_server_params, container_image) -> AsyncIterator[ClientSession]:
+async def session(mcp_server_params, container_image_root) -> AsyncIterator[ClientSession]:
     """Create an MCP client session for each test."""
     try:
         async with mcp_client(mcp_server_params) as (read, write):
@@ -85,8 +85,7 @@ async def test_reset(session: ClientSession):
     # Reset the kernel
     result = await session.call_tool("reset", arguments={})
     assert not result.isError
-    content = json.loads(result.content[0].text)
-    assert content["status"] == "success"
+    assert not result.content
 
     # Verify variable no longer exists
     result = await session.call_tool(
@@ -153,11 +152,11 @@ async def test_execute_with_error(session: ClientSession):
         },
     )
 
-    assert not result.isError  # MCP call succeeds
-    content = json.loads(result.content[0].text)
+    assert result.isError
+    content = result.content[0].text
 
-    assert "Before error" in content["text"]
-    assert "ZeroDivisionError" in content["text"]
+    assert "Before error" in content
+    assert "ZeroDivisionError" in content
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -229,8 +228,7 @@ async def test_upload_file(session: ClientSession, mcp_server_workspace):
     )
 
     assert not result.isError
-    content = json.loads(result.content[0].text)
-    assert content["status"] == "success"
+    assert not result.content
 
     # Verify file exists in container
     result = await session.call_tool(
@@ -269,8 +267,7 @@ async def test_download_file(session: ClientSession, mcp_server_workspace):
     )
 
     assert not result.isError
-    content = json.loads(result.content[0].text)
-    assert content["status"] == "success"
+    assert not result.content
 
     # Verify downloaded content
     assert download_path.exists()
