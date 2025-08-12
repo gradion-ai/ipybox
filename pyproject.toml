@@ -13,6 +13,7 @@ dependencies = [
     "aiodocker>=0.24.0,<0.25",
     "aiofiles>=24.1.0,<25",
     "aiohttp>=3.12.0,<4",
+    "mcp>=1.9.2,<2",
     "pillow>=11.0.0,<12",
     "tornado>=6.4.0,<7",
     "typer>=0.12.5,<0.13",
@@ -34,7 +35,6 @@ dev = [
     "datamodel-code-generator>=0.28.5,<0.29",
     "fastapi>=0.115.12,<0.116",
     "invoke~=2.2",
-    "mcp>=1.9.2,<2",
     "pre-commit~=4.0",
     "pydantic>=2.11.0,<3",
     "pytest~=8.3",
@@ -44,6 +44,9 @@ dev = [
     "uvicorn>=0.34.1,<0.35",
     "flaky>=3.8.1,<4",
 ]
+
+[project.scripts]
+ipybox = "ipybox.__main__:main"
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]

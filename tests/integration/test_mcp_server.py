@@ -39,10 +39,10 @@ def mcp_server_params(mcp_server_workspace):
         "command": sys.executable,
         "args": [
             "-m",
-            "ipybox.mcp.server",
+            "ipybox",
+            "mcp",
             "--allowed-dirs",
             str(workspace["temp_dir"]),
-            str(Path.home()),
             "--images-dir",
             str(workspace["images_dir"]),
         ],
@@ -50,7 +50,7 @@ def mcp_server_params(mcp_server_workspace):
 
 
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
-async def session(mcp_server_params, container_image_root) -> AsyncIterator[ClientSession]:
+async def session(mcp_server_params, container_image) -> AsyncIterator[ClientSession]:
     """Create an MCP client session for each test."""
     try:
         async with mcp_client(mcp_server_params) as (read, write):
@@ -201,7 +201,7 @@ img  # Display the image
     # Verify image was saved
     image_path = Path(content["images"][0])
     assert image_path.exists()
-    assert image_path.parent == workspace["images_dir"]
+    assert image_path.parent.parent == workspace["images_dir"]
 
     # Verify it's a valid image
     img = Image.open(image_path)

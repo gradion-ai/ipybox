@@ -1,9 +1,10 @@
+import asyncio
 import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 
@@ -122,5 +123,87 @@ def cleanup(
     subprocess.run(["bash", str(cleanup_script), ancestor], capture_output=True, text=True)
 
 
-if __name__ == "__main__":
+@app.command()
+def mcp(
+    allowed_dirs: Annotated[
+        Optional[list[Path]],
+        typer.Option(
+            "--allowed-dirs",
+            help="Directories allowed for host filesystem operations",
+        ),
+    ] = None,
+    images_dir: Annotated[
+        Path,
+        typer.Option(
+            "--images-dir",
+            help="Default directory for saving generated images",
+        ),
+    ] = Path.home() / ".ipybox" / "images",
+    container_tag: Annotated[
+        str,
+        typer.Option(
+            "--container-tag",
+            help="Docker image name and tag for the ipybox container",
+        ),
+    ] = "gradion-ai/ipybox",
+    container_env: Annotated[
+        Optional[list[str]],
+        typer.Option(
+            "--container-env",
+            help="Environment variables for container (format: KEY=VALUE)",
+        ),
+    ] = None,
+    container_binds: Annotated[
+        Optional[list[str]],
+        typer.Option(
+            "--container-binds",
+            help="Bind mounts for container (format: host_path:container_path)",
+        ),
+    ] = None,
+):
+    """Run the ipybox MCP server."""
+    from ipybox.mcp.server import MCPServer
+
+    # Default allowed directories if not specified
+    if allowed_dirs is None:
+        allowed_dirs = [Path.home(), Path("/tmp")]
+
+    # Parse environment variables
+    env = {}
+    if container_env:
+        for env_str in container_env:
+            if "=" in env_str:
+                key, value = env_str.split("=", 1)
+                env[key] = value
+
+    # Parse bind mounts
+    binds = {}
+    if container_binds:
+        for bind_str in container_binds:
+            if ":" in bind_str:
+                host_path, container_path = bind_str.split(":", 1)
+                binds[host_path] = container_path
+
+    container_config = {
+        "tag": container_tag,
+        "env": env,
+        "binds": binds,
+    }
+
+    async def run_server():
+        server = MCPServer(
+            allowed_dirs=allowed_dirs,
+            images_dir=images_dir,
+            container_config=container_config,
+        )
+        await server.run()
+
+    asyncio.run(run_server())
+
+
+def main():
     app()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,28 @@
+{
+    "mcpServers": {
+        "markitdown": {
+            "command": "docker",
+            "args": [
+                "run",
+                "--rm",
+                "-i",
+                "markitdown-mcp:latest"
+            ]
+        },
+        "gitingest": {
+            "command": "uvx",
+            "args": [
+                "--from",
+                "git+https://github.com/adhikasp/mcp-git-ingest",
+                "mcp-git-ingest"
+            ]
+        },
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ]
+        }
+    }
+}

@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
-"""MCP server for ipybox - provides secure Python code execution via Docker containers."""
-
-import argparse
 import asyncio
-import uuid
+from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from mcp.server.fastmcp import FastMCP
+from pydantic import Field
 
 from ipybox import ExecutionClient, ExecutionContainer, ExecutionError, ResourceClient
 
 
-class PathSecurity:
-    """Manages host filesystem path validation against a whitelist."""
+class PathValidator:
+    """Validates host filesystem paths against a whitelist."""
 
     def __init__(self, allowed_dirs: list[Path]):
         self.allowed_dirs = [Path(d).resolve() for d in allowed_dirs]
 
-    def is_allowed(self, path: Path) -> bool:
+    def validate(self, path: Path, operation: str = "access") -> None:
+        """Validate a path or raise an error."""
+        if not self._allowed(path):
+            raise PermissionError(f"Path '{path}' is not within allowed directories for {operation}")
+
+    def _allowed(self, path: Path) -> bool:
         """Check if a path is within any of the allowed directories."""
         try:
             resolved = Path(path).resolve()
@@ -26,38 +29,33 @@ class PathSecurity:
         except (OSError, ValueError):
             return False
 
-    def validate(self, path: Path, operation: str = "access") -> None:
-        """Validate a path or raise an error."""
-        if not self.is_allowed(path):
-            raise PermissionError(f"Path '{path}' is not within allowed directories for {operation}")
 
-
-class IpyboxMCPServer:
-    """MCP server implementation for ipybox using FastMCP."""
-
+class MCPServer:
     def __init__(
         self,
         allowed_dirs: list[Path],
         images_dir: Path,
         container_config: dict[str, Any],
     ):
-        self.path_security = PathSecurity(allowed_dirs)
-        self.images_dir = images_dir
+        self.path_validator = PathValidator(allowed_dirs)
         self.container_config = container_config
 
+        self.images_dir = images_dir
+        self.images_dir.mkdir(parents=True, exist_ok=True)
+
         # These will be initialized in setup()
-        self.container: ExecutionContainer
-        self.execution_client: ExecutionClient
-        self.resource_client: ResourceClient
+        self.container: ExecutionContainer | None = None
+        self.execution_client: ExecutionClient | None = None
+        self.resource_client: ResourceClient | None = None
 
         # Create FastMCP server
         self.mcp = FastMCP("ipybox")
 
         # Register tools
-        self.mcp.tool()(self.reset)
         self.mcp.tool()(self.execute_ipython_cell)
         self.mcp.tool()(self.upload_file)
         self.mcp.tool()(self.download_file)
+        self.mcp.tool()(self.reset)
 
         self.setup_task: asyncio.Task = asyncio.create_task(self._setup())
         self.executor_lock = asyncio.Lock()
@@ -74,7 +72,6 @@ class IpyboxMCPServer:
         await self.resource_client.connect()
 
     async def _cleanup(self) -> None:
-        """Clean up resources."""
         if self.execution_client:
             await self.execution_client.disconnect()
 
@@ -85,8 +82,16 @@ class IpyboxMCPServer:
             await self.container.kill()
 
     async def reset(self):
-        """Reset the IPython kernel by disconnecting and creating a new one."""
+        """Reset the IPython kernel to a clean state.
+
+        Creates a new kernel instance, clearing all variables, imports, and definitions
+        from memory. Installed packages and files in the container filesystem are
+        preserved. Useful for starting fresh experiments or clearing memory after
+        processing large datasets.
+        """
         await self.setup_task
+        assert self.container is not None
+        assert self.execution_client is not None
 
         async with self.executor_lock:
             await self.execution_client.disconnect()
@@ -94,19 +99,35 @@ class IpyboxMCPServer:
             self.execution_client = ExecutionClient(port=self.container.executor_port)
             await self.execution_client.connect()
 
-    async def execute_ipython_cell(self, code: str, timeout: float = 120) -> dict[str, Any]:
-        """Execute Python code in the IPython kernel.
+    async def execute_ipython_cell(
+        self,
+        code: Annotated[
+            str,
+            Field(
+                description="Python code to execute in the stateful IPython kernel. Install packages with '!pip install package_name'. The kernel has an active asyncio event loop - do NOT use asyncio.run() or create new event loops, use 'await' directly for async code"
+            ),
+        ],
+        timeout: Annotated[
+            float, Field(description="Maximum execution time in seconds before the code is interrupted")
+        ] = 120,
+    ) -> dict[str, Any]:
+        """Execute Python code in a stateful IPython kernel within a Docker container.
 
-        Args:
-            code: Python code to execute
-            images_dir: Local host directory for saving generated images (optional)
+        The kernel maintains state across executions - variables, imports, and definitions
+        persist between calls. Generated plots and images are automatically captured and
+        saved to the host filesystem. Images are saved in timestamped directories with
+        pattern: {images_dir}/YYYY-MM-DD_HH-MM-SS_mmm/image_{index}.png
+
+        Executions are sequential (not concurrent) as they share kernel state. Each
+        execution builds on the previous one. Use reset() to clear the kernel state.
+
+        Returns a dictionary with:
+        - "text": Output text from execution (string or null)
+        - "images": List of absolute paths to saved images on host filesystem
         """
         await self.setup_task
+        assert self.execution_client is not None
 
-        # Validate images directory
-        self.images_dir.mkdir(parents=True, exist_ok=True)
-
-        # Process results
         result: dict[str, Any] = {
             "text": None,
             "images": [],
@@ -126,25 +147,38 @@ class IpyboxMCPServer:
                 result["text"] = exec_result.text
 
             if exec_result.images:
-                uid = uuid.uuid4().hex[:8]
+                exec_dir = self.images_dir / datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")[:-3]
+                exec_dir.mkdir(parents=True, exist_ok=True)
                 for i, image in enumerate(exec_result.images):
-                    image_path = self.images_dir / f"ipybox_{uid}_{i}.png"
+                    image_path = exec_dir / f"image_{i}.png"
                     image.save(image_path, "PNG")
                     result["images"].append(str(image_path))
 
         return result
 
-    async def upload_file(self, relpath: str, local_path: str):
-        """Upload a file from host to container.
+    async def upload_file(
+        self,
+        relpath: Annotated[
+            str,
+            Field(
+                description="Destination path relative to container's /app directory (e.g., 'data/input.csv' saves to /app/data/input.csv)"
+            ),
+        ],
+        local_path: Annotated[
+            str, Field(description="Absolute path to the source file on host filesystem that will be uploaded")
+        ],
+    ):
+        """Upload a file from the host filesystem to the container's /app directory.
 
-        Args:
-            relpath: Path relative to container's /app directory
-            local_path: Absolute path to file on host filesystem
+        Makes a file from the host available inside the container for code execution.
+        The uploaded file can then be accessed in execute_ipython_cell using the
+        path '/app/{relpath}'.
         """
         await self.setup_task
+        assert self.resource_client is not None
 
         local_path_obj = Path(local_path)
-        self.path_security.validate(local_path_obj, "upload")
+        self.path_validator.validate(local_path_obj, "upload")
 
         if not local_path_obj.exists():
             raise FileNotFoundError(f"File not found: {local_path_obj}")
@@ -154,23 +188,31 @@ class IpyboxMCPServer:
 
         await self.resource_client.upload_file(relpath, local_path_obj)
 
-    async def download_file(self, relpath: str, local_path: str):
-        """Download a file from container to host.
+    async def download_file(
+        self,
+        relpath: Annotated[
+            str,
+            Field(
+                description="Source path relative to container's /app directory (e.g., 'output/results.csv' reads from /app/output/results.csv)"
+            ),
+        ],
+        local_path: Annotated[str, Field(description="Absolute path on host filesystem where the file will be saved")],
+    ):
+        """Download a file from the container's /app directory to the host filesystem.
 
-        Args:
-            relpath: Path relative to container's /app directory
-            local_path: Absolute path for saving on host filesystem
+        Retrieves files created or modified during code execution from the container.
+        The file at '/app/{relpath}' in the container will be saved to the specified
+        location on the host.
+
+        Parent directories are created automatically if they don't exist.
         """
         await self.setup_task
+        assert self.resource_client is not None
 
-        # Validate host path
         local_path_obj = Path(local_path)
-        self.path_security.validate(local_path_obj, "download")
-
-        # Create parent directory if needed
+        self.path_validator.validate(local_path_obj, "download")
         local_path_obj.parent.mkdir(parents=True, exist_ok=True)
 
-        # Download file
         await self.resource_client.download_file(relpath, local_path_obj)
 
     async def run(self):
@@ -178,84 +220,3 @@ class IpyboxMCPServer:
             await self.mcp.run_stdio_async()
         finally:
             await self._cleanup()
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="ipybox MCP Server",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-
-    # Host path security
-    parser.add_argument(
-        "--allowed-dirs",
-        nargs="+",
-        default=[Path.home(), Path("/tmp")],
-        type=Path,
-        help="Directories allowed for host filesystem operations",
-    )
-
-    # Images directory
-    parser.add_argument(
-        "--images-dir",
-        type=Path,
-        default=Path.cwd() / "images",
-        help="Default directory for saving generated images",
-    )
-
-    # Container configuration
-    parser.add_argument(
-        "--container-tag",
-        default="gradion-ai/ipybox",
-        help="Docker image tag for the ipybox container",
-    )
-
-    parser.add_argument(
-        "--container-env",
-        nargs="*",
-        default=[],
-        help="Environment variables for container (format: KEY=VALUE)",
-    )
-
-    parser.add_argument(
-        "--container-binds",
-        nargs="*",
-        default=[],
-        help="Bind mounts for container (format: host_path:container_path)",
-    )
-
-    return parser.parse_args()
-
-
-async def main():
-    args = parse_args()
-
-    env = {}
-    for env_str in args.container_env:
-        if "=" in env_str:
-            key, value = env_str.split("=", 1)
-            env[key] = value
-
-    binds = {}
-    for bind_str in args.container_binds:
-        if ":" in bind_str:
-            host_path, container_path = bind_str.split(":", 1)
-            binds[host_path] = container_path
-
-    container_config = {
-        "tag": args.container_tag,
-        "env": env,
-        "binds": binds,
-    }
-
-    server = IpyboxMCPServer(
-        allowed_dirs=args.allowed_dirs,
-        images_dir=args.images_dir,
-        container_config=container_config,
-    )
-
-    await server.run()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
