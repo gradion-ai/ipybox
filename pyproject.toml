@@ -17,6 +17,8 @@ dependencies = [
     "pillow>=11.0.0,<12",
     "tornado>=6.4.0,<7",
     "typer>=0.12.5,<0.13",
+    "click<8.2.0",
+    "python-dotenv>=1.1.1",
 ]
 
 [tool.uv]

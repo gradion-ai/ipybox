@@ -9,9 +9,8 @@
     <a href="https://pypi.org/project/ipybox/"><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/ipybox"></a>
 </p>
 
-`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). You can run it locally on your computer or remotely in an environment of your choice - no API key required.
+`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). You can run it locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute code safely e.g. for data analytics use cases or executing code actions like in [`freeact`](https://github.com/gradion-ai/freeact/) agents.
 
-While optimized for AI agents that interact with their environment through code execution, such as [`freeact`](https://github.com/gradion-ai/freeact/) agents, `ipybox` also serves as a general-purpose sandbox for secure code execution. It is fully open-source and distributed under the Apache 2.0 license.
 
 <p align="center">
   <img src="docs/img/logo.png" alt="logo">
@@ -25,7 +24,8 @@ While optimized for AI agents that interact with their environment through code 
 - Stream code execution output as it is generated
 - Install Python packages at build time or runtime
 - Return plots generated with visualization libraries
-- [Invocation of MCP servers](https://gradion-ai.github.io/ipybox/usage/#mcp-integration) via generated client code
+- Exposes an [MCP server](https://gradion-ai.github.io/ipybox/mcp-server/) interface for AI agent integration
+- [Invocation of MCP servers](https://gradion-ai.github.io/ipybox/mcp-client/) via generated client code
 - Flexible deployment options, local or remote
 - `asyncio` API for managing the execution environment
 
@@ -34,7 +34,22 @@ While optimized for AI agents that interact with their environment through code 
 - [User Guide](https://gradion-ai.github.io/ipybox/)
 - [API Docs](https://gradion-ai.github.io/ipybox/api/execution_container/)
 
-## Quickstart
+## MCP server
+
+`ipybox` can be installed as [MCP server](https://gradion-ai.github.io/ipybox/mcp-server/).
+
+```json
+{
+  "mcpServers": {
+    "ipybox": {
+      "command": "uvx",
+      "args": ["ipybox", "mcp"]
+    }
+  }
+}
+```
+
+## Python example
 
 Install `ipybox` Python package:
 
@@ -42,14 +57,14 @@ Install `ipybox` Python package:
 pip install ipybox
 ```
 
-Execute Python code in an `ipybox` container:
+Execute code in an `ipybox` container:
 
 ```python
 import asyncio
 from ipybox import ExecutionClient, ExecutionContainer
 
 async def main():
-    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox:minimal") as container:
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox") as container:
         async with ExecutionClient(port=container.executor_port) as client:
             result = await client.execute("print('Hello, world!')")
             print(f"Output: {result.text}")

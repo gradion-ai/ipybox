@@ -9,7 +9,7 @@ This example demonstrates how to:
 - Delete files in containers
 
 Note: Make sure to build the Docker image first:
-    python -m ipybox build -t gradion-ai/ipybox
+    python -m ipybox build -t ghcr.io/gradion-ai/ipybox
 """
 
 import asyncio

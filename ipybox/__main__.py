@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
+from dotenv import dotenv_values
 
 from ipybox.container import DEFAULT_TAG
 
@@ -128,8 +129,8 @@ def mcp(
     allowed_dirs: Annotated[
         Optional[list[Path]],
         typer.Option(
-            "--allowed-dirs",
-            help="Directories allowed for host filesystem operations",
+            "--allowed-dir",
+            help="Directory allowed for host filesystem operations",
         ),
     ] = None,
     images_dir: Annotated[
@@ -145,18 +146,28 @@ def mcp(
             "--container-tag",
             help="Docker image name and tag for the ipybox container",
         ),
-    ] = "gradion-ai/ipybox",
-    container_env: Annotated[
+    ] = DEFAULT_TAG,
+    container_env_vars: Annotated[
         Optional[list[str]],
         typer.Option(
-            "--container-env",
-            help="Environment variables for container (format: KEY=VALUE)",
+            "--container-env-var",
+            help="Environment variable for container (format: KEY=VALUE)",
+        ),
+    ] = None,
+    container_env_file: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--container-env-file",
+            file_okay=True,
+            dir_okay=False,
+            resolve_path=True,
+            help="Path to an environment variables file for container",
         ),
     ] = None,
     container_binds: Annotated[
         Optional[list[str]],
         typer.Option(
-            "--container-binds",
+            "--container-bind",
             help="Bind mounts for container (format: host_path:container_path)",
         ),
     ] = None,
@@ -168,16 +179,19 @@ def mcp(
     if allowed_dirs is None:
         allowed_dirs = [Path.home(), Path("/tmp")]
 
-    # Parse environment variables
     env = {}
-    if container_env:
-        for env_str in container_env:
+    binds = {}
+
+    if container_env_file:
+        file_env = dotenv_values(container_env_file)
+        env.update(file_env)
+
+    if container_env_vars:
+        for env_str in container_env_vars:
             if "=" in env_str:
                 key, value = env_str.split("=", 1)
                 env[key] = value
 
-    # Parse bind mounts
-    binds = {}
     if container_binds:
         for bind_str in container_binds:
             if ":" in bind_str:

@@ -18,7 +18,7 @@ async def main():
         print("timeout")
     """
 
-    async with ExecutionContainer(tag="gradion-ai/ipybox") as container:
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox") as container:
         async with ExecutionClient(port=container.executor_port) as client:
             result = await client.execute(CODE.format(host="example.com"))  # (1)!
             assert result.text == "connected"

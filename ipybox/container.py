@@ -8,7 +8,7 @@ from aiodocker.containers import DockerContainer
 
 from ipybox.utils import arun
 
-DEFAULT_TAG = "gradion-ai/ipybox"
+DEFAULT_TAG = "ghcr.io/gradion-ai/ipybox"
 
 logger = logging.getLogger(__name__)
 

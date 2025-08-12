@@ -13,7 +13,7 @@ async def main():
         "args": ["mcp-server-fetch"],
     }
 
-    async with ExecutionContainer(tag="gradion-ai/ipybox") as container:
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox") as container:
         async with ResourceClient(port=container.resource_port) as client:
             tool_names = await client.generate_mcp_sources(  # (2)!
                 relpath="mcpgen",

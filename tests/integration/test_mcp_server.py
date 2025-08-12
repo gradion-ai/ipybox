@@ -41,7 +41,7 @@ def mcp_server_params(mcp_server_workspace):
             "-m",
             "ipybox",
             "mcp",
-            "--allowed-dirs",
+            "--allowed-dir",
             str(workspace["temp_dir"]),
             "--images-dir",
             str(workspace["images_dir"]),

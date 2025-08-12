@@ -81,10 +81,11 @@ markdown_extensions:
 nav:
   - User Guide:
     - Introduction: index.md
-    - Quickstart: quickstart.md
     - Installation: installation.md
-    - Docker: docker.md
-    - Usage: usage.md
+    - Docker images: docker.md
+    - Usage examples: examples.md
+    - MCP Client: mcp-client.md
+    - MCP Server: mcp-server.md
   - API Documentation:
     - ExecutionContainer: api/execution_container.md
     - ExecutionClient: api/execution_client.md
