@@ -31,7 +31,7 @@ def mcp_server_workspace():
 
 
 @pytest.fixture(scope="module")
-def mcp_server_params(mcp_server_workspace):
+def mcp_server_params(mcp_server_workspace, container_image_root):
     """Server parameters for connecting to MCP server."""
     workspace = mcp_server_workspace
 
@@ -41,6 +41,8 @@ def mcp_server_params(mcp_server_workspace):
             "-m",
             "ipybox",
             "mcp",
+            "--container-tag",
+            "ghcr.io/gradion-ai/ipybox-test-root:latest",
             "--allowed-dir",
             str(workspace["temp_dir"]),
             "--images-dir",
@@ -50,7 +52,7 @@ def mcp_server_params(mcp_server_workspace):
 
 
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
-async def session(mcp_server_params, container_image) -> AsyncIterator[ClientSession]:
+async def session(mcp_server_params) -> AsyncIterator[ClientSession]:
     """Create an MCP client session for each test."""
     try:
         async with mcp_client(mcp_server_params) as (read, write):
