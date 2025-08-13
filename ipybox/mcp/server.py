@@ -103,9 +103,7 @@ class MCPServer:
         self,
         code: Annotated[
             str,
-            Field(
-                description="Python code to execute in the stateful IPython kernel. Install packages with '!pip install package_name'. The kernel has an active asyncio event loop - do NOT use asyncio.run() or create new event loops, use 'await' directly for async code"
-            ),
+            Field(description="Python code to execute in the IPython kernel"),
         ],
         timeout: Annotated[
             float, Field(description="Maximum execution time in seconds before the code is interrupted")
@@ -114,16 +112,32 @@ class MCPServer:
         """Execute Python code in a stateful IPython kernel within a Docker container.
 
         The kernel maintains state across executions - variables, imports, and definitions
-        persist between calls. Generated plots and images are automatically captured and
-        saved to the host filesystem. Images are saved in timestamped directories with
-        pattern: {images_dir}/YYYY-MM-DD_HH-MM-SS_mmm/image_{index}.png
+        persist between calls. Each execution builds on the previous one, allowing you to
+        build complex workflows step by step.
 
-        Executions are sequential (not concurrent) as they share kernel state. Each
-        execution builds on the previous one. Use reset() to clear the kernel state.
+        Key Features:
+        - Stateful execution: Variables and imports persist between calls
+        - Package installation: Use '!pip install package_name' to install packages
+        - Async support: The kernel has an active asyncio event loop - use 'await' directly
+          for async code. DO NOT use asyncio.run() or create new event loops
+        - Sequential execution: Executions are not concurrent as they share kernel state
 
-        Returns a dictionary with:
-        - "text": Output text from execution (string or null)
-        - "images": List of absolute paths to saved images on host filesystem
+        Plotting and Visualization:
+        - Display plots: Use plt.show() to display matplotlib plots
+        - Automatic capture: Displayed plots are automatically downloaded from ipybox and
+          stored locally on the host filesystem
+        - Path access: Absolute paths to saved images are included in the result's
+          'images' field
+        - Storage location: Images are saved in timestamped directories with pattern:
+          {images_dir}/YYYY-MM-DD_HH-MM-SS_mmm/image_{index}.png
+
+        Kernel Management:
+        - Use the reset() tool to clear the kernel state and start fresh
+
+        Returns:
+            dict: A dictionary containing:
+                - text: Output text from execution (string or null)
+                - images: List of absolute paths to saved images on host filesystem
         """
         await self.setup_task
         assert self.execution_client is not None

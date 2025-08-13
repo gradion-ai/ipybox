@@ -31,7 +31,7 @@ def mcp_server_workspace():
 
 
 @pytest.fixture(scope="module")
-def mcp_server_params(mcp_server_workspace, container_image_root):
+def mcp_server_params(mcp_server_workspace, container_image):
     """Server parameters for connecting to MCP server."""
     workspace = mcp_server_workspace
 
@@ -42,7 +42,7 @@ def mcp_server_params(mcp_server_workspace, container_image_root):
             "ipybox",
             "mcp",
             "--container-tag",
-            "ghcr.io/gradion-ai/ipybox-test-root:latest",
+            container_image,
             "--allowed-dir",
             str(workspace["temp_dir"]),
             "--images-dir",

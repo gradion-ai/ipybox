@@ -32,7 +32,7 @@ All available command-line options for advanced configuration:
         "--allowed-dir", "/home/alice/projects",
         "--allowed-dir", "/tmp/data",
         "--images-dir", "/home/alice/ipybox-images",
-        "--container-tag", "ghcr.io/gradion-ai/ipybox-custom:0.1.2",
+        "--container-tag", "ghcr.io/gradion-ai/ipybox:latest",
         "--container-env-var", "API_KEY=secret123",
         "--container-env-var", "DEBUG=true",
         "--container-env-file", "/home/alice/projects/agent/.env",
