@@ -393,3 +393,89 @@ async def test_install_invalid_package(session: ClientSession):
     )
 
     assert "Could not find a version" in result.content[0].text
+
+
+@pytest.fixture(scope="module")
+def mcp_server_params_with_firewall(mcp_server_workspace, container_image_user):
+    """Server parameters for connecting to MCP server with firewall configuration."""
+    workspace = mcp_server_workspace
+
+    return {
+        "command": sys.executable,
+        "args": [
+            "-m",
+            "ipybox",
+            "mcp",
+            "--container-tag",
+            container_image_user,  # Use -test container (supports firewall)
+            "--allowed-dir",
+            str(workspace["temp_dir"]),
+            "--allowed-domain",
+            "gradion.ai",  # Allow access to gradion.ai
+            "--allowed-domain",
+            "httpbin.org",  # Allow access to httpbin.org for testing
+        ],
+    }
+
+
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
+async def session_with_firewall(mcp_server_params_with_firewall) -> AsyncIterator[ClientSession]:
+    """Create an MCP client session with firewall enabled for testing."""
+    try:
+        async with mcp_client(mcp_server_params_with_firewall) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                yield session
+    except Exception:
+        pass
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_firewall_allows_permitted_domains(session_with_firewall: ClientSession):
+    """Test that firewall allows access to permitted domains."""
+    # Test access to allowed domain
+    result = await session_with_firewall.call_tool(
+        "execute_ipython_cell",
+        arguments={
+            "code": """
+import urllib.request
+try:
+    response = urllib.request.urlopen('https://httpbin.org/get', timeout=5)
+    data = response.read().decode('utf-8')
+    print("SUCCESS: Access to httpbin.org allowed")
+    print("Response contains 'headers':", "headers" in data.lower())
+except Exception as e:
+    print(f"ERROR: {e}")
+""",
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+    assert "SUCCESS: Access to httpbin.org allowed" in output
+    assert "Response contains 'headers': True" in output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_firewall_blocks_non_permitted_domains(session_with_firewall: ClientSession):
+    """Test that firewall blocks access to non-permitted domains."""
+    # Test access to blocked domain
+    result = await session_with_firewall.call_tool(
+        "execute_ipython_cell",
+        arguments={
+            "code": """
+import urllib.request
+try:
+    response = urllib.request.urlopen('https://example.com', timeout=2)
+    data = response.read().decode('utf-8')
+    print("ERROR: Access to example.com should be blocked")
+except Exception as e:
+    print(f"SUCCESS: Access blocked as expected - {e}")
+""",
+        },
+    )
+
+    assert not result.isError  # The code execution itself should succeed
+    output = result.content[0].text
+    assert "SUCCESS: Access blocked as expected" in output
+    assert "Network is unreachable" in output or "urlopen error" in output
