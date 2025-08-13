@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import asyncio
-from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -34,14 +33,10 @@ class MCPServer:
     def __init__(
         self,
         allowed_dirs: list[Path],
-        images_dir: Path,
         container_config: dict[str, Any],
     ):
         self.path_validator = PathValidator(allowed_dirs)
         self.container_config = container_config
-
-        self.images_dir = images_dir
-        self.images_dir.mkdir(parents=True, exist_ok=True)
 
         # These will be initialized in setup()
         self.container: ExecutionContainer | None = None
@@ -108,67 +103,36 @@ class MCPServer:
         timeout: Annotated[
             float, Field(description="Maximum execution time in seconds before the code is interrupted")
         ] = 120,
-    ) -> dict[str, Any]:
+    ) -> str:
         """Execute Python code in a stateful IPython kernel within a Docker container.
 
         The kernel maintains state across executions - variables, imports, and definitions
         persist between calls. Each execution builds on the previous one, allowing you to
-        build complex workflows step by step.
+        build complex workflows step by step. Use '!pip install package_name' to install
+        packages as needed.
 
-        Key Features:
-        - Stateful execution: Variables and imports persist between calls
-        - Package installation: Use '!pip install package_name' to install packages
-        - Async support: The kernel has an active asyncio event loop - use 'await' directly
-          for async code. DO NOT use asyncio.run() or create new event loops
-        - Sequential execution: Executions are not concurrent as they share kernel state
+        The kernel has an active asyncio event loop, so use 'await' directly for async
+        code. DO NOT use asyncio.run() or create new event loops.
 
-        Plotting and Visualization:
-        - Display plots: Use plt.show() to display matplotlib plots
-        - Automatic capture: Displayed plots are automatically downloaded from ipybox and
-          stored locally on the host filesystem
-        - Path access: Absolute paths to saved images are included in the result's
-          'images' field
-        - Storage location: Images are saved in timestamped directories with pattern:
-          {images_dir}/YYYY-MM-DD_HH-MM-SS_mmm/image_{index}.png
-
-        Kernel Management:
-        - Use the reset() tool to clear the kernel state and start fresh
+        Executions are sequential (not concurrent) as they share kernel state. Use the
+        reset() tool to clear the kernel state and start fresh.
 
         Returns:
-            dict: A dictionary containing:
-                - text: Output text from execution (string or null)
-                - images: List of absolute paths to saved images on host filesystem
+            str: Output text from execution, or empty string if no output.
         """
         await self.setup_task
         assert self.execution_client is not None
 
-        result: dict[str, Any] = {
-            "text": None,
-            "images": [],
-        }
-
         try:
             async with self.executor_lock:
-                exec_result = await self.execution_client.execute(code, timeout=timeout)
+                result = await self.execution_client.execute(code, timeout=timeout)
+                return result.text or ""
         except Exception as e:
             match e:
                 case ExecutionError():
                     raise ExecutionError(e.args[0] + "\n" + e.trace)
                 case _:
                     raise e
-        else:
-            if exec_result.text:
-                result["text"] = exec_result.text
-
-            if exec_result.images:
-                exec_dir = self.images_dir / datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")[:-3]
-                exec_dir.mkdir(parents=True, exist_ok=True)
-                for i, image in enumerate(exec_result.images):
-                    image_path = exec_dir / f"image_{i}.png"
-                    image.save(image_path, "PNG")
-                    result["images"].append(str(image_path))
-
-        return result
 
     async def upload_file(
         self,

@@ -31,7 +31,6 @@ All available command-line options for advanced configuration:
         "mcp",
         "--allowed-dir", "/home/alice/projects",
         "--allowed-dir", "/tmp/data",
-        "--images-dir", "/home/alice/ipybox-images",
         "--container-tag", "ghcr.io/gradion-ai/ipybox:latest",
         "--container-env-var", "API_KEY=secret123",
         "--container-env-var", "DEBUG=true",
@@ -47,7 +46,6 @@ All available command-line options for advanced configuration:
 **Command-line options:**
 
 - `--allowed-dir`: Directory allowed for host filesystem operations (default: home directory and `/tmp`). Can be specified multiple times.
-- `--images-dir`: Directory for saving generated images (default: `~/.ipybox/images`)
 - `--container-tag`: Docker image to use (default: `ghcr.io/gradion-ai/ipybox:latest`)
 - `--container-env-var`: Environment variable for container (format: `KEY=VALUE`). Can be specified multiple times.
 - `--container-env-file`: Path to a file with environment variables for container

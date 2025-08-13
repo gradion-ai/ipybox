@@ -1,6 +1,5 @@
 """Integration tests for the ipybox MCP server."""
 
-import json
 import sys
 import tempfile
 from pathlib import Path
@@ -20,13 +19,8 @@ def mcp_server_workspace():
     with tempfile.TemporaryDirectory(prefix="ipybox_mcp_test_") as temp_dir:
         temp_path = Path(temp_dir)
 
-        # Create subdirectories
-        images_dir = temp_path / "images"
-        images_dir.mkdir()
-
         yield {
             "temp_dir": temp_path,
-            "images_dir": images_dir,
         }
 
 
@@ -45,8 +39,6 @@ def mcp_server_params(mcp_server_workspace, container_image):
             container_image,
             "--allowed-dir",
             str(workspace["temp_dir"]),
-            "--images-dir",
-            str(workspace["images_dir"]),
         ],
     }
 
@@ -81,8 +73,7 @@ async def test_reset(session: ClientSession):
             "code": "print(test_var)",
         },
     )
-    content = json.loads(result.content[0].text)
-    assert "before_reset" in content["text"]
+    assert "before_reset" in result.content[0].text
 
     # Reset the kernel
     result = await session.call_tool("reset", arguments={})
@@ -96,8 +87,7 @@ async def test_reset(session: ClientSession):
             "code": "try:\n    print(test_var)\nexcept NameError:\n    print('Variable not defined')",
         },
     )
-    content = json.loads(result.content[0].text)
-    assert "Variable not defined" in content["text"]
+    assert "Variable not defined" in result.content[0].text
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -112,12 +102,10 @@ async def test_execute_simple_code(session: ClientSession):
     )
 
     assert not result.isError
-    content = json.loads(result.content[0].text)
+    output = result.content[0].text
 
-    assert "text" in content
-    assert "Hello, World!" in content["text"]
-    assert "Result: 4" in content["text"]
-    assert content["images"] == []
+    assert "Hello, World!" in output
+    assert "Result: 4" in output
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -139,8 +127,7 @@ async def test_execute_stateful(session: ClientSession):
         },
     )
 
-    content = json.loads(result.content[0].text)
-    assert "x = 42" in content["text"]
+    assert "x = 42" in result.content[0].text
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -166,48 +153,61 @@ async def test_execute_with_image(session: ClientSession, mcp_server_workspace):
     """Test code execution that generates images."""
     workspace = mcp_server_workspace
 
-    # First install Pillow
+    # First install matplotlib
     await session.call_tool(
         "execute_ipython_cell",
         arguments={
-            "code": "!pip install pillow",
+            "code": "!pip install matplotlib",
         },
     )
 
-    # Generate an image
+    # Generate and save a figure
     code = """
-from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
 
-# Create a simple image
-img = Image.new('RGB', (100, 100), color='red')
-draw = ImageDraw.Draw(img)
-draw.rectangle([25, 25, 75, 75], fill='blue')
+# Create a simple plot
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot([1, 2, 3, 4], [1, 4, 2, 3], 'b-')
+ax.set_title('Test Plot')
+ax.set_xlabel('X axis')
+ax.set_ylabel('Y axis')
 
-img  # Display the image
+# Save the figure to a file in the container
+fig.savefig('/app/test_plot.png', dpi=100, bbox_inches='tight')
+print('Figure saved to /app/test_plot.png')
+plt.close(fig)
 """
 
     result = await session.call_tool(
         "execute_ipython_cell",
         arguments={
             "code": code,
-            "images_dir": str(workspace["images_dir"]),
         },
     )
 
     assert not result.isError
-    content = json.loads(result.content[0].text)
+    assert "Figure saved" in result.content[0].text
 
-    assert "images" in content
-    assert len(content["images"]) == 1
+    # Download the image file from the container
+    download_path = workspace["temp_dir"] / "downloaded_plot.png"
+    result = await session.call_tool(
+        "download_file",
+        arguments={
+            "relpath": "test_plot.png",
+            "local_path": str(download_path),
+        },
+    )
 
-    # Verify image was saved
-    image_path = Path(content["images"][0])
-    assert image_path.exists()
-    assert image_path.parent.parent == workspace["images_dir"]
+    assert not result.isError
+    assert download_path.exists()
 
     # Verify it's a valid image
-    img = Image.open(image_path)
-    assert img.size == (100, 100)
+    img = Image.open(download_path)
+    # The bbox_inches='tight' option adjusts the size, so just verify it's a reasonable size
+    assert img.size[0] > 400 and img.size[0] < 700
+    assert img.size[1] > 300 and img.size[1] < 500
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -240,8 +240,7 @@ async def test_upload_file(session: ClientSession, mcp_server_workspace):
         },
     )
 
-    content = json.loads(result.content[0].text)
-    assert test_content in content["text"]
+    assert test_content in result.content[0].text
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -346,7 +345,6 @@ async def test_install_package(session: ClientSession):
     )
 
     assert not result.isError
-    content = json.loads(result.content[0].text)
 
     # Verify package is installed
     result = await session.call_tool(
@@ -356,8 +354,7 @@ async def test_install_package(session: ClientSession):
         },
     )
 
-    content = json.loads(result.content[0].text)
-    assert "six version:" in content["text"]
+    assert "six version:" in result.content[0].text
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -381,8 +378,7 @@ async def test_install_package_with_version(session: ClientSession):
         },
     )
 
-    content = json.loads(result.content[0].text)
-    assert "requests version:" in content["text"]
+    assert "requests version:" in result.content[0].text
 
 
 @pytest.mark.asyncio(loop_scope="module")

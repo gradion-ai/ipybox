@@ -133,13 +133,6 @@ def mcp(
             help="Directory allowed for host filesystem operations",
         ),
     ] = None,
-    images_dir: Annotated[
-        Path,
-        typer.Option(
-            "--images-dir",
-            help="Default directory for saving generated images",
-        ),
-    ] = Path.home() / ".ipybox" / "images",
     container_tag: Annotated[
         str,
         typer.Option(
@@ -207,7 +200,6 @@ def mcp(
     async def run_server():
         server = MCPServer(
             allowed_dirs=allowed_dirs,
-            images_dir=images_dir,
             container_config=container_config,
         )
         await server.run()
