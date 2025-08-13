@@ -1,6 +1,6 @@
 # MCP Server
 
-`ipybox` can be configured as an [MCP](https://modelcontextprotocol.io/) server providing secure Python code execution in Docker containers with a stateful IPython kernel. The kernel maintains execution state across code executions until explicitly reset. Files can be uploaded to and downloaded from the container. Host filesystem operations are restricted to whitelisted directories for security. Generated images are automatically saved to the host filesystem.
+`ipybox` can be configured as an [MCP](https://modelcontextprotocol.io/) server providing secure Python code execution in Docker containers with a stateful IPython kernel. The kernel maintains execution state across code executions until explicitly reset. Files can be uploaded to and downloaded from the container. Host filesystem operations are restricted to whitelisted directories for security.
 
 ## Configuration
 
@@ -55,7 +55,7 @@ All available command-line options for advanced configuration:
 
 The MCP server provides four tools:
 
-- `execute_ipython_cell`: Executes Python code in a stateful IPython kernel. Variables, definitions and imports persist across executions. Images are automatically captured and saved.
+- `execute_ipython_cell`: Executes Python code in a stateful IPython kernel. Variables, definitions and imports persist across executions.
 - `upload_file`: Transfers files from host to container filesystem.
 - `download_file`: Transfers files from container to host filesystem.
 - `reset`: Creates a new IPython kernel, clearing all variables, definitions and imports while preserving installed packages and files.
