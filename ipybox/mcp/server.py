@@ -101,7 +101,7 @@ class MCPServer:
             Field(description="Python code to execute in the IPython kernel"),
         ],
         timeout: Annotated[
-            float, Field(description="Maximum execution time in seconds before the code is interrupted")
+            float, Field(description="Maximum execution time in seconds before the kernel is interrupted")
         ] = 120,
     ) -> str:
         """Execute Python code in a stateful IPython kernel within a Docker container.
