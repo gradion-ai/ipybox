@@ -46,10 +46,38 @@ All available command-line options for advanced configuration:
 **Command-line options:**
 
 - `--allowed-dir`: Directory allowed for host filesystem operations (default: home directory and `/tmp`). Can be specified multiple times.
+- `--allowed-domain`: Domain, IP address, or CIDR range allowed for outbound network access from container. Can be specified multiple times. See [Network Restrictions](#network-restrictions).
 - `--container-tag`: Docker image to use (default: `ghcr.io/gradion-ai/ipybox:latest`)
 - `--container-env-var`: Environment variable for container (format: `KEY=VALUE`). Can be specified multiple times.
 - `--container-env-file`: Path to a file with environment variables for container
 - `--container-bind`: Bind mount for container (format: `host_path:container_path`). Host paths may be relative or absolute. Container paths must be relative and are created as subdirectories of `/app`. Can be specified multiple times.
+
+## Network Restrictions
+
+By default, containers allow all outbound internet traffic. You can restrict network access by specifying allowed domains, IP addresses, or CIDR ranges using the `--allowed-domain` option:
+
+```json
+{
+  "mcpServers": {
+    "ipybox": {
+      "command": "uvx",
+      "args": [
+        "ipybox",
+        "mcp",
+        "--allowed-domain", "gradion.ai",
+        "--allowed-domain", "api.openai.com",
+        "--allowed-domain", "192.168.1.0/24"
+      ]
+    }
+  }
+}
+```
+
+**Important Notes:**
+
+- Network restrictions only work with non-root container images (images built without the `-r` or `--root` flag)
+- If no `--allowed-domain` options are specified, the container runs without firewall restrictions
+- For more details on network access control, see the [restrict network access](examples.md#restrict-network-access) section in the examples documentation
 
 ## Tools
 
