@@ -133,6 +133,13 @@ def mcp(
             help="Directory allowed for host filesystem operations",
         ),
     ] = None,
+    allowed_domains: Annotated[
+        Optional[list[str]],
+        typer.Option(
+            "--allowed-domain",
+            help="Domain, IP address, or CIDR range allowed for outbound network access from container",
+        ),
+    ] = None,
     container_tag: Annotated[
         str,
         typer.Option(
@@ -201,6 +208,7 @@ def mcp(
         server = MCPServer(
             allowed_dirs=allowed_dirs,
             container_config=container_config,
+            allowed_domains=allowed_domains,
         )
         await server.run()
 

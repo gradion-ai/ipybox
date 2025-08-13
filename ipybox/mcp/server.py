@@ -34,9 +34,11 @@ class MCPServer:
         self,
         allowed_dirs: list[Path],
         container_config: dict[str, Any],
+        allowed_domains: list[str] | None = None,
     ):
         self.path_validator = PathValidator(allowed_dirs)
         self.container_config = container_config
+        self.allowed_domains = allowed_domains
 
         # These will be initialized in setup()
         self.container: ExecutionContainer | None = None
@@ -59,6 +61,10 @@ class MCPServer:
         """Initialize container and execution client."""
         self.container = ExecutionContainer(**self.container_config)
         await self.container.run()
+
+        # Initialize firewall if allowed domains are specified
+        if self.allowed_domains is not None:
+            await self.container.init_firewall(self.allowed_domains)
 
         self.execution_client = ExecutionClient(port=self.container.executor_port)
         await self.execution_client.connect()
