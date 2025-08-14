@@ -11,6 +11,9 @@
 
 `ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). You can run it locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute code safely e.g. for data analytics use cases or executing code actions like in [`freeact`](https://github.com/gradion-ai/freeact/) agents.
 
+<a href="https://glama.ai/mcp/servers/@gradion-ai/ipybox">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@gradion-ai/ipybox/badge" alt="ipybox MCP server" />
+</a>
 
 <p align="center">
   <img src="docs/img/logo.png" alt="logo">
