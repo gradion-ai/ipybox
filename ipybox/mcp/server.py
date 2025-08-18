@@ -203,4 +203,5 @@ class MCPServer:
         try:
             await self.mcp.run_stdio_async()
         finally:
+            await self.setup_task
             await self._cleanup()

@@ -171,10 +171,10 @@ class ExecutionClient:
         self.host = host
 
         self._heartbeat_interval = heartbeat_interval
-        self._heartbeat_callback = None
+        self._heartbeat_callback: PeriodicCallback | None = None
 
         self._kernel_id = None
-        self._ws: WebSocketClientConnection
+        self._ws: WebSocketClientConnection | None = None
 
     async def __aenter__(self):
         await self.connect()
@@ -228,16 +228,20 @@ class ExecutionClient:
         self._ws = await websocket_connect(HTTPRequest(url=self.kernel_ws_url))
         logger.info("Connected to kernel")
 
-        self.heartbeat_callback = PeriodicCallback(self._ping_kernel, self._heartbeat_interval * 1000)
-        self.heartbeat_callback.start()
+        self._heartbeat_callback = PeriodicCallback(self._ping_kernel, self._heartbeat_interval * 1000)
+        self._heartbeat_callback.start()
         logger.info(f"Started heartbeat (interval = {self._heartbeat_interval}s)")
 
         await self._init_kernel()
 
     async def disconnect(self):
         """Disconnects from and deletes the running IPython kernel."""
-        self.heartbeat_callback.stop()
-        self._ws.close()
+        if self._heartbeat_callback:
+            self._heartbeat_callback.stop()
+
+        if self._ws:
+            self._ws.close()
+
         async with aiohttp.ClientSession() as session:
             async with session.delete(self.kernel_http_url):
                 pass
@@ -292,9 +296,13 @@ class ExecutionClient:
         return Execution(client=self, req_id=req_id)
 
     async def _send_request(self, req):
+        if self._ws is None:
+            raise ConnectionError("Not connected to kernel")
         await self._ws.write_message(json_encode(req))
 
     async def _read_message(self) -> dict:
+        if self._ws is None:
+            raise ConnectionError("Not connected to kernel")
         return json_decode(await self._ws.read_message())
 
     async def _create_kernel(self):
@@ -312,7 +320,7 @@ class ExecutionClient:
 
     async def _ping_kernel(self):
         try:
-            self._ws.ping()
+            self._ws.ping()  # type: ignore
         except tornado.iostream.StreamClosedError as e:
             logger.error("Kernel disconnected", e)
 
