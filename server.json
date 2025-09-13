@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.gradion-ai/ipybox",
+  "description": "An MCP server for sandboxed Python code execution with IPython and Docker, and file transfer.",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/gradion-ai/ipybox",
+    "source": "github"
+  },
+  "version": "0.6.3",
+  "packages": [
+    {
+      "registry_type": "pypi",
+      "registry_base_url": "https://pypi.org",
+      "identifier": "ipybox",
+      "version": "0.6.3",
+      "transport": {
+        "type": "stdio"
+      },
+      "environment_variables": []
+    }
+  ]
+}
