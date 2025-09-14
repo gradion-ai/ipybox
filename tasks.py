@@ -1,7 +1,9 @@
 import json
 import os
+import urllib.request
 from sys import platform
 
+import jsonschema
 from invoke import task
 
 
@@ -91,33 +93,20 @@ def mcp_sync(c):
 
 
 @task(aliases=["mcp-val"])
-def mcp_validate(c):
+def mcp_validate(c, schema_path=".mcpregistry_schema.json"):
     """Validate server.json against MCP schema"""
-    import tempfile
-    import urllib.request
-
-    import jsonschema
-
-    # Download schema to temp file
     schema_url = "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json"
 
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as temp_schema:
+    if not os.path.exists(schema_path):
         with urllib.request.urlopen(schema_url) as response:
             schema_content = response.read().decode("utf-8")
-            temp_schema.write(schema_content)
-            temp_schema_path = temp_schema.name
+        with open(schema_path, "w") as f:
+            f.write(schema_content)
 
-    try:
-        # Read server.json
-        with open("server.json", "r") as f:
-            server_data = json.load(f)
+    with open("server.json", "r") as f:
+        server_data = json.load(f)
 
-        # Read schema
-        with open(temp_schema_path, "r") as f:
-            schema = json.load(f)
+    with open(schema_path, "r") as f:
+        schema = json.load(f)
 
-        # Validate - will raise exception if invalid
-        jsonschema.validate(server_data, schema)
-    finally:
-        # Clean up temp file
-        os.unlink(temp_schema_path)
+    jsonschema.validate(server_data, schema)

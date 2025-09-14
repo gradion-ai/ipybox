@@ -45,6 +45,7 @@ dev = [
     "python-multipart>=0.0.20,<0.1",
     "uvicorn>=0.34.1,<0.35",
     "flaky>=3.8.1,<4",
+    "jsonschema>=4.25.0",
 ]
 
 [project.scripts]
