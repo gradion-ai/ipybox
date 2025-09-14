@@ -1,0 +1,101 @@
+name: Publish to MCP Registry
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-mcp:
+    runs-on: ubuntu-latest
+    needs: []  # Run independently from other release jobs
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Verify current tag is on main branch
+      run: |
+        # Exit with error if current tag is not on main
+        git merge-base --is-ancestor ${{ github.sha }} origin/main || exit 1
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: ${{ vars.CI_UV_VERSION }}
+        enable-cache: true
+
+    - name: Install Python
+      run: uv python install
+
+    - name: Build package
+      run: |
+        uv build
+        ls -la dist/
+
+    - name: Wait for PyPI package availability
+      run: |
+        # Extract version from tag
+        VERSION=${GITHUB_REF#refs/tags/}
+        echo "Waiting for ipybox==$VERSION to be available on PyPI..."
+
+        # Wait up to 10 minutes for the package to be available
+        for i in {1..60}; do
+          if pip index versions ipybox 2>/dev/null | grep -q "$VERSION"; then
+            echo "Package ipybox==$VERSION is now available on PyPI"
+            break
+          fi
+          echo "Attempt $i/60: Package not yet available, waiting 10 seconds..."
+          sleep 10
+        done
+
+        # Final check
+        if ! pip index versions ipybox 2>/dev/null | grep -q "$VERSION"; then
+          echo "ERROR: Package ipybox==$VERSION not found on PyPI after 10 minutes"
+          exit 1
+        fi
+
+    - name: Install MCP Publisher
+      run: |
+        npm install -g @modelcontextprotocol/publisher
+
+    - name: Update server.json version
+      run: |
+        # Extract version from tag
+        VERSION=${GITHUB_REF#refs/tags/}
+        echo "Updating server.json to version $VERSION"
+
+        # Update version using invoke task
+        VERSION=$VERSION uv run invoke mcp-sync
+
+        # Show the updated server.json
+        cat server.json
+
+    - name: Validate server.json
+      run: |
+        # Install jsonschema dependency
+        uv pip install jsonschema
+
+        # Validate using invoke task
+        uv run invoke mcp-val
+
+    - name: Login to MCP Registry
+      run: |
+        # Use GitHub OIDC for authentication
+        mcp-publisher login github-oidc
+
+    - name: Publish to MCP Registry
+      run: |
+        mcp-publisher publish
+
+    - name: Verify publication
+      run: |
+        echo "Server published successfully to MCP Registry"
+        echo "Visit https://modelcontextprotocol.io/servers to verify the publication"

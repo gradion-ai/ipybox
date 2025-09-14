@@ -7,17 +7,65 @@
     "url": "https://github.com/gradion-ai/ipybox",
     "source": "github"
   },
-  "version": "0.6.3",
+  "version": "0.0.0",
   "packages": [
     {
       "registry_type": "pypi",
       "registry_base_url": "https://pypi.org",
       "identifier": "ipybox",
-      "version": "0.6.3",
+      "version": "0.0.0",
+      "runtime_hint": "uvx",
       "transport": {
         "type": "stdio"
       },
-      "environment_variables": []
+      "package_arguments": [
+        {
+          "type": "positional",
+          "value": "mcp",
+          "is_required": true,
+          "description": "Required MCP server subcommand"
+        },
+        {
+          "type": "named",
+          "name": "--allowed-dir",
+          "description": "Directory allowed for host filesystem operations",
+          "is_repeated": true,
+          "value_hint": "directory_path"
+        },
+        {
+          "type": "named",
+          "name": "--allowed-domain",
+          "description": "Domain, IP address, or CIDR range allowed for outbound network access",
+          "is_repeated": true,
+          "value_hint": "domain_or_ip"
+        },
+        {
+          "type": "named",
+          "name": "--container-tag",
+          "description": "Docker image tag to use",
+          "value_hint": "docker_image_tag"
+        },
+        {
+          "type": "named",
+          "name": "--container-env-var",
+          "description": "Environment variable for container (KEY=VALUE format)",
+          "is_repeated": true,
+          "value_hint": "env_var"
+        },
+        {
+          "type": "named",
+          "name": "--container-env-file",
+          "description": "Path to file containing container environment variables",
+          "value_hint": "file_path"
+        },
+        {
+          "type": "named",
+          "name": "--container-bind",
+          "description": "Bind mount for container (host_path:container_path format)",
+          "is_repeated": true,
+          "value_hint": "bind_mount"
+        }
+      ]
     }
   ]
 }
