@@ -80,9 +80,6 @@ jobs:
 
     - name: Validate server.json
       run: |
-        # Install jsonschema dependency
-        uv pip install jsonschema
-
         # Validate using invoke task
         uv run invoke mcp-val
 
