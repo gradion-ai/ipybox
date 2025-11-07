@@ -413,7 +413,7 @@ def mcp_server_params_with_firewall(mcp_server_workspace, container_image_user):
             "--allowed-domain",
             "gradion.ai",  # Allow access to gradion.ai
             "--allowed-domain",
-            "httpbin.org",  # Allow access to httpbin.org for testing
+            "postman-echo.com",  # Allow access to postman-echo.com for testing
         ],
     }
 
@@ -440,9 +440,13 @@ async def test_firewall_allows_permitted_domains(session_with_firewall: ClientSe
             "code": """
 import urllib.request
 try:
-    response = urllib.request.urlopen('https://httpbin.org/get', timeout=5)
+    request = urllib.request.Request(
+        'https://postman-echo.com/get',
+        headers={'User-Agent': 'Python/3.0'}
+    )
+    response = urllib.request.urlopen(request, timeout=5)
     data = response.read().decode('utf-8')
-    print("SUCCESS: Access to httpbin.org allowed")
+    print("SUCCESS: Access to postman-echo.com allowed")
     print("Response contains 'headers':", "headers" in data.lower())
 except Exception as e:
     print(f"ERROR: {e}")
@@ -452,7 +456,7 @@ except Exception as e:
 
     assert not result.isError
     output = result.content[0].text
-    assert "SUCCESS: Access to httpbin.org allowed" in output
+    assert "SUCCESS: Access to postman-echo.com allowed" in output
     assert "Response contains 'headers': True" in output
 
 

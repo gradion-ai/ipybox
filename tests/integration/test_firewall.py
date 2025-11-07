@@ -98,18 +98,20 @@ print("Localhost accessible")
 @flaky(max_runs=3, min_passes=1)
 async def test_multiple_allowed_domains(container_user: ExecutionContainer):
     """Test firewall with multiple allowed domains."""
-    await container_user.init_firewall(["gradion.ai", "httpbin.org"])
+    await container_user.init_firewall(["gradion.ai", "postman-echo.com"])
 
     async with ExecutionClient(port=container_user.executor_port) as client:
         domains_to_test = [
             ("https://gradion.ai", "martin"),  # Check for expected content
-            ("https://httpbin.org/get", "headers"),  # httpbin returns JSON with headers
+            ("https://postman-echo.com/get", "headers"),  # postman-echo.com returns JSON with headers
         ]
 
         for url, expected_content in domains_to_test:
+            headers = {"User-Agent": "Python/3.0"} if url == "https://postman-echo.com/get" else {}
             code = f"""
 import urllib.request
-response = urllib.request.urlopen('{url}', timeout=5)
+request = urllib.request.Request('{url}', headers={headers})
+response = urllib.request.urlopen(request, timeout=5)
 print(response.read().decode('utf-8'))
 """
             result = await client.execute(code)
