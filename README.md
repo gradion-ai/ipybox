@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/gradion-ai-ipybox-badge.png)](https://mseep.ai/app/gradion-ai-ipybox)
+
 # ipybox
 
 mcp-name: io.github.gradion-ai/ipybox
