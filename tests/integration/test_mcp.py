@@ -7,8 +7,9 @@ from mcp import ClientSession
 from ipybox.mcp.gen import (
     generate_function_definition,
     generate_init_definition,
-    generate_input_definition,
+    generate_input_model_code,
     generate_mcp_sources,
+    generate_output_model_code,
     sanitize_name,
 )
 from ipybox.mcp.run import mcp_client, run_async
@@ -16,6 +17,7 @@ from ipybox.mcp.run import mcp_client, run_async
 # Test constants
 TOOL1_NAME = "tool-1"
 TOOL2_NAME = "tool_2"
+TOOL3_NAME = "tool_3"
 NONEXISTENT_TOOL = "non_existent_tool"
 TEST_SERVER_NAME = "test_mcp_server"
 
@@ -60,29 +62,45 @@ def test_generate_init_definition(server_params):
 
 
 @pytest.mark.parametrize(
-    "sanitized_name,original_name,description,expected_fragments",
+    "sanitized_name,original_name,description,has_output_schema,expected_fragments",
     [
         (
             "tool_1",
             TOOL1_NAME,
             "This is tool 1.",
+            False,
             ["def tool_1(params: Params) -> str:", "This is tool 1.", f'run_sync("{TOOL1_NAME}"'],
         ),
         (
             "tool_with_quotes",
             "tool_with_quotes",
             'This contains """triple quotes""".',
+            False,
             [
                 "def tool_with_quotes(params: Params) -> str:",
                 r"This contains \"\"\"triple quotes\"\"\".",
                 'run_sync("tool_with_quotes"',
             ],
         ),
+        (
+            "tool_with_output_schema",
+            "tool_with_output_schema",
+            "This tool has an output schema.",
+            True,
+            [
+                "def tool_with_output_schema(params: Params) -> Result:",
+                "This tool has an output schema.",
+                'run_sync("tool_with_output_schema"',
+                "Result.model_validate(result)",
+            ],
+        ),
     ],
 )
-def test_generate_function_definition(sanitized_name, original_name, description, expected_fragments):
+def test_generate_function_definition(
+    sanitized_name, original_name, description, has_output_schema, expected_fragments
+):
     """Test the generate_function_definition function."""
-    function_def = generate_function_definition(sanitized_name, original_name, description)
+    function_def = generate_function_definition(sanitized_name, original_name, description, has_output_schema)
 
     # Check that the function definition contains the correct elements
     for fragment in expected_fragments:
@@ -94,7 +112,7 @@ def test_generate_input_definition():
     # Create a simple schema similar to what FastMCP would generate for tool_1
     schema = {"type": "object", "properties": {"s": {"type": "string"}}, "required": ["s"]}
 
-    input_def = generate_input_definition(schema)
+    input_def = generate_input_model_code(schema)
 
     # Check that the input definition contains a Pydantic model
     assert "class Params(" in input_def
@@ -107,11 +125,40 @@ def test_generate_input_definition():
         "required": ["s", "n"],
     }
 
-    complex_input_def = generate_input_definition(complex_schema)
+    complex_input_def = generate_input_model_code(complex_schema)
     assert "class Params(" in complex_input_def
     assert "s: str" in complex_input_def
     assert "n: float" in complex_input_def
     assert "b: Optional[bool]" in complex_input_def
+
+
+def test_generate_output_definition():
+    """Test the generate_output_definition function."""
+    # Create a simple schema for a tool's output
+    schema = {"type": "object", "properties": {"result": {"type": "string"}}, "required": ["result"]}
+
+    output_def = generate_output_model_code(schema)
+
+    # Check that the output definition contains a Pydantic model named Result
+    assert "class Result(" in output_def
+    assert "result: str" in output_def
+
+    # Test with a more complex schema
+    complex_schema = {
+        "type": "object",
+        "properties": {
+            "status": {"type": "string"},
+            "count": {"type": "integer"},
+            "success": {"type": "boolean"},
+        },
+        "required": ["status", "count"],
+    }
+
+    complex_output_def = generate_output_model_code(complex_schema)
+    assert "class Result(" in complex_output_def
+    assert "status: str" in complex_output_def
+    assert "count: int" in complex_output_def
+    assert "success: Optional[bool]" in complex_output_def
 
 
 @pytest.mark.asyncio
@@ -180,12 +227,13 @@ async def test_mcp_client(server_params):
             # Check that we can get the list of tools
             tools = await session.list_tools()
             assert tools is not None
-            assert len(tools.tools) >= 2  # should have at least tool-1 and tool_2
+            assert len(tools.tools) >= 3  # should have at least tool-1, tool_2, and tool_3
 
             # Find our test tools
             tool_names = [tool.name for tool in tools.tools]
             assert TOOL1_NAME in tool_names, f"Tool {TOOL1_NAME} not found in tools"
             assert TOOL2_NAME in tool_names, f"Tool {TOOL2_NAME} not found in tools"
+            assert TOOL3_NAME in tool_names, f"Tool {TOOL3_NAME} not found in tools"
 
     # Test with invalid server_params
     with pytest.raises(ValueError, match='Neither a "command" nor a "url" key in server_params'):

@@ -18,7 +18,7 @@ INIT_TEMPLATE = """
 SERVER_PARAMS = {server_params}
 """
 
-FUNCTION_TEMPLATE = '''
+FUNCTION_TEMPLATE_UNSTRUCTURED = '''
 from ipybox.mcp.run import run_sync
 from . import SERVER_PARAMS
 
@@ -28,27 +28,47 @@ def {sanitized_name}(params: Params) -> str:
     return run_sync("{original_name}", params.model_dump(exclude_none=True), SERVER_PARAMS)
 '''
 
+FUNCTION_TEMPLATE_STRUCTURED = '''
+from ipybox.mcp.run import run_sync
+from . import SERVER_PARAMS
+
+def {sanitized_name}(params: Params) -> Result:
+    """{description}
+    """
+    result = run_sync("{original_name}", params.model_dump(exclude_none=True), SERVER_PARAMS)
+    return Result.model_validate(result)
+'''
+
 
 def generate_init_definition(server_params: dict[str, Any]):
     return INIT_TEMPLATE.format(server_params=server_params)
 
 
-def generate_function_definition(sanitized_name: str, original_name: str, description: str):
-    return FUNCTION_TEMPLATE.format(
+def generate_function_definition(sanitized_name: str, original_name: str, description: str, structured_output: bool):
+    template = FUNCTION_TEMPLATE_STRUCTURED if structured_output else FUNCTION_TEMPLATE_UNSTRUCTURED
+    return template.format(
         sanitized_name=sanitized_name,
         original_name=original_name,
         description=description.replace('"""', '\\"\\"\\"'),
     )
 
 
-def generate_input_definition(schema: dict[str, Any]):
+def generate_input_model_code(schema: dict[str, Any]) -> str:
+    return _generate_model_code(schema, "Params")
+
+
+def generate_output_model_code(schema: dict[str, Any]) -> str:
+    return _generate_model_code(schema, "Result")
+
+
+def _generate_model_code(schema: dict[str, Any], class_name: str) -> str:
     data_model_types = get_data_model_types(
         data_model_type=DataModelType.PydanticV2BaseModel,
         target_python_version=PythonVersion.PY_311,
     )
     parser = JsonSchemaParser(
         source=json.dumps(schema),
-        class_name="Params",
+        class_name=class_name,
         data_model_type=data_model_types.data_model,
         data_model_root_type=data_model_types.root_model,
         data_model_field_type=data_model_types.field_model,
@@ -80,17 +100,33 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
                 sanitized_name = sanitize_name(tool.name)
                 result.append(sanitized_name)
 
-                input_definition = generate_input_definition(tool.inputSchema)
+                # Generate input model (Params)
+                input_model_code = generate_input_model_code(tool.inputSchema)
+
+                if output_schema := tool.outputSchema:
+                    output_model_code = generate_output_model_code(output_schema)
+                    output_model_code = strip_imports(output_model_code)
+
+                # Generate function with appropriate return type
                 function_definition = generate_function_definition(
                     sanitized_name=sanitized_name,
                     original_name=original_name,
                     description=tool.description,
+                    structured_output=output_schema is not None,
                 )
 
+                # Write file with models and function
                 async with aiofiles.open(root_dir / server_name / f"{sanitized_name}.py", "w") as f:
-                    await f.write(f"{input_definition}\n\n{function_definition}")
+                    if output_schema:
+                        await f.write(f"{input_model_code}\n\n{output_model_code}\n\n{function_definition}")
+                    else:
+                        await f.write(f"{input_model_code}\n\n{function_definition}")
 
             return result
+
+
+def strip_imports(code: str) -> str:
+    return re.sub(r"^(from |import ).*$\n?", "", code, flags=re.MULTILINE)
 
 
 def sanitize_name(name: str) -> str:

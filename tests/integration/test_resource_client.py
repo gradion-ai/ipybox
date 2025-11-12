@@ -33,7 +33,7 @@ async def test_generate_and_get_mcp_sources(resource_client: ResourceClient, wor
     gen_result = await resource_client.generate_mcp_sources(
         relpath="mcpgen", server_name="test", server_params=server_params
     )
-    assert gen_result == ["tool_1", "tool_2"]
+    assert gen_result == ["tool_1", "tool_2", "tool_3"]
 
     # retrieve the generated sources via ipybox filesystem
     get_result_1 = await resource_client.get_mcp_sources(relpath="mcpgen", server_name="test")

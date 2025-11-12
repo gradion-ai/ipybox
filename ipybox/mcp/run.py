@@ -36,16 +36,24 @@ async def mcp_client(server_params: dict[str, Any]):
 
 async def run_async(
     tool_name: str, params: dict[str, Any], server_params: dict[str, Any], connect_timeout: float = 5
-) -> str | None:
+) -> dict[str, Any] | str | None:
     async with mcp_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await asyncio.wait_for(session.initialize(), timeout=connect_timeout)
             result = await session.call_tool(tool_name, arguments=params)
 
+            if result.isError:
+                match result.content:
+                    case [TextContent(text=text)]:
+                        raise Exception(text)
+                    case _:
+                        raise Exception("Tool execution failed")
+
+            if result.structuredContent:
+                return result.structuredContent
+
             match result.content:
                 case [TextContent(text=text)]:
-                    if result.isError:
-                        raise Exception(text)
                     return text
                 case _:
                     return None
@@ -53,7 +61,7 @@ async def run_async(
 
 def run_sync(
     tool_name: str, params: dict[str, Any], server_params: dict[str, Any], connect_timeout: float = 5
-) -> str | None:
+) -> dict[str, Any] | str | None:
     try:
         asyncio.get_running_loop()
 

@@ -88,21 +88,16 @@ async def test_generate_mcp_with_real_server(resource_client, temp_dir):
         relpath="generated_mcp", server_name="myTestServer", server_params=server_params
     )
 
-    assert gen_result == ["tool_1", "tool_2"]
+    assert gen_result == ["tool_1", "tool_2", "tool_3"]
 
     # Verify files were created (indirectly through get_mcp_sources)
-    sources = await resource_client.get_mcp_sources(relpath="generated_mcp", server_name="myTestServer")
-    assert "tool_1" in sources
-    assert "tool_2" in sources
-
-    # Check content of sources
-    assert "def tool_1(params: Params)" in sources["tool_1"]
-    assert "def tool_2(params: Params)" in sources["tool_2"]
-
-    # Also verify the files were physically created
+    generated_sources = await resource_client.get_mcp_sources(relpath="generated_mcp", server_name="myTestServer")
     generated_dir = temp_dir / "generated_mcp" / "myTestServer"
-    assert (generated_dir / "tool_1.py").exists()
-    assert (generated_dir / "tool_2.py").exists()
+
+    for tool_name in ["tool_1", "tool_2", "tool_3"]:
+        assert tool_name in generated_sources
+        assert (generated_dir / f"{tool_name}.py").exists()
+        assert f"def {tool_name}(params: Params)" in generated_sources[tool_name]
 
 
 @pytest.mark.asyncio
