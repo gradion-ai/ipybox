@@ -1,8 +1,8 @@
-### Core Architecture
+## Core Architecture
 
 Container-based isolation with dual-server architecture: Jupyter Kernel Gateway (8888) manages IPython kernels for code execution; Resource Server (8900) handles file operations, module introspection, and MCP tool execution through synthesized Python functions. Fully async with Python's asyncio.
 
-### Key Components
+## Key Components
 
 **ExecutionContainer** (`container.py`)
 - Docker container lifecycle management with auto-pull and health monitoring
@@ -32,3 +32,14 @@ Container-based isolation with dual-server architecture: Jupyter Kernel Gateway 
 - FastMCP-based server exposing ipybox as MCP server for secure code execution
 - Provides execute_ipython_cell, upload_file, download_file, and reset tools
 - Path validation and whitelisting for secure host filesystem operations
+
+## Exploring documentation:
+
+Use the following strategies to explore external documentation:
+
+Use the llmstxt-explorer skill for:
+- Model Context Protocol (MCP): https://modelcontextprotocol.io/llms.txt
+
+Use the WebFetch tool directly for:
+- MCP Python client: https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/refs/heads/main/README.md
+- Datamodel Code Generator: https://koxudaxi.github.io/datamodel-code-generator/using_as_module/
