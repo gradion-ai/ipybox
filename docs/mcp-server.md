@@ -31,6 +31,7 @@ All available command-line options for advanced configuration:
         "mcp",
         "--allowed-dir", "/home/alice/projects",
         "--allowed-dir", "/tmp/data",
+        "--log-level", "WARNING",
         "--container-tag", "ghcr.io/gradion-ai/ipybox:latest",
         "--container-env-var", "API_KEY=secret123",
         "--container-env-var", "DEBUG=true",
@@ -47,6 +48,7 @@ All available command-line options for advanced configuration:
 
 - `--allowed-dir`: Directory allowed for host filesystem operations (default: home directory and `/tmp`). Can be specified multiple times.
 - `--allowed-domain`: Domain, IP address, or CIDR range allowed for outbound network access from container. Can be specified multiple times. See [Network Restrictions](#network-restrictions).
+- `--log-level`: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL). Default: WARNING.
 - `--container-tag`: Docker image to use (default: `ghcr.io/gradion-ai/ipybox:latest`)
 - `--container-env-var`: Environment variable for container (format: `KEY=VALUE`). Can be specified multiple times.
 - `--container-env-file`: Path to a file with environment variables for container

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
+import logging
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -35,7 +36,11 @@ class MCPServer:
         allowed_dirs: list[Path],
         container_config: dict[str, Any],
         allowed_domains: list[str] | None = None,
+        log_level: str = "WARNING",
     ):
+        # Configure logging
+        logging.basicConfig(level=getattr(logging, log_level.upper()))
+
         self.path_validator = PathValidator(allowed_dirs)
         self.container_config = container_config
         self.allowed_domains = allowed_domains

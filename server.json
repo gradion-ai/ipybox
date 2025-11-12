@@ -41,6 +41,12 @@
         },
         {
           "type": "named",
+          "name": "--log-level",
+          "description": "Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+          "value_hint": "log_level"
+        },
+        {
+          "type": "named",
           "name": "--container-tag",
           "description": "Docker image tag to use",
           "value_hint": "docker_image_tag"

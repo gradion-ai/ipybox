@@ -140,6 +140,13 @@ def mcp(
             help="Domain, IP address, or CIDR range allowed for outbound network access from container",
         ),
     ] = None,
+    log_level: Annotated[
+        str,
+        typer.Option(
+            "--log-level",
+            help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+        ),
+    ] = "WARNING",
     container_tag: Annotated[
         str,
         typer.Option(
@@ -209,6 +216,7 @@ def mcp(
             allowed_dirs=allowed_dirs,
             container_config=container_config,
             allowed_domains=allowed_domains,
+            log_level=log_level,
         )
         await server.run()
 
