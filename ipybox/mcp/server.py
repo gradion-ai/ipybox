@@ -54,10 +54,10 @@ class MCPServer:
         self.mcp = FastMCP("ipybox")
 
         # Register tools
-        self.mcp.tool()(self.execute_ipython_cell)
-        self.mcp.tool()(self.upload_file)
-        self.mcp.tool()(self.download_file)
-        self.mcp.tool()(self.reset)
+        self.mcp.tool(structured_output=False)(self.execute_ipython_cell)
+        self.mcp.tool(structured_output=False)(self.upload_file)
+        self.mcp.tool(structured_output=False)(self.download_file)
+        self.mcp.tool(structured_output=False)(self.reset)
 
         self.setup_task: asyncio.Task = asyncio.create_task(self._setup())
         self.executor_lock = asyncio.Lock()
