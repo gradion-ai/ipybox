@@ -19,23 +19,27 @@ SERVER_PARAMS = {server_params}
 """
 
 FUNCTION_TEMPLATE_UNSTRUCTURED = '''
+import os
 from ipybox.mcp.run import run_sync
+from ipybox.mcp.utils import replace_variables
 from . import SERVER_PARAMS
 
 def {sanitized_name}(params: Params) -> str:
     """{description}
     """
-    return run_sync("{original_name}", params.model_dump(exclude_none=True), SERVER_PARAMS)
+    return run_sync("{original_name}", params.model_dump(exclude_none=True), replace_variables(SERVER_PARAMS, os.environ).replaced)
 '''
 
 FUNCTION_TEMPLATE_STRUCTURED = '''
+import os
+from ipybox.mcp.utils import replace_variables
 from ipybox.mcp.run import run_sync
 from . import SERVER_PARAMS
 
 def {sanitized_name}(params: Params) -> Result:
     """{description}
     """
-    result = run_sync("{original_name}", params.model_dump(exclude_none=True), SERVER_PARAMS)
+    result = run_sync("{original_name}", params.model_dump(exclude_none=True), replace_variables(SERVER_PARAMS, os.environ).replaced)
     return Result.model_validate(result)
 '''
 
@@ -126,7 +130,12 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
 
 
 def strip_imports(code: str) -> str:
-    return re.sub(r"^(from |import ).*$\n?", "", code, flags=re.MULTILINE)
+    filtered_lines = []
+    for line in code.split("\n"):
+        if line.strip() == "from __future__ import annotations":
+            continue
+        filtered_lines.append(line)
+    return "\n".join(filtered_lines)
 
 
 def sanitize_name(name: str) -> str:
