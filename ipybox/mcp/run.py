@@ -7,7 +7,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
-from mcp.types import TextContent
+from mcp.types import ContentBlock, TextContent
 
 
 @asynccontextmanager
@@ -34,31 +34,6 @@ async def mcp_client(server_params: dict[str, Any]):
         yield read, write
 
 
-async def run_async(
-    tool_name: str, params: dict[str, Any], server_params: dict[str, Any], connect_timeout: float = 5
-) -> dict[str, Any] | str | None:
-    async with mcp_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await asyncio.wait_for(session.initialize(), timeout=connect_timeout)
-            result = await session.call_tool(tool_name, arguments=params)
-
-            if result.isError:
-                match result.content:
-                    case [TextContent(text=text)]:
-                        raise Exception(text)
-                    case _:
-                        raise Exception("Tool execution failed")
-
-            if result.structuredContent:
-                return result.structuredContent
-
-            match result.content:
-                case [TextContent(text=text)]:
-                    return text
-                case _:
-                    return None
-
-
 def run_sync(
     tool_name: str, params: dict[str, Any], server_params: dict[str, Any], connect_timeout: float = 5
 ) -> dict[str, Any] | str | None:
@@ -71,3 +46,32 @@ def run_sync(
 
     except RuntimeError:
         return asyncio.run(run_async(tool_name, params, server_params, connect_timeout))
+
+
+async def run_async(
+    tool_name: str, params: dict[str, Any], server_params: dict[str, Any], connect_timeout: float = 5
+) -> dict[str, Any] | str | None:
+    async with mcp_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await asyncio.wait_for(session.initialize(), timeout=connect_timeout)
+            result = await session.call_tool(tool_name, arguments=params)
+
+            if result.isError:
+                raise Exception(_text_content(result.content) or f"Error calling {tool_name}")
+
+            if result.structuredContent:
+                return result.structuredContent
+
+            if content := result.content:
+                return _text_content(content) or None
+
+            return None
+
+
+def _text_content(content: list[ContentBlock]) -> str:
+    text_elems = []
+    for elem in content:
+        match elem:
+            case TextContent(text=text):
+                text_elems.append(text)
+    return "\n".join(text_elems)
