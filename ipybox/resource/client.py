@@ -100,8 +100,37 @@ class ResourceClient:
         Returns:
             Source code of generated MCP client functions. Keys are tool names, values are generated sources.
         """
+        url = f"{self._base_url}/mcp/{relpath}/{server_name}/sources"
+        async with self._session.get(url) as response:
+            response.raise_for_status()
+            return await response.json()
+
+    async def get_mcp_descriptions(self, relpath: str, server_name: str) -> dict[str, str]:
+        """Get the descriptions (docstrings) of MCP tools for given MCP `server_name`.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+            server_name: Application-defined name of an MCP server
+
+        Returns:
+            Descriptions of MCP tools. Keys are tool names, values are tool docstrings.
+        """
+        url = f"{self._base_url}/mcp/{relpath}/{server_name}/descriptions"
+        async with self._session.get(url) as response:
+            response.raise_for_status()
+            return await response.json()
+
+    async def get_mcp_server_names(self, relpath: str) -> list[str]:
+        """Get the list of MCP server names in a given directory.
+
+        Args:
+            relpath: Path relative to the container's `/app` directory
+
+        Returns:
+            List of MCP server names (directory names) in the specified path.
+        """
         url = f"{self._base_url}/mcp/{relpath}"
-        async with self._session.get(url, params={"server_name": server_name}) as response:
+        async with self._session.get(url) as response:
             response.raise_for_status()
             return await response.json()
 
@@ -114,7 +143,7 @@ class ResourceClient:
         Returns:
             Source code of Python modules. Keys are module names, values are module sources.
         """
-        url = f"{self._base_url}/modules"
+        url = f"{self._base_url}/modules/sources"
         async with self._session.get(url, params={"q": module_names}) as response:
             response.raise_for_status()
             return await response.json()

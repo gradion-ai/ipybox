@@ -57,6 +57,64 @@ async def test_generate_and_get_mcp_sources(resource_client: ResourceClient, wor
 
 
 @pytest.mark.asyncio
+async def test_get_mcp_descriptions(resource_client: ResourceClient, workspace: str, server_params: dict):
+    """Test retrieving MCP tool descriptions."""
+    if "command" in server_params:
+        # Copy MCP server to /app/workspace/mcp_server.py in the container
+        shutil.copy(STDIO_SERVER_PATH, Path(workspace) / "mcp_server.py")
+        server_params["args"] = ["workspace/mcp_server.py"]
+
+    # Generate MCP client sources
+    await resource_client.generate_mcp_sources(relpath="mcpgen", server_name="test", server_params=server_params)
+
+    # Get descriptions of all generated tools
+    descriptions = await resource_client.get_mcp_descriptions(relpath="mcpgen", server_name="test")
+
+    # Verify we got descriptions for all three tools
+    assert "tool_1" in descriptions
+    assert "tool_2" in descriptions
+    assert "tool_3" in descriptions
+
+    # Verify descriptions are non-empty strings
+    assert isinstance(descriptions["tool_1"], str)
+    assert len(descriptions["tool_1"]) > 0
+    assert isinstance(descriptions["tool_2"], str)
+    assert len(descriptions["tool_2"]) > 0
+    assert isinstance(descriptions["tool_3"], str)
+    assert len(descriptions["tool_3"]) > 0
+
+    # Verify descriptions contain expected content
+    assert "This is tool 1" in descriptions["tool_1"]
+    assert "This is tool 2" in descriptions["tool_2"]
+    assert "This is tool 3 with nested structured output" in descriptions["tool_3"]
+
+
+@pytest.mark.asyncio
+async def test_get_mcp_server_names(resource_client: ResourceClient, workspace: str, server_params: dict):
+    """Test listing MCP server names."""
+    if "command" in server_params:
+        # Copy MCP server to /app/workspace/mcp_server.py in the container
+        shutil.copy(STDIO_SERVER_PATH, Path(workspace) / "mcp_server.py")
+        server_params["args"] = ["workspace/mcp_server.py"]
+
+    # Generate MCP client sources
+    await resource_client.generate_mcp_sources(relpath="mcpgen", server_name="test", server_params=server_params)
+
+    # Get list of all server names in the mcpgen directory
+    server_names = await resource_client.get_mcp_server_names(relpath="mcpgen")
+
+    # Verify we got a list
+    assert isinstance(server_names, list)
+
+    # Verify the list contains our test server
+    assert "test" in server_names
+
+    # Verify all elements are strings
+    for name in server_names:
+        assert isinstance(name, str)
+
+
+@pytest.mark.asyncio
 async def test_file_upload_download(resource_client: ResourceClient):
     """Test uploading and downloading files."""
     # Create a temporary file

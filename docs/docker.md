@@ -17,7 +17,7 @@ python -m ipybox build
 Containers of this image will run with the same user and group IDs as the user who built the image. To create a container running as `root`, use the `-r` or `--root` option:
 
 ```bash
-uvx ipybox build --r
+uvx ipybox build -r
 ```
 
 To see all command line options, run:

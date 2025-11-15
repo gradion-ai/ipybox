@@ -1,9 +1,10 @@
 import argparse
+import importlib
 import io
 import mimetypes
 import tarfile
 from pathlib import Path
-from typing import Annotated, Any, Dict, List
+from typing import Annotated, Any, Callable, Dict, List
 
 import aiofiles
 import aiofiles.os
@@ -22,9 +23,12 @@ class ResourceServer:
         self.port = port
 
         self.app = FastAPI(title="Resource Server")
+        # Register more specific routes first to avoid ambiguous matching
+        self.app.get("/mcp/{relpath:path}/{server_name}/sources")(self.get_mcp_sources)
+        self.app.get("/mcp/{relpath:path}/{server_name}/descriptions")(self.get_mcp_descriptions)
         self.app.put("/mcp/{relpath:path}/{server_name}")(self.generate_mcp_sources)
-        self.app.get("/mcp/{relpath:path}")(self.get_mcp_sources)
-        self.app.get("/modules")(self.get_module_sources)
+        self.app.get("/mcp/{relpath:path}")(self.get_mcp_server_names)
+        self.app.get("/modules/sources")(self.get_module_sources)
         self.app.get("/status/")(self.status)
 
         # File operations
@@ -36,21 +40,50 @@ class ResourceServer:
         self.app.post("/directories/{relpath:path}")(self.upload_directory)
         self.app.get("/directories/{relpath:path}")(self.download_directory)
 
-    async def generate_mcp_sources(self, relpath: Path, server_name: str, server_params: Dict[str, Any]):
+    async def generate_mcp_sources(self, relpath: Path, server_name: str, server_params: Dict[str, Any]) -> list[str]:
         return await gen.generate_mcp_sources(server_name, server_params, self.root_dir / relpath)
 
-    async def get_mcp_sources(self, relpath: Path, server_name: str):
+    async def get_mcp_sources(self, relpath: Path, server_name: str) -> dict[str, str]:
+        def get_tool_source(module_name: str, tool_name: str) -> str:
+            return get_module_info(module_name).source
+
+        return await self._get_mcp_data(relpath=relpath, server_name=server_name, visitor=get_tool_source)
+
+    async def get_mcp_descriptions(self, relpath: Path, server_name: str) -> dict[str, str]:
+        def get_tool_description(module_name: str, tool_name: str) -> str:
+            module = importlib.import_module(module_name)
+            func = getattr(module, tool_name)
+            return func.__doc__ or ""
+
+        return await self._get_mcp_data(relpath=relpath, server_name=server_name, visitor=get_tool_description)
+
+    async def _get_mcp_data(
+        self, relpath: Path, server_name: str, visitor: Callable[[str, str], str]
+    ) -> dict[str, str]:
         server_dir = self.root_dir / relpath / server_name
 
         if not server_dir.exists():
             raise HTTPException(status_code=404, detail=f"MCP server {server_name} not found")
 
-        result = {}  # type: ignore
+        result: dict[str, str] = {}
         for file in server_dir.glob("*.py"):
             tool_name = file.stem
             if tool_name != "__init__":
-                async with aiofiles.open(file, mode="r") as f:
-                    result[tool_name] = await f.read()
+                module_name = f"{relpath}.{server_name}.{tool_name}"
+                result[tool_name] = visitor(module_name, tool_name)
+
+        return result
+
+    async def get_mcp_server_names(self, relpath: Path) -> list[str]:
+        reldir = self.root_dir / relpath
+
+        if not reldir.exists():
+            raise HTTPException(status_code=404, detail=f"MCP server path {relpath} not found")
+
+        result: list[str] = []
+        for file in reldir.iterdir():
+            if file.is_dir():
+                result.append(file.stem)
 
         return result
 

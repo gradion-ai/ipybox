@@ -56,5 +56,7 @@ USER appuser
 
 WORKDIR /app
 
+ENV PYTHONPATH=/app
+
 # Use uv to run the entrypoint with activated virtual environment
 CMD ["/bin/bash", "-c", "source ${HOME}/.venv/bin/activate && ${HOME}/server.sh"]
