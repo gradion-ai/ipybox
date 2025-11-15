@@ -100,7 +100,7 @@ async def test_generate_mcp_with_real_server(resource_client, temp_dir):
     for tool_name in ["tool_1", "tool_2", "tool_3"]:
         assert tool_name in generated_sources
         assert (generated_dir / f"{tool_name}.py").exists()
-        assert f"def {tool_name}(params: Params)" in generated_sources[tool_name]
+        assert "def run(params: Params)" in generated_sources[tool_name]
 
 
 @pytest.mark.asyncio
@@ -246,10 +246,9 @@ async def test_get_mcp_server_names_empty_directory(resource_client, temp_dir):
 @pytest.mark.asyncio
 async def test_get_mcp_server_names_nonexistent_path(resource_client):
     """Test listing MCP servers for a non-existent path."""
-    with pytest.raises(aiohttp.ClientResponseError) as excinfo:
-        await resource_client.get_mcp_server_names(relpath="non_existent_path")
-
-    assert excinfo.value.status == 404
+    # Should return empty list when path doesn't exist (e.g., no servers registered yet)
+    result = await resource_client.get_mcp_server_names(relpath="non_existent_path")
+    assert result == []
 
 
 @pytest.mark.asyncio

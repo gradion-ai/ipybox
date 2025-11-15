@@ -44,22 +44,20 @@ class ResourceServer:
         return await gen.generate_mcp_sources(server_name, server_params, self.root_dir / relpath)
 
     async def get_mcp_sources(self, relpath: Path, server_name: str) -> dict[str, str]:
-        def get_tool_source(module_name: str, tool_name: str) -> str:
+        def get_tool_source(module_name: str) -> str:
             return get_module_info(module_name).source
 
         return await self._get_mcp_data(relpath=relpath, server_name=server_name, visitor=get_tool_source)
 
     async def get_mcp_descriptions(self, relpath: Path, server_name: str) -> dict[str, str]:
-        def get_tool_description(module_name: str, tool_name: str) -> str:
+        def get_tool_description(module_name: str) -> str:
             module = importlib.import_module(module_name)
-            func = getattr(module, tool_name)
+            func = getattr(module, "run")
             return func.__doc__ or ""
 
         return await self._get_mcp_data(relpath=relpath, server_name=server_name, visitor=get_tool_description)
 
-    async def _get_mcp_data(
-        self, relpath: Path, server_name: str, visitor: Callable[[str, str], str]
-    ) -> dict[str, str]:
+    async def _get_mcp_data(self, relpath: Path, server_name: str, visitor: Callable[[str], str]) -> dict[str, str]:
         server_dir = self.root_dir / relpath / server_name
 
         if not server_dir.exists():
@@ -70,7 +68,7 @@ class ResourceServer:
             tool_name = file.stem
             if tool_name != "__init__":
                 module_name = f"{relpath}.{server_name}.{tool_name}"
-                result[tool_name] = visitor(module_name, tool_name)
+                result[tool_name] = visitor(module_name)
 
         return result
 
@@ -78,7 +76,7 @@ class ResourceServer:
         reldir = self.root_dir / relpath
 
         if not reldir.exists():
-            raise HTTPException(status_code=404, detail=f"MCP server path {relpath} not found")
+            return []
 
         result: list[str] = []
         for file in reldir.iterdir():

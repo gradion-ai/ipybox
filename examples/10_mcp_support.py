@@ -24,8 +24,8 @@ async def main():
 
         async with ExecutionClient(port=container.executor_port) as client:
             result = await client.execute("""
-                from mcpgen.fetchurl.fetch import Params, fetch
-                print(fetch(Params(url="https://www.gradion.ai"))[:375])
+                from mcpgen.fetchurl.fetch import Params, run
+                print(run(Params(url="https://www.gradion.ai"))[:375])
             """)  # (4)!
             print(result.text)  # (5)!
 

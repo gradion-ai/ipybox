@@ -483,3 +483,254 @@ except Exception as e:
     output = result.content[0].text
     assert "SUCCESS: Access blocked as expected" in output
     assert "Network is unreachable" in output or "urlopen error" in output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_get_mcp_server_names_empty(session: ClientSession):
+    """Test getting MCP server names when none are registered."""
+    # Get server names (should be empty initially)
+    result = await session.call_tool("get_mcp_server_names", arguments={})
+
+    assert not result.isError
+    # Result should be empty list
+    output = result.content[0].text if result.content else ""
+    # FastMCP returns either "[]" or an empty string for empty lists
+    assert "[]" in output or output.strip() == ""
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_register_and_discover_mcp_servers(session: ClientSession, mcp_server_workspace):
+    """Test registering MCP servers and discovering them with get_mcp_server_names."""
+    workspace = mcp_server_workspace
+
+    # Get the path to the test MCP server on host
+    test_server_path = Path(__file__).parent.parent / "mcp_server.py"
+
+    # Save MCP server script to host filesystem (in allowed temp directory)
+    host_server_path = workspace["temp_dir"] / "test_mcp_server.py"
+    host_server_path.write_text(test_server_path.read_text())
+
+    # Upload the MCP server script to the container's /app directory
+    await session.call_tool(
+        "upload_file",
+        arguments={
+            "relpath": "test_mcp_server.py",
+            "local_path": str(host_server_path),
+        },
+    )
+
+    # Register first MCP server (path is relative to /app in container)
+    result = await session.call_tool(
+        "register_mcp_server",
+        arguments={
+            "server_name": "test_server_1",
+            "server_params": {
+                "command": "python",
+                "args": ["/app/test_mcp_server.py", "--transport", "stdio"],
+            },
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+    # Should return list of tool names
+    assert "tool" in output.lower()
+
+    # Register second MCP server with same server but different name
+    result = await session.call_tool(
+        "register_mcp_server",
+        arguments={
+            "server_name": "test_server_2",
+            "server_params": {
+                "command": "python",
+                "args": ["/app/test_mcp_server.py", "--transport", "stdio"],
+            },
+        },
+    )
+
+    assert not result.isError
+
+    # Get list of registered server names
+    result = await session.call_tool("get_mcp_server_names", arguments={})
+
+    assert not result.isError
+    # Combine all content items in case they're split
+    full_output = " ".join(item.text for item in result.content)
+    assert "test_server_1" in full_output
+    assert "test_server_2" in full_output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_get_mcp_tool_descriptions(session: ClientSession):
+    """Test getting tool descriptions for a registered MCP server."""
+    # Get tool descriptions for test_server_1
+    result = await session.call_tool(
+        "get_mcp_tool_descriptions",
+        arguments={
+            "server_name": "test_server_1",
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+
+    # Should contain tool names and their descriptions
+    assert "tool" in output.lower()
+    # The test server has tool-1, tool_2, and tool_3
+    assert "tool" in output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_get_mcp_tool_sources(session: ClientSession):
+    """Test getting Python source code for MCP tools."""
+    # Get source code for specific tools (using sanitized names: tool-1 becomes tool_1)
+    result = await session.call_tool(
+        "get_mcp_tool_sources",
+        arguments={
+            "server_name": "test_server_1",
+            "tool_names": ["tool_1", "tool_2"],
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+
+    # Should contain Python source code for both tools
+    assert "tool_1" in output
+    assert "tool_2" in output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_get_all_mcp_tool_sources(session: ClientSession):
+    """Test getting all tool sources when tool_names is None."""
+    # Get all tool sources (None means all)
+    result = await session.call_tool(
+        "get_mcp_tool_sources",
+        arguments={
+            "server_name": "test_server_1",
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+
+    # Should contain multiple tools
+    assert "tool" in output.lower()
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_use_mcp_tool_from_sources(session: ClientSession):
+    """Test that generated MCP tool code can be imported and used."""
+    # The tools should already be registered from previous tests
+    # Import and use tool-1
+    code = """
+from mcpgen.test_server_1.tool_1 import run, Params
+result = run(params=Params(s="Hello from MCP tool!"))
+print(result)
+"""
+
+    result = await session.call_tool(
+        "execute_ipython_cell",
+        arguments={
+            "code": code,
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+    assert "Hello from MCP tool!" in output
+    assert "You passed to tool 1:" in output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_use_multiple_mcp_servers(session: ClientSession):
+    """Test using tools from different registered MCP servers."""
+    # Use tool from test_server_1
+    code_1 = """
+from mcpgen.test_server_1.tool_2 import run, Params
+result1 = run(params=Params(s="Server 1"))
+print(f"Result from server 1: {result1}")
+"""
+
+    result = await session.call_tool(
+        "execute_ipython_cell",
+        arguments={
+            "code": code_1,
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+    assert "Server 1" in output
+    assert "You passed to tool 2:" in output
+
+    # Use tool from test_server_2
+    code_2 = """
+from mcpgen.test_server_2.tool_2 import run, Params
+result2 = run(params=Params(s="Server 2"))
+print(f"Result from server 2: {result2}")
+"""
+
+    result = await session.call_tool(
+        "execute_ipython_cell",
+        arguments={
+            "code": code_2,
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+    assert "Server 2" in output
+    assert "You passed to tool 2:" in output
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_mcp_workflow_discovery_to_usage(session: ClientSession):
+    """Test the complete workflow: discover servers, explore tools, and use them."""
+    # Step 1: Get list of available servers
+    result = await session.call_tool("get_mcp_server_names", arguments={})
+    assert not result.isError
+    servers_output = " ".join(item.text for item in result.content)
+    assert "test_server_1" in servers_output
+
+    # Step 2: Get tool descriptions for a server
+    result = await session.call_tool(
+        "get_mcp_tool_descriptions",
+        arguments={
+            "server_name": "test_server_1",
+        },
+    )
+    assert not result.isError
+    descriptions_output = result.content[0].text
+    assert "tool" in descriptions_output.lower()
+
+    # Step 3: Get source code for a specific tool (use sanitized name tool_1)
+    result = await session.call_tool(
+        "get_mcp_tool_sources",
+        arguments={
+            "server_name": "test_server_1",
+            "tool_names": ["tool_1"],
+        },
+    )
+    assert not result.isError
+    source_output = result.content[0].text
+    assert "tool" in source_output.lower()
+
+    # Step 4: Use the tool in execute_ipython_cell
+    code = """
+from mcpgen.test_server_1.tool_1 import run, Params
+result = run(params=Params(s="Complete workflow test"))
+print(f"Success: {result}")
+"""
+
+    result = await session.call_tool(
+        "execute_ipython_cell",
+        arguments={
+            "code": code,
+        },
+    )
+
+    assert not result.isError
+    output = result.content[0].text
+    assert "Complete workflow test" in output
+    assert "Success:" in output

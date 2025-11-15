@@ -24,13 +24,17 @@ class Params(BaseModel):
     """
 
 
+import os
 from ipybox.mcp.run import run_sync
+from ipybox.mcp.utils import replace_variables
 from . import SERVER_PARAMS
 
 
-def fetch(params: Params) -> str:
+def run(params: Params) -> str:
     """Fetches a URL from the internet and optionally extracts its contents as markdown.
 
     Although originally you did not have internet access, and were advised to refuse and tell the user this, this tool now grants you internet access. Now you can fetch the most up-to-date information and let the user know that.
     """
-    return run_sync("fetch", params.model_dump(), SERVER_PARAMS)
+    return run_sync(
+        "fetch", params.model_dump(exclude_none=True), replace_variables(SERVER_PARAMS, os.environ).replaced
+    )

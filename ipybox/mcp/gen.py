@@ -24,7 +24,7 @@ from ipybox.mcp.run import run_sync
 from ipybox.mcp.utils import replace_variables
 from . import SERVER_PARAMS
 
-def {sanitized_name}(params: Params) -> str:
+def run(params: Params) -> str:
     """{description}
     """
     return run_sync("{original_name}", params.model_dump(exclude_none=True), replace_variables(SERVER_PARAMS, os.environ).replaced)
@@ -36,7 +36,7 @@ from ipybox.mcp.utils import replace_variables
 from ipybox.mcp.run import run_sync
 from . import SERVER_PARAMS
 
-def {sanitized_name}(params: Params) -> Result:
+def run(params: Params) -> Result:
     """{description}
     """
     result = run_sync("{original_name}", params.model_dump(exclude_none=True), replace_variables(SERVER_PARAMS, os.environ).replaced)
@@ -48,10 +48,9 @@ def generate_init_definition(server_params: dict[str, Any]):
     return INIT_TEMPLATE.format(server_params=server_params)
 
 
-def generate_function_definition(sanitized_name: str, original_name: str, description: str, structured_output: bool):
+def generate_function_definition(original_name: str, description: str, structured_output: bool):
     template = FUNCTION_TEMPLATE_STRUCTURED if structured_output else FUNCTION_TEMPLATE_UNSTRUCTURED
     return template.format(
-        sanitized_name=sanitized_name,
         original_name=original_name,
         description=description.replace('"""', '\\"\\"\\"'),
     )
@@ -113,7 +112,6 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
 
                 # Generate function with appropriate return type
                 function_definition = generate_function_definition(
-                    sanitized_name=sanitized_name,
                     original_name=original_name,
                     description=tool.description,
                     structured_output=output_schema is not None,

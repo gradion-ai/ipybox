@@ -24,8 +24,8 @@ async def main():
 
         async with ExecutionClient(port=container.executor_port) as client:
             result = await client.execute("""
-                from mcpgen.test_server.tool_1 import Params, tool_1
-                response = tool_1(Params(s="Hello from ipybox!"))
+                from mcpgen.test_server.tool_1 import Params, run
+                response = run(Params(s="Hello from ipybox!"))
                 print(response)
             """)  # (4)!
             print(result.text)  # (5)!

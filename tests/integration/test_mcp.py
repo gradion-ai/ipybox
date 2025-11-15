@@ -62,33 +62,30 @@ def test_generate_init_definition(server_params):
 
 
 @pytest.mark.parametrize(
-    "sanitized_name,original_name,description,has_output_schema,expected_fragments",
+    "original_name,description,has_output_schema,expected_fragments",
     [
         (
-            "tool_1",
             TOOL1_NAME,
             "This is tool 1.",
             False,
-            ["def tool_1(params: Params) -> str:", "This is tool 1.", f'run_sync("{TOOL1_NAME}"'],
+            ["def run(params: Params) -> str:", "This is tool 1.", f'run_sync("{TOOL1_NAME}"'],
         ),
         (
-            "tool_with_quotes",
             "tool_with_quotes",
             'This contains """triple quotes""".',
             False,
             [
-                "def tool_with_quotes(params: Params) -> str:",
+                "def run(params: Params) -> str:",
                 r"This contains \"\"\"triple quotes\"\"\".",
                 'run_sync("tool_with_quotes"',
             ],
         ),
         (
             "tool_with_output_schema",
-            "tool_with_output_schema",
             "This tool has an output schema.",
             True,
             [
-                "def tool_with_output_schema(params: Params) -> Result:",
+                "def run(params: Params) -> Result:",
                 "This tool has an output schema.",
                 'run_sync("tool_with_output_schema"',
                 "Result.model_validate(result)",
@@ -96,11 +93,9 @@ def test_generate_init_definition(server_params):
         ),
     ],
 )
-def test_generate_function_definition(
-    sanitized_name, original_name, description, has_output_schema, expected_fragments
-):
+def test_generate_function_definition(original_name, description, has_output_schema, expected_fragments):
     """Test the generate_function_definition function."""
-    function_def = generate_function_definition(sanitized_name, original_name, description, has_output_schema)
+    function_def = generate_function_definition(original_name, description, has_output_schema)
 
     # Check that the function definition contains the correct elements
     for fragment in expected_fragments:
@@ -198,7 +193,7 @@ async def test_generate_mcp_sources(temp_dir, server_params):
         tool1_content = f.read()
         assert "class Params(" in tool1_content
         assert "s: str" in tool1_content
-        assert "def tool_1(params: Params) -> str:" in tool1_content
+        assert "def run(params: Params) -> str:" in tool1_content
         assert f'run_sync("{TOOL1_NAME}"' in tool1_content
 
     # Check that tool_2.py was created and contains the correct elements
@@ -208,7 +203,7 @@ async def test_generate_mcp_sources(temp_dir, server_params):
         tool2_content = f.read()
         assert "class Params(" in tool2_content
         assert "s: str" in tool2_content
-        assert f"def {TOOL2_NAME}(params: Params) -> str:" in tool2_content
+        assert "def run(params: Params) -> str:" in tool2_content
         assert f'run_sync("{TOOL2_NAME}"' in tool2_content
 
 

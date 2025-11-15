@@ -172,7 +172,7 @@ async def test_mcp_client_function(
 
     # Execute the MCP server via the generated function
     exec_result = await execution_client.execute("""
-from mcpgen.test.tool_1 import tool_1, Params
-print(tool_1(Params(s="Hello")))
+from mcpgen.test.tool_1 import run, Params
+print(run(Params(s="Hello")))
 """)
     assert exec_result.text == "You passed to tool 1: Hello"

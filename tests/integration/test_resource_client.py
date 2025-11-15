@@ -52,8 +52,8 @@ async def test_generate_and_get_mcp_sources(resource_client: ResourceClient, wor
     assert source_2 == get_result_2[module_name_2]
 
     # check if it contains the generated function signature
-    assert "tool_1(params: Params)" in source_1
-    assert "tool_2(params: Params)" in source_2
+    assert "run(params: Params)" in source_1
+    assert "run(params: Params)" in source_2
 
 
 @pytest.mark.asyncio
