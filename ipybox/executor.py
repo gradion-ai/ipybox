@@ -325,4 +325,4 @@ class ExecutionClient:
             logger.error("Kernel disconnected", e)
 
     async def _init_kernel(self):
-        pass
+        await self.execute("")
