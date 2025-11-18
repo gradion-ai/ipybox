@@ -31,13 +31,13 @@ RUN chmod +x ${HOME}/server.sh
 COPY init-firewall-root.sh /usr/local/bin/init-firewall.sh
 RUN chmod +x /usr/local/bin/init-firewall.sh
 
-COPY ipybox/resource /app/ipybox/resource/
-COPY ipybox/mcp /app/ipybox/mcp/
-COPY ipybox/modinfo.py /app/ipybox/
+COPY ipybox/resource /${HOME}/ipybox/resource/
+COPY ipybox/mcp /${HOME}/ipybox/mcp/
+COPY ipybox/modinfo.py /${HOME}/ipybox/
 
 WORKDIR /app
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/${HOME}:/app
 
 # Use uv to run the entrypoint with activated virtual environment
 CMD ["/bin/bash", "-c", "source ${HOME}/.venv/bin/activate && ${HOME}/server.sh"]

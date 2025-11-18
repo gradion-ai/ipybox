@@ -43,9 +43,9 @@ RUN uv sync --no-dev --no-install-project
 COPY --chown=appuser:appuser server.sh ${HOME}/
 RUN chmod +x ${HOME}/server.sh
 
-COPY --chown=appuser:appuser ipybox/resource /app/ipybox/resource/
-COPY --chown=appuser:appuser ipybox/mcp /app/ipybox/mcp/
-COPY --chown=appuser:appuser ipybox/modinfo.py /app/ipybox/
+COPY --chown=appuser:appuser ipybox/resource /${HOME}/ipybox/resource/
+COPY --chown=appuser:appuser ipybox/mcp /${HOME}/ipybox/mcp/
+COPY --chown=appuser:appuser ipybox/modinfo.py /${HOME}/ipybox/
 
 USER root
 
@@ -56,7 +56,7 @@ USER appuser
 
 WORKDIR /app
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/${HOME}:/app
 
 # Use uv to run the entrypoint with activated virtual environment
 CMD ["/bin/bash", "-c", "source ${HOME}/.venv/bin/activate && ${HOME}/server.sh"]
