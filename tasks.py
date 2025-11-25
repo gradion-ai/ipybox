@@ -95,7 +95,7 @@ def mcp_sync(c):
 @task(aliases=["mcp-val"])
 def mcp_validate(c, schema_path=".mcpregistry_schema.json"):
     """Validate server.json against MCP schema"""
-    schema_url = "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json"
+    schema_url = "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json"
 
     if not os.path.exists(schema_path):
         with urllib.request.urlopen(schema_url) as response:
