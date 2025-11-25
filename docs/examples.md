@@ -2,7 +2,7 @@
 
 !!! Info
 
-    Code examples in the following sections are from the project's [examples](https://github.com/gradion-ai/ipybox/tree/main/examples) directory. Most of them use a prebuilt [Docker image](docker.md).
+    Code examples in the following sections are from the project's [examples](https://github.com/gradion-ai/ipybox/tree/0.6.x/examples) directory. Most of them use a prebuilt [Docker image](docker.md).
 
 ## Basic usage
 

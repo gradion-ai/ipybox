@@ -2,7 +2,7 @@
 
 !!! example "Generated function"
 
-    The example below generates a [`fetch`](https://github.com/gradion-ai/ipybox/blob/main/docs/mcpgen/fetchurl/fetch.py) function from the input schema of the `fetch` tool provided by the [Fetch MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch).
+    The example below generates a [`fetch`](https://github.com/gradion-ai/ipybox/blob/0.6.x/docs/mcpgen/fetchurl/fetch.py) function from the input schema of the `fetch` tool provided by the [Fetch MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch).
 
 ```python
 --8<-- "examples/10_mcp_support.py:import"
@@ -27,14 +27,10 @@
 
 Calling a generated MCP client function, executes the corresponding MCP tool. Tools of `stdio` based MCP servers are always executed **inside** the container, while `streamable-http` or legacy `sse` based MCP servers are expected to run elsewhere. Generated MCP client code can be downloaded from the container with [`get_mcp_sources`][ipybox.resource.client.ResourceClient.get_mcp_sources] (not shown).
 
-!!! example "Application example"
-
-    [`freeact`](https://gradion-ai.github.io/freeact/) agents use the `ipybox` MCP integration for [calling MCP tools](https://gradion-ai.github.io/freeact/mcp-integration/) in their code actions.
-
 ### Remote MCP servers
 
 In addition to `stdio` based MCP servers that run inside the container, `ipybox` also supports connecting to remote MCP servers running with `streamable-http` or legacy `sse` transports.
-This is demonstrated below with an [example MCP server](https://github.com/gradion-ai/ipybox/blob/main/tests/mcp_server.py) that is part of the project. Start the server in a separate terminal on the host machine:
+This is demonstrated below with an [example MCP server](https://github.com/gradion-ai/ipybox/blob/0.6.x/tests/mcp_server.py) that is part of the project. Start the server in a separate terminal on the host machine:
 
 ```bash
 python tests/mcp_server.py --transport streamable-http --port 8000

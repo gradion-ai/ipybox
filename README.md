@@ -1,5 +1,10 @@
 # ipybox
 
+> [!IMPORTANT]
+> This `0.6.x` branch contains the legacy version of ipybox. The `main` branch contains a complete rewrite of ipybox.
+>
+> The documentation for this legacy version is no longer hosted online. To view the documentation locally, set up the development environment as described in [DEVELOPMENT.md](DEVELOPMENT.md) and run `invoke serve-docs`.
+
 mcp-name: io.github.gradion-ai/ipybox
 
 <p align="left">
@@ -7,11 +12,11 @@ mcp-name: io.github.gradion-ai/ipybox
     <a href="https://pypi.org/project/ipybox/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/ipybox?color=blue"></a>
     <a href="https://github.com/gradion-ai/ipybox/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/gradion-ai/ipybox"></a>
     <a href="https://github.com/gradion-ai/ipybox/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/gradion-ai/ipybox/test.yml"></a>
-    <a href="https://github.com/gradion-ai/ipybox/blob/main/LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/gradion-ai/ipybox?color=blueviolet"></a>
+    <a href="https://github.com/gradion-ai/ipybox/blob/0.6.x/LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/gradion-ai/ipybox?color=blueviolet"></a>
     <a href="https://pypi.org/project/ipybox/"><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/ipybox"></a>
 </p>
 
-`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). It can run locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute Python code securely e.g. for data analysis or executing code actions, like [`freeact`](https://github.com/gradion-ai/freeact/) agents.
+`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). It can run locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute Python code securely e.g. for data analysis or executing code actions.
 
 <a href="https://glama.ai/mcp/servers/@gradion-ai/ipybox">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@gradion-ai/ipybox/badge" alt="ipybox MCP server" />

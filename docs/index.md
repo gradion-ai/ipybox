@@ -2,7 +2,7 @@
 
 ## Overview
 
-`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). It can run locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute Python code securely e.g. for data analysis or executing code actions, like [`freeact`](https://gradion-ai.github.io/freeact/) agents.
+`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). It can run locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute Python code securely e.g. for data analysis or executing code actions.
 
 <figure markdown>
   ![logo](img/logo.png){ width="300" style="display: block; margin: 0 auto" }
