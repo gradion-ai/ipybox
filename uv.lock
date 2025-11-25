@@ -1064,7 +1064,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ipybox-dev"
+name = "ipybox"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },

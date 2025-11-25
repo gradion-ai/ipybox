@@ -1,7 +1,7 @@
 [project]
-name = "ipybox-dev"
+name = "ipybox"
 dynamic = ["version"]
-description = "ipybox-dev"
+description = "ipybox"
 authors = [
     { name = "Martin Krasser", email = "martin@gradion.ai" },
 ]
