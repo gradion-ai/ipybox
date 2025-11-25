@@ -6,22 +6,27 @@ repos:
   rev: v5.0.0
   hooks:
     - id: check-yaml
+      args: [--unsafe]
+      exclude: ^mkdocs\.yml$
     - id: end-of-file-fixer
     - id: trailing-whitespace
+      exclude: ^docs/
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.4.4
   hooks:
     - id: ruff
       args: [ --fix, --extend-select=I001 ]
-      exclude: ^docs/
     - id: ruff-format
 
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.10.0
   hooks:
     - id: mypy
-      exclude: ^docs/
+      args: ["--config-file=pyproject.toml"]
+      additional_dependencies:
+        - types-requests>=2.32.4.20250913
+        - types-aiofiles>=25.1.0.20251011
 
 - repo: local
   hooks:

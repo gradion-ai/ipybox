@@ -1,5 +1,6 @@
 site_name: ipybox
-site_description: Python code execution sandbox based on IPython and Docker
+site_description: ipybox
+site_url: https://gradion-ai.github.io/ipybox/
 
 repo_name: gradion-ai/ipybox
 repo_url: https://github.com/gradion-ai/ipybox
@@ -56,11 +57,15 @@ plugins:
         python:
           paths: [ipybox]
           options:
+            show_root_heading: true
+            show_source: false
             show_signature_annotations: true
             signature_crossrefs: true
             separate_signature: true
             merge_init_into_class: true
-          import:
+            extensions:
+              - griffe_pydantic
+          inventories:
             - url: https://docs.python.org/3/objects.inv
               domains: [py, std]
 
@@ -77,16 +82,12 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - admonition
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 nav:
-  - User Guide:
-    - Introduction: index.md
-    - Installation: installation.md
-    - Docker images: docker.md
-    - Usage examples: examples.md
-    - MCP Client: mcp-client.md
-    - MCP Server: mcp-server.md
+  - User Guide: index.md
   - API Documentation:
-    - ExecutionContainer: api/execution_container.md
-    - ExecutionClient: api/execution_client.md
-    - ResourceClient: api/resource_client.md
+    - Server: api/server.md
+    - Client: api/client.md

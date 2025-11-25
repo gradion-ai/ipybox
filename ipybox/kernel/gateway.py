@@ -1,0 +1,142 @@
+import argparse
+import asyncio
+import os
+import sys
+from pathlib import Path
+
+import psutil
+
+
+class KernelGateway:
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 8888,
+        sandbox: bool = False,
+        sandbox_settings: Path | None = None,
+        log_level: str = "INFO",
+        log_to_stderr: bool = False,
+        env: dict[str, str] | None = None,
+    ):
+        self.host = host
+        self.port = port
+
+        self.sandbox = sandbox
+        self.sandbox_settings = sandbox_settings
+
+        self.log_level = log_level
+        self.log_to_stderr = log_to_stderr
+        self.env = env or {}
+
+        self._process: asyncio.subprocess.Process | None = None
+
+    async def __aenter__(self):
+        await self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.stop()
+
+    async def start(self):
+        if self._process is not None:
+            raise RuntimeError("Kernel gateway is already running")
+
+        jupyter_path = Path(sys.prefix) / "bin" / "jupyter"
+        log_level = "WARN" if self.log_level == "WARNING" else self.log_level
+
+        cmd = [
+            str(jupyter_path),
+            "kernelgateway",
+            f"--KernelGatewayApp.ip={self.host}",
+            f"--KernelGatewayApp.port={self.port}",
+            f"--KernelGatewayApp.log_level={log_level}",
+            "--KernelGatewayApp.port_retries=0",
+            "--KernelGatewayApp.answer_yes=True",
+        ]
+
+        if self.sandbox:
+            settings_path = self.sandbox_settings or Path(__file__).parent / "sandbox.json"
+            cmd = ["srt", "--settings", str(settings_path)] + cmd
+
+        process_env = {"PATH": os.environ.get("PATH", "")}
+        process_env.update(self.env)
+
+        self._process = await asyncio.create_subprocess_exec(
+            *cmd,
+            env=process_env,
+            stdout=sys.stderr if self.log_to_stderr else None,
+        )
+
+    async def stop(self, timeout: float = 10):
+        if self._process is None:
+            return
+
+        if self._process.returncode is None:
+            try:
+                parent = psutil.Process(self._process.pid)
+                children = parent.children(recursive=True)
+            except psutil.NoSuchProcess:
+                children = []
+
+            for child in children:
+                try:
+                    child.terminate()
+                except psutil.NoSuchProcess:
+                    pass
+
+            self._process.terminate()
+
+            try:
+                await asyncio.wait_for(self.join(), timeout=timeout)
+            except asyncio.TimeoutError:
+                self._process.kill()
+                await self.join()
+
+        self._process = None
+
+    async def join(self):
+        if self._process is None:
+            return
+
+        try:
+            await self._process.wait()
+        except asyncio.CancelledError:
+            pass
+
+
+async def main():
+    parser = argparse.ArgumentParser(
+        description="Start a Jupyter Kernel Gateway",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        help="The host address to bind the gateway to",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8888,
+        help="The port to bind the gateway to",
+    )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="The logging level for the gateway",
+    )
+    args = parser.parse_args()
+
+    async with KernelGateway(
+        host=args.host,
+        port=args.port,
+        log_level=args.log_level,
+    ) as gateway:
+        await gateway.join()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
