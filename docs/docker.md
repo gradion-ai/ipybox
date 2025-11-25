@@ -28,7 +28,7 @@ uvx ipybox --help
 
 !!! Hint "Prebuilt image"
 
-    Run `docker pull ghcr.io/gradion-ai/ipybox` to get a prebuilt Docker image built with the `-r` option.
+    Run `docker pull ghcr.io/gradion-ai/ipybox:0.6.7` to get a prebuilt Docker image built with the `-r` option.
 
 ### Custom image
 

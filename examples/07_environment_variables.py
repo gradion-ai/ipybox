@@ -7,7 +7,7 @@ async def main():
     # --8<-- [start:usage]
     env = {"API_KEY": "secret-key-123", "DEBUG": "1"}
 
-    async with ExecutionContainer(env=env) as container:  # (1)!
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox:0.6.7", env=env) as container:  # (1)!
         async with ExecutionClient(port=container.executor_port) as client:
             result = await client.execute("""
                 import os

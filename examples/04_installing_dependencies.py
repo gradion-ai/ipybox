@@ -5,7 +5,7 @@ from ipybox import ExecutionClient, ExecutionContainer
 
 async def main():
     # --8<-- [start:usage]
-    async with ExecutionContainer() as container:
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox:0.6.7") as container:
         async with ExecutionClient(port=container.executor_port) as client:
             execution = await client.submit("!pip install einops")  # (1)!
             async for chunk in execution.stream():  # (2)!
