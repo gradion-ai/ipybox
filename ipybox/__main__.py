@@ -146,7 +146,7 @@ def mcp(
             "--container-tag",
             help="Docker image name and tag for the ipybox container",
         ),
-    ] = DEFAULT_TAG,
+    ] = "0.6.7",
     container_env_vars: Annotated[
         Optional[list[str]],
         typer.Option(

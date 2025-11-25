@@ -15,7 +15,7 @@ async def main():
         "./examples/output": "output",  # (3)!
     }
 
-    async with ExecutionContainer(binds=binds) as container:
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox:0.6.7", binds=binds) as container:
         async with ExecutionClient(port=container.executor_port) as client:
             await client.execute("""
                 with open('data/input.txt') as f:

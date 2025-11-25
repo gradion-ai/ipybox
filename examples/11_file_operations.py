@@ -22,7 +22,7 @@ async def main():
     # --8<-- [start:usage]
     input_dir = Path("examples", "data")
 
-    async with ExecutionContainer() as container:
+    async with ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox:0.6.7") as container:
         async with ResourceClient(port=container.resource_port) as res_client:
             async with ExecutionClient(port=container.executor_port) as exec_client:
                 await res_client.upload_file("data/example.txt", input_dir / "example.txt")  # (1)!

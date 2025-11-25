@@ -5,7 +5,7 @@ from ipybox import ExecutionClient, ExecutionContainer
 
 async def main():
     # --8<-- [start:run-container]
-    container = ExecutionContainer()  # (1)!
+    container = ExecutionContainer(tag="ghcr.io/gradion-ai/ipybox:0.6.7")  # (1)!
     await container.run()  # (2)!
     # --8<-- [end:run-container]
 
