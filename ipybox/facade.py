@@ -2,17 +2,56 @@ import asyncio
 from contextlib import AsyncExitStack, asynccontextmanager
 from typing import AsyncIterator
 
-from ipybox.kernel.executor import Execution, ExecutionClient
+from ipybox.kernel.executor import Execution, ExecutionClient, ExecutionResult
 from ipybox.kernel.gateway import KernelGateway
 from ipybox.mcp.runner.approval import Approval, ApprovalClient
 from ipybox.mcp.runner.server import ToolServer
 
 
+class FacadeExecution:
+    def __init__(self, code: str):
+        self._code = code
+        self._queue = asyncio.Queue[Approval | str | ExecutionResult | Exception]()
+        self._result: ExecutionResult | None = None
+
+    async def stream(self) -> AsyncIterator[Approval | str]:
+        if self._result is not None:
+            return
+
+        while True:
+            item = await self._queue.get()
+            match item:
+                case Approval():
+                    yield item
+                case str():
+                    yield item
+                case Exception():
+                    raise item
+                case ExecutionResult():
+                    self._result = item
+                    break
+                case None:
+                    break
+
+    async def result(self) -> AsyncIterator[Approval | ExecutionResult]:
+        async for item in self.stream():
+            match item:
+                case Approval():
+                    yield item
+                case str():
+                    pass
+
+        assert self._result is not None
+        yield self._result
+
+
 class Facade:
     def __init__(self):
-        self._queue: asyncio.Queue[str | Approval | None] = asyncio.Queue()
-        self._executor: ExecutionClient | None = None
+        self._exec_client: ExecutionClient
         self._exit_stack = AsyncExitStack()
+
+        self._work_queue: asyncio.Queue[FacadeExecution | None] = asyncio.Queue()
+        self._work_task: asyncio.Task[None]
 
     async def __aenter__(self):
         await self.start()
@@ -21,46 +60,51 @@ class Facade:
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.stop()
 
-    async def on_approval(self, approval: Approval):
-        await self._queue.put(approval)
-
-    @asynccontextmanager
-    async def _execution_client(self):
-        async with KernelGateway():
-            async with ToolServer(approval_required=True):
-                async with ApprovalClient(callback=self.on_approval):
-                    async with ExecutionClient() as client:
-                        self._executor = client
-                        yield
-
-    async def _complete_execution(self, execution: Execution):
-        async for chunk in execution.stream():
-            await self._queue.put(chunk)
-        await self._queue.put(None)
-
-    async def execute(self, code: str) -> AsyncIterator[Approval | str]:
-        if not self._executor:
-            raise RuntimeError("Facade not started")
-
-        execution = await self._executor.submit(code)
-
-        task = asyncio.create_task(self._complete_execution(execution))
-
-        while True:
-            item = await self._queue.get()
-            if item is None:
-                break
-            yield item
-
-        await task
-
     async def start(self):
-        self._session = await self._exit_stack.enter_async_context(self._execution_client())
+        self._exec_client = await self._exit_stack.enter_async_context(self._executor())
+        self._work_task = asyncio.create_task(self._work())
 
     async def stop(self):
+        if self._work_task is not None:
+            await self._work_queue.put(None)
+            await self._work_task
+        await self._exit_stack.aclose()
+
+    @asynccontextmanager
+    async def _executor(self) -> AsyncIterator[ExecutionClient]:
+        async with KernelGateway():
+            async with ToolServer(approval_required=True):
+                async with ExecutionClient() as client:
+                    yield client
+
+    async def _complete(self, execution: Execution, queue: asyncio.Queue):
         try:
-            await self._exit_stack.aclose()
-        except RuntimeError:
-            pass
-        finally:
-            self._session = None
+            async for chunk in execution.stream():
+                await queue.put(chunk)
+        except Exception as e:
+            await queue.put(e)
+        else:
+            await queue.put(await execution.result())
+
+    async def submit(self, code: str) -> FacadeExecution:
+        execution = FacadeExecution(code)
+        await self._work_queue.put(execution)
+        return execution
+
+    async def _work(self):
+        while True:
+            item = await self._work_queue.get()
+
+            match item:
+                case None:
+                    break
+                case FacadeExecution():
+                    async with ApprovalClient(callback=item._queue.put):
+                        try:
+                            execution = await self._exec_client.submit(item._code)
+                        except Exception as e:
+                            await item._queue.put(e)
+                            continue
+                        else:
+                            complete = self._complete(execution, item._queue)
+                            await asyncio.create_task(complete)

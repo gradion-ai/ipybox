@@ -29,9 +29,8 @@ class ExecutionError(Exception):
         trace: String representation of the stack trace.
     """
 
-    def __init__(self, message: str, trace: str | None = None):
+    def __init__(self, message: str):
         super().__init__(message)
-        self.trace = trace
 
 
 @dataclass
@@ -161,7 +160,7 @@ class Execution:
         error_name = msg_dict["content"].get("ename", "Unknown Error")
         error_value = msg_dict["content"].get("evalue", "")
         error_trace = "\n".join(msg_dict["content"]["traceback"])
-        raise ExecutionError(f"{error_name}: {error_value}", error_trace)
+        raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")
 
 
 class ExecutionClient:

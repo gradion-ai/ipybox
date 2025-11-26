@@ -1,7 +1,7 @@
 import asyncio
 import os
 from contextlib import AsyncExitStack, asynccontextmanager
-from typing import Any
+from typing import Any, AsyncIterator
 
 from mcp import ClientSession, StdioServerParameters, Tool
 from mcp.client.sse import sse_client
@@ -75,7 +75,7 @@ class MCPClient:
         return "\n".join(text_elems)
 
     @asynccontextmanager
-    async def _mcp_session(self) -> ClientSession:
+    async def _mcp_session(self) -> AsyncIterator[ClientSession]:
         async with self._mcp_client() as (read, write, *_):
             async with ClientSession(read, write) as session:
                 await asyncio.wait_for(session.initialize(), timeout=self.connect_timeout)

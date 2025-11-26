@@ -9,7 +9,7 @@ from typing import Annotated, Any
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
-from ipybox.kernel.executor import ExecutionClient, ExecutionError
+from ipybox.kernel.executor import ExecutionClient
 from ipybox.kernel.gateway import KernelGateway
 from ipybox.mcp.apigen import generate_mcp_sources
 from ipybox.mcp.runner.client import reset
@@ -223,16 +223,14 @@ class MCPServer:
                 from the external tool.
             asyncio.TimeoutError: If execution exceeds the timeout duration.
         """
-        try:
-            async with self._lock:
-                result = await self._client.execute(code, timeout=timeout)
-                return str(result)
-        except Exception as e:
-            match e:
-                case ExecutionError():
-                    raise ExecutionError(e.args[0] + "\n" + e.trace)
-                case _:
-                    raise e
+        async with self._lock:
+            result = await self._client.execute(code, timeout=timeout)
+            output = result.text or ""
+            if result.images:
+                output += "\n\nGenerated images:\n\n"
+                for img_path in result.images:
+                    output += f"- [{img_path.stem}]({img_path.absolute()})\n"
+            return output
 
     async def reset(self):
         """Reset the IPython kernel to a clean state.

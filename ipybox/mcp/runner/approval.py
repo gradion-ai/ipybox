@@ -131,7 +131,7 @@ class ApprovalChannel:
                 approval_response = await self._websocket.receive_json()
                 await self._handle_approval_response(approval_response)
         except WebSocketDisconnect:
-            pass
+            await self.disconnect()
 
     async def disconnect(self):
         if self._websocket is not None:
