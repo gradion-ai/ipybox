@@ -1,13 +1,13 @@
 import asyncio
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 
 async def main():
     async with MCPClient(
         server_params={
             "command": "python",
-            "args": ["-m", "ipybox.mcp.server"],
+            "args": ["-m", "ipybox.mcp_server"],
         },
     ) as client:
         result = await client.run("install_package", {"package_name": "yfinance"})

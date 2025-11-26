@@ -1,8 +1,8 @@
 import asyncio
 
-from ipybox.kernel.executor import ExecutionClient
-from ipybox.kernel.gateway import KernelGateway
-from ipybox.mcp.runner.server import ToolServer
+from ipybox.kernel.client import ExecutionClient
+from ipybox.kernel.server import KernelGateway
+from ipybox.mcp_tools.runner.server import ToolServer
 
 
 async def main():

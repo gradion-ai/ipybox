@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from ipybox.mcp.apigen import generate_mcp_sources
+from ipybox.mcp_tools.apigen import generate_mcp_sources
 
 
 async def main():

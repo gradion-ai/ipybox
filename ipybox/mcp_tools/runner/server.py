@@ -10,8 +10,8 @@ import uvicorn.config
 from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 
-from ipybox.mcp.client import MCPClient
-from ipybox.mcp.runner.approval import ApprovalChannel
+from ipybox.mcp_client import MCPClient
+from ipybox.mcp_tools.approval.server import ApprovalChannel
 
 
 class ToolCallRequest(BaseModel):

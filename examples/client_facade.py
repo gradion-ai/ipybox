@@ -1,7 +1,7 @@
 import asyncio
 
-from ipybox.facade import CodeExecution, CodeExecutor
-from ipybox.mcp.runner.approval import ApprovalRequest
+from ipybox.code_exec import CodeExecution, CodeExecutor
+from ipybox.mcp_tools.approval.client import ApprovalRequest
 
 CODE_1 = """
 from time import sleep

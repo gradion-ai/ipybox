@@ -9,7 +9,7 @@ from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 from mcp.types import ContentBlock, TextContent
 
-from ipybox.mcp.utils import replace_variables
+from ipybox.vars import replace_variables
 
 ToolResult = dict[str, Any] | str | None
 

@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 CODE_1 = """
 from mcptools.brave_search import brave_web_search as bws
@@ -25,7 +25,7 @@ async def main():
             "command": "python",
             "args": [
                 "-m",
-                "ipybox.mcp.server",
+                "ipybox.mcp_server",
                 # "--workspace",
                 # "/Users/martin/Development/workspace/ipybox",
                 # "--sandbox",

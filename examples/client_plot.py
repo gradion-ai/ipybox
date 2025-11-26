@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 CODE = """
 import matplotlib.pyplot as plt
@@ -16,7 +16,7 @@ async def main():
             "command": "python",
             "args": [
                 "-m",
-                "ipybox.mcp.server",
+                "ipybox.mcp_server",
             ],
         },
     ) as client:

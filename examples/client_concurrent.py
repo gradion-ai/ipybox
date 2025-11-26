@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 server_params = {
     "command": "python",

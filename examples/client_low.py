@@ -2,7 +2,7 @@ import asyncio
 import json
 import sys
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 server_params_1 = {
     "command": "npx",

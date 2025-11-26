@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 server_params_1 = {
     "command": "uvx",
@@ -15,7 +15,7 @@ server_params_2 = {
 
 
 async def main():
-    async with MCPClient(server_params={"command": "python", "args": ["-m", "ipybox.mcp.server"]}) as client:
+    async with MCPClient(server_params={"command": "python", "args": ["-m", "ipybox.mcp_server"]}) as client:
         result = await client.run(
             tool="register_mcp_server",
             arguments={

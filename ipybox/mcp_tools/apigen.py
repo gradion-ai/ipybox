@@ -13,11 +13,11 @@ from datamodel_code_generator.model import get_data_model_types
 from datamodel_code_generator.model.base import ALL_MODEL
 from datamodel_code_generator.parser.jsonschema import JsonSchemaParser
 
-from ipybox.mcp.client import MCPClient
+from ipybox.mcp_client import MCPClient
 
 INIT_TEMPLATE = """
 import os
-from ipybox.mcp.runner.client import ToolRunner
+from ipybox.mcp_tools.runner.client import ToolRunner
 
 CLIENT = ToolRunner(
     server_name="{server_name}",
