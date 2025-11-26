@@ -27,12 +27,18 @@ async def main():
         "headers": {"Authorization": "Bearer {GITHUB_API_KEY}"},
     }
 
+    server_params_5 = {
+        "command": "python",
+        "args": ["-m", "examples.mcp_server"],
+    }
+
     root_dir = Path("mcptools")
 
     await generate_mcp_sources("fetch", server_params_1, root_dir)
     await generate_mcp_sources("brave_search", server_params_2, root_dir)
     await generate_mcp_sources("pubmed", server_params_3, root_dir)
     await generate_mcp_sources("github", server_params_4, root_dir)
+    await generate_mcp_sources("test", server_params_5, root_dir)
 
 
 if __name__ == "__main__":

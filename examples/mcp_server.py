@@ -43,10 +43,12 @@ async def tool_1(s: str) -> str:
     return f"You passed to tool 1: {s}"
 
 
-async def tool_2(s: str) -> str:
+async def tool_2(s: str, delay: float = 2) -> str:
     """
     This is tool 2.
     """
+
+    await asyncio.sleep(delay)
     return f"You passed to tool 2: {s}"
 
 
