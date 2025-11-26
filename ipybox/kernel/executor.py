@@ -17,16 +17,11 @@ from tornado.websocket import WebSocketClientConnection, websocket_connect
 logger = logging.getLogger(__name__)
 
 
-class ConnectionError(Exception):
-    """Raised when a connection to an IPython kernel cannot be established."""
-
-
 class ExecutionError(Exception):
     """Raised when code execution in an IPython kernel raises an error.
 
     Args:
         message: Error message
-        trace: String representation of the stack trace.
     """
 
     def __init__(self, message: str):
@@ -44,14 +39,6 @@ class ExecutionResult:
 
     text: str | None
     images: list[Path]
-
-    def __str__(self):
-        output = self.text or ""
-        if self.images:
-            output += "\n\nGenerated images:\n\n"
-            for img_path in self.images:
-                output += f"- [{img_path.stem}]({img_path.absolute()})\n"
-        return output
 
 
 class Execution:
@@ -209,10 +196,10 @@ class ExecutionClient:
         """The ID of the running IPython kernel.
 
         Raises:
-            ValueError: If not connected to a kernel
+            RuntimeError: If not connected to a kernel
         """
         if self._kernel_id is None:
-            raise ValueError("Not connected to kernel")
+            raise RuntimeError("Not connected to kernel")
         return self._kernel_id
 
     @property
@@ -235,7 +222,7 @@ class ExecutionClient:
             retry_interval: Delay between connection retries in seconds.
 
         Raises:
-            ConnectionError: If connection cannot be established after all retries
+            RuntimeError: If connection cannot be established after all retries
         """
         for _ in range(retries):
             try:
@@ -244,7 +231,7 @@ class ExecutionClient:
             except Exception:
                 await asyncio.sleep(retry_interval)
         else:
-            raise ConnectionError("Failed to create kernel")
+            raise RuntimeError("Failed to create kernel")
 
         self._ws = await websocket_connect(HTTPRequest(url=self.kernel_ws_url))
         logger.info("Connected to kernel")
@@ -319,12 +306,12 @@ class ExecutionClient:
 
     async def _send_request(self, req):
         if self._ws is None:
-            raise ConnectionError("Not connected to kernel")
+            raise RuntimeError("Not connected to kernel")
         await self._ws.write_message(json_encode(req))
 
     async def _read_message(self) -> dict:
         if self._ws is None:
-            raise ConnectionError("Not connected to kernel")
+            raise RuntimeError("Not connected to kernel")
         return json_decode(await self._ws.read_message())
 
     async def _create_kernel(self):

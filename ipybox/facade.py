@@ -2,13 +2,17 @@ import asyncio
 from contextlib import AsyncExitStack, asynccontextmanager
 from typing import AsyncIterator
 
-from ipybox.kernel.executor import Execution, ExecutionClient, ExecutionResult
+from ipybox.kernel.executor import Execution, ExecutionClient, ExecutionError, ExecutionResult
 from ipybox.kernel.gateway import KernelGateway
 from ipybox.mcp.runner.approval import Approval, ApprovalClient
 from ipybox.mcp.runner.server import ToolServer
 
 
-class FacadeExecution:
+class CodeExecutionError(Exception):
+    pass
+
+
+class CodeExecution:
     def __init__(self, code: str):
         self._code = code
         self._queue = asyncio.Queue[Approval | str | ExecutionResult | Exception]()
@@ -25,6 +29,8 @@ class FacadeExecution:
                     yield item
                 case str():
                     yield item
+                case ExecutionError():
+                    raise CodeExecutionError(item.args[0])
                 case Exception():
                     raise item
                 case ExecutionResult():
@@ -45,12 +51,12 @@ class FacadeExecution:
         yield self._result
 
 
-class Facade:
+class CodeExecutor:
     def __init__(self):
         self._exec_client: ExecutionClient
         self._exit_stack = AsyncExitStack()
 
-        self._work_queue: asyncio.Queue[FacadeExecution | None] = asyncio.Queue()
+        self._work_queue: asyncio.Queue[CodeExecution | None] = asyncio.Queue()
         self._work_task: asyncio.Task[None]
 
     async def __aenter__(self):
@@ -86,8 +92,8 @@ class Facade:
         else:
             await queue.put(await execution.result())
 
-    async def submit(self, code: str) -> FacadeExecution:
-        execution = FacadeExecution(code)
+    async def submit(self, code: str) -> CodeExecution:
+        execution = CodeExecution(code)
         await self._work_queue.put(execution)
         return execution
 
@@ -98,7 +104,7 @@ class Facade:
             match item:
                 case None:
                     break
-                case FacadeExecution():
+                case CodeExecution():
                     async with ApprovalClient(callback=item._queue.put):
                         try:
                             execution = await self._exec_client.submit(item._code)

@@ -182,7 +182,8 @@ class MCPServer:
             Field(description="Python code to execute in the IPython kernel"),
         ],
         timeout: Annotated[
-            float, Field(description="Maximum execution time in seconds before the kernel is interrupted")
+            float,
+            Field(description="Maximum execution time in seconds before the kernel is interrupted"),
         ] = 120,
     ) -> str:
         """Execute Python code in a stateful IPython kernel.
@@ -225,6 +226,11 @@ class MCPServer:
         """
         async with self._lock:
             result = await self._client.execute(code, timeout=timeout)
+
+            # -------------------------------------------------
+            #  TODO: consider returning structured output
+            # -------------------------------------------------
+
             output = result.text or ""
             if result.images:
                 output += "\n\nGenerated images:\n\n"

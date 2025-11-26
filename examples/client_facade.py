@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.facade import Facade, FacadeExecution
+from ipybox.facade import CodeExecution, CodeExecutor
 from ipybox.mcp.runner.approval import Approval
 
 CODE_1 = """
@@ -14,13 +14,14 @@ print("Starting...")
 #sleep(1)
 result = tool_2.run(tool_2.Params(s="hello", delay=0))
 #raise RuntimeError("test-2")
+foo()
 print(result)
 sleep(1)
 print("Done")
 """
 
 
-async def consume_execution(execution: FacadeExecution):
+async def consume_execution(execution: CodeExecution):
     async for item in execution.stream():
         match item:
             case Approval():
@@ -31,12 +32,12 @@ async def consume_execution(execution: FacadeExecution):
 
 
 async def main():
-    async with Facade() as facade:
+    async with CodeExecutor() as facade:
         execution_1 = await facade.submit(CODE_1)
-        execution_2 = await facade.submit(CODE_1)
+        # execution_2 = await facade.submit(CODE_1)
         await asyncio.gather(
             consume_execution(execution_1),
-            consume_execution(execution_2),
+            # consume_execution(execution_2),
         )
 
 
