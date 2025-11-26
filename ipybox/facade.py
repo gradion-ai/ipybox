@@ -4,7 +4,7 @@ from typing import AsyncIterator
 
 from ipybox.kernel.executor import Execution, ExecutionClient, ExecutionError, ExecutionResult
 from ipybox.kernel.gateway import KernelGateway
-from ipybox.mcp.runner.approval import Approval, ApprovalClient
+from ipybox.mcp.runner.approval import ApprovalClient, ApprovalRequest
 from ipybox.mcp.runner.server import ToolServer
 
 
@@ -15,17 +15,17 @@ class CodeExecutionError(Exception):
 class CodeExecution:
     def __init__(self, code: str):
         self._code = code
-        self._queue = asyncio.Queue[Approval | str | ExecutionResult | Exception]()
+        self._queue = asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]()
         self._result: ExecutionResult | None = None
 
-    async def stream(self) -> AsyncIterator[Approval | str]:
+    async def stream(self) -> AsyncIterator[ApprovalRequest | str]:
         if self._result is not None:
             return
 
         while True:
             item = await self._queue.get()
             match item:
-                case Approval():
+                case ApprovalRequest():
                     yield item
                 case str():
                     yield item
@@ -39,10 +39,10 @@ class CodeExecution:
                 case None:
                     break
 
-    async def result(self) -> AsyncIterator[Approval | ExecutionResult]:
+    async def result(self) -> AsyncIterator[ApprovalRequest | ExecutionResult]:
         async for item in self.stream():
             match item:
-                case Approval():
+                case ApprovalRequest():
                     yield item
                 case str():
                     pass

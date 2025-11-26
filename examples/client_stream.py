@@ -2,7 +2,7 @@ import asyncio
 
 from ipybox.kernel.executor import ExecutionClient
 from ipybox.kernel.gateway import KernelGateway
-from ipybox.mcp.runner.approval import Approval, ApprovalClient
+from ipybox.mcp.runner.approval import ApprovalClient, ApprovalRequest
 from ipybox.mcp.runner.server import ToolServer
 
 CODE_1 = """
@@ -20,7 +20,7 @@ print("Done")
 
 
 async def main():
-    async def on_approval(approval: Approval):
+    async def on_approval(approval: ApprovalRequest):
         print(f"Approval request: {approval}")
         await approval.approve()
 

@@ -1,7 +1,7 @@
 import asyncio
 
 from ipybox.facade import CodeExecution, CodeExecutor
-from ipybox.mcp.runner.approval import Approval
+from ipybox.mcp.runner.approval import ApprovalRequest
 
 CODE_1 = """
 from time import sleep
@@ -14,7 +14,7 @@ print("Starting...")
 #sleep(1)
 result = tool_2.run(tool_2.Params(s="hello", delay=0))
 #raise RuntimeError("test-2")
-foo()
+#foo()
 print(result)
 sleep(1)
 print("Done")
@@ -24,7 +24,7 @@ print("Done")
 async def consume_execution(execution: CodeExecution):
     async for item in execution.stream():
         match item:
-            case Approval():
+            case ApprovalRequest():
                 print(f"Approval request: {item}")
                 await item.approve()
             case str():

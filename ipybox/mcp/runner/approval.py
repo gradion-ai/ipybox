@@ -9,7 +9,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from websockets import ClientConnection, ConnectionClosed
 
 
-class Approval:
+class ApprovalRequest:
     def __init__(
         self,
         server_name: str,
@@ -26,7 +26,7 @@ class Approval:
         kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.arguments.items()])
         return f"{self.server_name}.{self.tool_name}({kwargs_str})"
 
-    async def deny(self) -> bool:
+    async def reject(self) -> bool:
         return await self.respond(False)
 
     async def approve(self) -> bool:
@@ -36,7 +36,7 @@ class Approval:
         await self._respond(result)
 
 
-ApprovalCallback = Callable[[Approval], Awaitable[None]]
+ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
 
 
 class ApprovalClient:
@@ -94,7 +94,7 @@ class ApprovalClient:
 
                 if data.get("method") == "approve":
                     params = data.get("params", {})
-                    approval = Approval(
+                    approval = ApprovalRequest(
                         server_name=params["server_name"],
                         tool_name=params["tool"],
                         arguments=params["arguments"],
