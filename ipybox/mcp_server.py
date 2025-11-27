@@ -10,7 +10,7 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
 from ipybox.kernel.client import ExecutionClient
-from ipybox.kernel.server import KernelGateway
+from ipybox.kernel.gateway import KernelGateway
 from ipybox.mcp_tools.apigen import generate_mcp_sources
 from ipybox.mcp_tools.runner.client import reset
 from ipybox.mcp_tools.runner.server import ToolServer
