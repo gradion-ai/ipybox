@@ -1,3 +1,9 @@
+"""Internal IPython kernel client implementation.
+
+This module is not part of the public API. Applications should use the
+[`CodeExecutor`][ipybox.CodeExecutor] facade instead.
+"""
+
 import asyncio
 import logging
 from base64 import b64decode
@@ -18,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 
 class ExecutionError(Exception):
-    """Raised when code execution in an IPython kernel raises an error.
+    """Raised when code executed in an IPython kernel raises an error.
 
     Args:
-        message: Error message
+        message: Error message including stack trace.
     """
 
     def __init__(self, message: str):
@@ -34,7 +40,7 @@ class ExecutionResult:
 
     Args:
         text: Output text generated during execution
-        images: List of images generated during execution
+        images: List of paths to images generated during execution
     """
 
     text: str | None
@@ -80,11 +86,11 @@ class Execution:
 
     async def stream(self, timeout: float = 120) -> AsyncIterator[str]:
         """Streams the code execution result as it is generated. Once the stream
-        is consumed, a [`result`][ipybox.kernel.executor.Execution.result] is
+        is consumed, a [`result`][ipybox.code_exec.client.Execution.result] is
         immediately available without waiting.
 
         Generated images are not streamed. Their file paths can be obtained from the
-        return value of [`result`][ipybox.kernel.executor.Execution.result].
+        return value of [`result`][ipybox.code_exec.client.Execution.result].
 
         Args:
             timeout: Maximum time in seconds to wait for the complete execution result
@@ -146,7 +152,7 @@ class Execution:
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
         error_value = msg_dict["content"].get("evalue", "")
-        error_trace = "\n".join(msg_dict["content"]["traceback"])
+        error_trace = "\n".join(msg_dict["content"].get("traceback", []))
         raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")
 
 
@@ -155,15 +161,15 @@ class KernelClient:
     Context manager for executing code in an IPython kernel. The kernel is
     created on entering the context and destroyed on exit.
 
-    Code execution is stateful for a given `ExecutionClient` instance. Definitions
+    Code execution is stateful for a given `KernelClient` instance. Definitions
     and variables of previous executions are available to subsequent executions.
 
     Args:
         host: Hostname or IP address of the kernel gateway
         port: Port number of the kernel gateway
         images_dir: Directory for saving images generated during code execution
-        heartbeat_interval: Ping interval for keeping the websocket connection to
-            the IPython kernel alive.
+        heartbeat_interval: Interval in seconds for pings that keep the websocket
+            connection to the IPython kernel alive.
     """
 
     def __init__(
@@ -270,14 +276,14 @@ class KernelClient:
 
     async def submit(self, code: str) -> Execution:
         """Submits code for execution in this client's IPython kernel and returns an
-        [`Execution`][ipybox.kernel.executor.Execution] object for consuming the execution
+        [`Execution`][ipybox.code_exec.client.Execution] object for consuming the execution
         result.
 
         Args:
             code: Python code to execute
 
         Returns:
-            An [`Execution`][ipybox.kernel.executor.Execution] object to track the code execution.
+            An [`Execution`][ipybox.code_exec.client.Execution] object to track the code execution.
         """
         req_id = uuid4().hex
         req = {
@@ -312,7 +318,10 @@ class KernelClient:
     async def _read_message(self) -> dict:
         if self._ws is None:
             raise RuntimeError("Not connected to kernel")
-        return json_decode(await self._ws.read_message())
+        msg = await self._ws.read_message()
+        if msg is None:
+            raise RuntimeError("Kernel disconnected")
+        return json_decode(msg)
 
     async def _create_kernel(self):
         async with aiohttp.ClientSession() as session:
@@ -330,8 +339,8 @@ class KernelClient:
     async def _ping_kernel(self):
         try:
             self._ws.ping()  # type: ignore
-        except tornado.iostream.StreamClosedError as e:
-            logger.error("Kernel disconnected", e)
+        except tornado.iostream.StreamClosedError:
+            logger.exception("Kernel disconnected")
 
     async def _init_kernel(self):
         await self.execute("%colors nocolor")
