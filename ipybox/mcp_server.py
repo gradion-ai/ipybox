@@ -9,11 +9,11 @@ from typing import Annotated, Any
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
-from ipybox.kernel.client import ExecutionClient
-from ipybox.kernel.gateway import KernelGateway
-from ipybox.mcp_tools.apigen import generate_mcp_sources
-from ipybox.mcp_tools.runner.client import reset
-from ipybox.mcp_tools.runner.server import ToolServer
+from ipybox.code_exec.client import ExecutionClient
+from ipybox.code_exec.server import KernelGateway
+from ipybox.mcp_apigen import generate_mcp_sources
+from ipybox.tool_exec.client import reset
+from ipybox.tool_exec.server import ToolServer
 from ipybox.utils import find_free_port
 
 logger = logging.getLogger(__name__)

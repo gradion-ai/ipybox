@@ -1,8 +1,8 @@
 import asyncio
 import os
 
-from ipybox.mcp_tools.runner.client import ToolRunner
-from ipybox.mcp_tools.runner.server import ToolServer
+from ipybox.tool_exec.client import ToolRunner
+from ipybox.tool_exec.server import ToolServer
 from ipybox.utils import arun
 
 server_params_1 = {

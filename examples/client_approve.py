@@ -1,9 +1,9 @@
 import asyncio
 
-from ipybox.kernel.client import ExecutionClient
-from ipybox.kernel.gateway import KernelGateway
-from ipybox.mcp_tools.approval.client import ApprovalClient, ApprovalRequest
-from ipybox.mcp_tools.runner.server import ToolServer
+from ipybox.code_exec.client import ExecutionClient
+from ipybox.code_exec.server import KernelGateway
+from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
+from ipybox.tool_exec.server import ToolServer
 
 CODE_1 = """
 from mcptools.brave_search import brave_web_search as bws

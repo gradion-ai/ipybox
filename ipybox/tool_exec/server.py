@@ -11,7 +11,7 @@ from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 
 from ipybox.mcp_client import MCPClient
-from ipybox.mcp_tools.approval.server import ApprovalChannel
+from ipybox.tool_exec.approval.server import ApprovalChannel
 
 
 class ToolCall(BaseModel):

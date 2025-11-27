@@ -17,7 +17,7 @@ from ipybox.mcp_client import MCPClient
 
 INIT_TEMPLATE = """
 import os
-from ipybox.mcp_tools.runner.client import ToolRunner
+from ipybox.tool_exec.client import ToolRunner
 
 CLIENT = ToolRunner(
     server_name="{server_name}",

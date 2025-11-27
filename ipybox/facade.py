@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncIterator
 
-from ipybox.kernel.client import Execution, ExecutionClient, ExecutionError, ExecutionResult
-from ipybox.kernel.gateway import KernelGateway
-from ipybox.mcp_tools.approval.client import ApprovalClient, ApprovalRequest
-from ipybox.mcp_tools.runner.client import reset
-from ipybox.mcp_tools.runner.server import ToolServer
+from ipybox.code_exec.client import Execution, ExecutionClient, ExecutionError, ExecutionResult
+from ipybox.code_exec.server import KernelGateway
+from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
+from ipybox.tool_exec.client import reset
+from ipybox.tool_exec.server import ToolServer
 from ipybox.utils import find_free_port
 
 
