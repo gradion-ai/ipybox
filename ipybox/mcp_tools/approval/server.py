@@ -37,7 +37,7 @@ class ApprovalChannel:
             self._websocket = None
             self._requests.clear()
 
-    async def request(self, server_name: str, tool: str, arguments: dict[str, Any]) -> bool:
+    async def request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> bool:
         if not self.approval_required:
             return True
 
@@ -46,17 +46,17 @@ class ApprovalChannel:
 
         try:
             async with asyncio.timeout(self.approval_timeout):
-                request_id = await self._send_approval_request(server_name, tool, arguments)
+                request_id = await self._send_approval_request(server_name, tool_name, tool_args)
                 return await self._requests[request_id]
         finally:
             self._requests.pop(request_id, None)
 
-    async def _send_approval_request(self, server_name: str, tool: str, arguments: dict[str, Any]) -> str:
+    async def _send_approval_request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> str:
         request_id = str(uuid.uuid4())
         approval_request = {
             "jsonrpc": "2.0",
             "method": "approve",
-            "params": {"server_name": server_name, "tool": tool, "arguments": arguments},
+            "params": {"server_name": server_name, "tool_name": tool_name, "tool_args": tool_args},
             "id": request_id,
         }
 

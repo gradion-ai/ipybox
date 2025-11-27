@@ -27,9 +27,9 @@ class ToolRunner:
     async def reset(self):
         await reset(host=self.host, port=self.port)
 
-    async def run(self, tool: str, arguments: dict[str, Any]) -> dict[str, Any] | str | None:
+    async def run(self, tool_name: str, tool_args: dict[str, Any]) -> dict[str, Any] | str | None:
         async with aiohttp.ClientSession() as session:
-            async with session.post(url=self.url, json=self._create_input_data(tool, arguments)) as response:
+            async with session.post(url=self.url, json=self._create_input_data(tool_name, tool_args)) as response:
                 response.raise_for_status()
                 response_json = await response.json()
 
@@ -38,8 +38,8 @@ class ToolRunner:
 
                 return response_json["result"]
 
-    def run_sync(self, tool: str, arguments: dict[str, Any]) -> dict[str, Any] | str | None:
-        response = requests.post(url=self.url, json=self._create_input_data(tool, arguments))
+    def run_sync(self, tool_name: str, tool_args: dict[str, Any]) -> dict[str, Any] | str | None:
+        response = requests.post(url=self.url, json=self._create_input_data(tool_name, tool_args))
         response.raise_for_status()
         response_json = response.json()
 
@@ -48,12 +48,12 @@ class ToolRunner:
 
         return response_json["result"]
 
-    def _create_input_data(self, tool: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    def _create_input_data(self, tool_name: str, tool_args: dict[str, Any]) -> dict[str, Any]:
         return {
             "server_name": self.server_name,
             "server_params": self.server_params,
-            "tool": tool,
-            "arguments": arguments,
+            "tool_name": tool_name,
+            "tool_args": tool_args,
         }
 
 

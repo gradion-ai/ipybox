@@ -53,8 +53,8 @@ class MCPClient:
     async def list_tools(self) -> list[Tool]:
         return (await self.session.list_tools()).tools
 
-    async def run(self, tool: str, arguments: dict[str, Any]) -> ToolResult:
-        result = await self.session.call_tool(tool, arguments=arguments)
+    async def run(self, tool_name: str, tool_args: dict[str, Any]) -> ToolResult:
+        result = await self.session.call_tool(tool_name, arguments=tool_args)
 
         if result.isError:
             raise Exception(self._extract_text(result.content))

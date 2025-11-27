@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from ipybox.kernel.client import Execution, ExecutionClient, ExecutionError, ExecutionResult
-from ipybox.kernel.server import KernelGateway
+from ipybox.kernel.gateway import KernelGateway
 from ipybox.mcp_tools.approval.client import ApprovalClient, ApprovalRequest
 from ipybox.mcp_tools.runner.client import reset
 from ipybox.mcp_tools.runner.server import ToolServer

@@ -17,16 +17,16 @@ server_params_2 = {
 async def main():
     async with MCPClient(server_params={"command": "python", "args": ["-m", "ipybox.mcp_server"]}) as client:
         result = await client.run(
-            tool="register_mcp_server",
-            arguments={
+            tool_name="register_mcp_server",
+            tool_args={
                 "server_name": "fetch",
                 "server_params": server_params_1,
             },
         )
         print(result)
         result = await client.run(
-            tool="register_mcp_server",
-            arguments={
+            tool_name="register_mcp_server",
+            tool_args={
                 "server_name": "brave_search",
                 "server_params": server_params_2,
             },

@@ -33,7 +33,7 @@ from . import CLIENT
 def run(params: Params) -> str:
     """{description}
     """
-    return CLIENT.run_sync(tool="{original_name}", arguments=params.model_dump(exclude_none=True))
+    return CLIENT.run_sync(tool_name="{original_name}", tool_args=params.model_dump(exclude_none=True))
 '''
 
 FUNCTION_TEMPLATE_STRUCTURED = '''
@@ -42,7 +42,7 @@ from . import CLIENT
 def run(params: Params) -> Result:
     """{description}
     """
-    result = CLIENT.run_sync(tool="{original_name}", arguments=params.model_dump(exclude_none=True))
+    result = CLIENT.run_sync(tool_name="{original_name}", tool_args=params.model_dump(exclude_none=True))
     return Result.model_validate(result)
 '''
 

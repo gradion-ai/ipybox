@@ -14,11 +14,11 @@ from ipybox.mcp_client import MCPClient
 from ipybox.mcp_tools.approval.server import ApprovalChannel
 
 
-class ToolCallRequest(BaseModel):
+class ToolCall(BaseModel):
     server_name: str
     server_params: dict[str, Any]
-    tool: str
-    arguments: dict[str, Any]
+    tool_name: str
+    tool_args: dict[str, Any]
 
 
 class ToolServer:
@@ -74,23 +74,23 @@ class ToolServer:
         await self._close_mcp_clients()
         return {"reset": "success"}
 
-    async def run(self, request: ToolCallRequest) -> dict[str, Any] | str | None:
+    async def run(self, call: ToolCall) -> dict[str, Any] | str | None:
         try:
-            if not await self._approval_channel.request(request.server_name, request.tool, request.arguments):
-                return {"error": f"Approval request for {request.server_name}.{request.tool} denied"}
+            if not await self._approval_channel.request(call.server_name, call.tool_name, call.tool_args):
+                return {"error": f"Approval request for {call.server_name}.{call.tool_name} denied"}
         except asyncio.TimeoutError:
-            return {"error": f"Approval request for {request.server_name}.{request.tool} expired"}
+            return {"error": f"Approval request for {call.server_name}.{call.tool_name} expired"}
         except Exception as e:
-            return {"error": f"Approval request for {request.server_name}.{request.tool} failed: {str(e)}"}
+            return {"error": f"Approval request for {call.server_name}.{call.tool_name} failed: {str(e)}"}
 
         try:
             client = await self._get_mcp_client(
-                request.server_name,
-                request.server_params,
+                call.server_name,
+                call.server_params,
             )
             result = await client.run(
-                request.tool,
-                request.arguments,
+                call.tool_name,
+                call.tool_args,
             )
         except Exception as e:
             return {"error": str(e)}

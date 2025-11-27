@@ -12,16 +12,16 @@ class ApprovalRequest:
         self,
         server_name: str,
         tool_name: str,
-        arguments: dict[str, Any],
+        tool_args: dict[str, Any],
         respond: Callable[[bool], Awaitable[None]],
     ):
         self.server_name = server_name
         self.tool_name = tool_name
-        self.arguments = arguments
+        self.tool_args = tool_args
         self._respond = respond
 
     def __str__(self) -> str:
-        kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.arguments.items()])
+        kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.tool_args.items()])
         return f"{self.server_name}.{self.tool_name}({kwargs_str})"
 
     async def reject(self) -> bool:
@@ -94,8 +94,8 @@ class ApprovalClient:
                     params = data.get("params", {})
                     approval = ApprovalRequest(
                         server_name=params["server_name"],
-                        tool_name=params["tool"],
-                        arguments=params["arguments"],
+                        tool_name=params["tool_name"],
+                        tool_args=params["tool_args"],
                         respond=partial(self._send, request_id=data["id"]),
                     )
                     await self.callback(approval)
