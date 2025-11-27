@@ -9,7 +9,7 @@ from typing import Annotated, Any
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
-from ipybox.code_exec.client import ExecutionClient
+from ipybox.code_exec.client import KernelClient
 from ipybox.code_exec.server import KernelGateway
 from ipybox.mcp_apigen import generate_mcp_sources
 from ipybox.tool_exec.client import reset
@@ -46,7 +46,7 @@ class MCPServer:
         self._mcp.tool(structured_output=False)(self.execute_ipython_cell)
         self._mcp.tool(structured_output=False)(self.reset)
 
-        self._client: ExecutionClient
+        self._client: KernelClient
         self._lock = asyncio.Lock()
 
     @asynccontextmanager
@@ -69,7 +69,7 @@ class MCPServer:
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },
             ):
-                async with ExecutionClient(
+                async with KernelClient(
                     host=self.kernel_gateway_host,
                     port=self.kernel_gateway_port,
                 ) as client:
@@ -271,7 +271,7 @@ class MCPServer:
                 port=self.tool_server_port,
             )
             await self._client.disconnect()
-            self._client = ExecutionClient(
+            self._client = KernelClient(
                 host=self.kernel_gateway_host,
                 port=self.kernel_gateway_port,
             )

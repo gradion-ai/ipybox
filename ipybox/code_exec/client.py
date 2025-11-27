@@ -49,7 +49,7 @@ class Execution:
         req_id: Unique identifier of the code execution request
     """
 
-    def __init__(self, client: "ExecutionClient", req_id: str):
+    def __init__(self, client: "KernelClient", req_id: str):
         self.client = client
         self.req_id = req_id
 
@@ -150,7 +150,7 @@ class Execution:
         raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")
 
 
-class ExecutionClient:
+class KernelClient:
     """
     Context manager for executing code in an IPython kernel. The kernel is
     created on entering the context and destroyed on exit.

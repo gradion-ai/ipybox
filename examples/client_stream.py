@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.code_exec.client import ExecutionClient
+from ipybox.code_exec.client import KernelClient
 from ipybox.code_exec.server import KernelGateway
 from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
 from ipybox.tool_exec.server import ToolServer
@@ -27,7 +27,7 @@ async def main():
     async with KernelGateway():
         async with ToolServer(approval_required=True):
             async with ApprovalClient(callback=on_approval):
-                async with ExecutionClient() as client:
+                async with KernelClient() as client:
                     result = await client.submit(CODE_1)
                     async for chunk in result.stream():
                         print(chunk, end="", flush=True)

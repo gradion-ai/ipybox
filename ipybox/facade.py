@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncIterator
 
-from ipybox.code_exec.client import Execution, ExecutionClient, ExecutionError, ExecutionResult
+from ipybox.code_exec.client import Execution, ExecutionError, ExecutionResult, KernelClient
 from ipybox.code_exec.server import KernelGateway
 from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
 from ipybox.tool_exec.client import reset
@@ -104,8 +104,8 @@ class CodeExecutor:
         self.sandbox_settings = sandbox_settings
         self.log_level = log_level
 
-        self._exec_client: ExecutionClient
         self._exit_stack = AsyncExitStack()
+        self._client: KernelClient
         self._lock = asyncio.Lock()
 
         self._work_queue: asyncio.Queue[CodeExecution | None] = asyncio.Queue()
@@ -119,7 +119,7 @@ class CodeExecutor:
         await self.stop()
 
     async def start(self):
-        self._exec_client = await self._exit_stack.enter_async_context(self._executor())
+        self._client = await self._exit_stack.enter_async_context(self._executor())
         self._work_task = asyncio.create_task(self._work())
 
     async def stop(self):
@@ -134,12 +134,12 @@ class CodeExecutor:
                 host=self.tool_server_host,
                 port=self.tool_server_port,
             )
-            await self._exec_client.disconnect()
-            self._exec_client = ExecutionClient(
+            await self._client.disconnect()
+            self._client = KernelClient(
                 host=self.kernel_gateway_host,
                 port=self.kernel_gateway_port,
             )
-            await self._exec_client.connect()
+            await self._client.connect()
 
     async def submit(self, code: str) -> CodeExecution:
         execution = CodeExecution(code)
@@ -147,7 +147,7 @@ class CodeExecutor:
         return execution
 
     @asynccontextmanager
-    async def _executor(self) -> AsyncIterator[ExecutionClient]:
+    async def _executor(self) -> AsyncIterator[KernelClient]:
         async with ToolServer(
             host=self.tool_server_host,
             port=self.tool_server_port,
@@ -164,7 +164,7 @@ class CodeExecutor:
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },
             ):
-                async with ExecutionClient(
+                async with KernelClient(
                     host=self.kernel_gateway_host,
                     port=self.kernel_gateway_port,
                 ) as client:
@@ -193,7 +193,7 @@ class CodeExecutor:
                         port=self.tool_server_port,
                     ):
                         try:
-                            execution = await self._exec_client.submit(code)
+                            execution = await self._client.submit(code)
                         except Exception as e:
                             await item._queue.put(e)
                             continue
