@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.code_exec import CodeExecution, CodeExecutor
+from ipybox.code_exec import CodeExecution, CodeExecutionChunk, CodeExecutionResult, CodeExecutor
 from ipybox.mcp_tools.approval.client import ApprovalRequest
 
 CODE_1 = """
@@ -22,22 +22,24 @@ print("Done")
 
 
 async def consume_execution(execution: CodeExecution):
-    async for item in execution.stream():
+    async for item in execution.complete(stream=True):
         match item:
             case ApprovalRequest():
                 print(f"Approval request: {item}")
                 await item.approve()
-            case str():
+            case CodeExecutionChunk():
+                print(item)
+            case CodeExecutionResult():
                 print(item)
 
 
 async def main():
     async with CodeExecutor() as facade:
         execution_1 = await facade.submit(CODE_1)
-        # execution_2 = await facade.submit(CODE_1)
+        execution_2 = await facade.submit(CODE_1)
         await asyncio.gather(
             consume_execution(execution_1),
-            # consume_execution(execution_2),
+            consume_execution(execution_2),
         )
 
 
