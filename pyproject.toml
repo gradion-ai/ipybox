@@ -40,7 +40,9 @@ docs = [
     "click<=8.2.1",
 ]
 dev = [
+    "flaky>=3.8.1",
     "invoke>=2.2,<3",
+    "matplotlib>=3.10.7",
     "pre-commit>=4.3.0,<5",
     "pytest>=8.4.2,<9",
     "pytest-asyncio>=1.2.0,<2",

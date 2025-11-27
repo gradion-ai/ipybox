@@ -14,10 +14,8 @@ from uuid import uuid4
 
 import aiofiles
 import aiohttp
-import tornado
 from tornado.escape import json_decode, json_encode
 from tornado.httpclient import HTTPRequest
-from tornado.ioloop import PeriodicCallback
 from tornado.websocket import WebSocketClientConnection, websocket_connect
 
 logger = logging.getLogger(__name__)
@@ -185,9 +183,9 @@ class KernelClient:
         self.images_dir = images_dir or Path("images")
 
         self._heartbeat_interval = heartbeat_interval
-        self._heartbeat_callback: PeriodicCallback | None = None
 
         self._kernel_id = None
+        self._session_id = uuid4().hex
         self._ws: WebSocketClientConnection | None = None
 
     async def __aenter__(self):
@@ -218,7 +216,7 @@ class KernelClient:
 
     @property
     def kernel_ws_url(self):
-        return f"ws://{self.host}:{self.port}/api/kernels/{self.kernel_id}/channels"
+        return f"ws://{self.host}:{self.port}/api/kernels/{self.kernel_id}/channels?session_id={self._session_id}"
 
     async def connect(self, retries: int = 10, retry_interval: float = 1.0):
         """Creates an IPython kernel and connects to it.
@@ -239,20 +237,17 @@ class KernelClient:
         else:
             raise RuntimeError("Failed to create kernel")
 
-        self._ws = await websocket_connect(HTTPRequest(url=self.kernel_ws_url))
-        logger.info("Connected to kernel")
-
-        self._heartbeat_callback = PeriodicCallback(self._ping_kernel, self._heartbeat_interval * 1000)
-        self._heartbeat_callback.start()
-        logger.info(f"Started heartbeat (interval = {self._heartbeat_interval}s)")
+        self._ws = await websocket_connect(
+            HTTPRequest(url=self.kernel_ws_url),
+            ping_interval=self._heartbeat_interval,
+            ping_timeout=self._heartbeat_interval,
+        )
+        logger.info(f"Connected to kernel (ping_interval={self._heartbeat_interval}s)")
 
         await self._init_kernel()
 
     async def disconnect(self):
         """Disconnects from and deletes the running IPython kernel."""
-        if self._heartbeat_callback:
-            self._heartbeat_callback.stop()
-
         if self._ws:
             self._ws.close()
 
@@ -290,7 +285,7 @@ class KernelClient:
             "header": {
                 "username": "",
                 "version": "5.0",
-                "session": "",
+                "session": self._session_id,
                 "msg_id": req_id,
                 "msg_type": "execute_request",
             },
@@ -335,12 +330,6 @@ class KernelClient:
                 f"{self.kernel_http_url}/interrupt", json={"kernel_id": self._kernel_id}
             ) as response:
                 logger.info(f"Kernel interrupted: {response.status}")
-
-    async def _ping_kernel(self):
-        try:
-            self._ws.ping()  # type: ignore
-        except tornado.iostream.StreamClosedError:
-            logger.exception("Kernel disconnected")
 
     async def _init_kernel(self):
         await self.execute("%colors nocolor")

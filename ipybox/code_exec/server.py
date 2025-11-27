@@ -11,7 +11,7 @@ class KernelGateway:
     def __init__(
         self,
         host: str = "localhost",
-        port: int = 8888,
+        port: int = 8889,
         sandbox: bool = False,
         sandbox_settings: Path | None = None,
         log_level: str = "INFO",
