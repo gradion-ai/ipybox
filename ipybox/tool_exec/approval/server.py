@@ -71,7 +71,7 @@ class ApprovalChannel:
     async def request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> bool:
         """Request approval for a tool call.
 
-        If `approval_required` is False, returns `True` immediately. Otherwise, sends an
+        If `approval_required` is `False`, returns `True` immediately. Otherwise, sends an
         approval request to the connected `ApprovalClient` and waits for a response.
 
         Args:
