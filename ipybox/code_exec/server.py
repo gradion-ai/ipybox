@@ -113,7 +113,7 @@ async def main():
         "--host",
         type=str,
         default="localhost",
-        help="The host address to bind the gateway to",
+        help="The hostname to bind the gateway to",
     )
     parser.add_argument(
         "--port",

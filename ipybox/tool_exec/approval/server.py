@@ -6,11 +6,30 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 
 class ApprovalChannel:
+    """Server-side channel for sending tool call approval requests to clients.
+
+    `ApprovalChannel` handles `WebSocket` connections from
+    [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient] instances and
+    sends approval requests via JSON-RPC. It is used internally by
+    [`ToolServer`][ipybox.tool_exec.server.ToolServer] to enforce tool call approval
+    before execution.
+
+    When `approval_required` is `False`, all approval requests are automatically granted.
+    When `True`, requests are sent to the connected `ApprovalClient` and the channel waits
+    for a response within the configured timeout.
+    """
+
     def __init__(
         self,
         approval_required: bool = False,
         approval_timeout: float = 60,
     ):
+        """Initialize an `ApprovalChannel`.
+
+        Args:
+            approval_required: Whether approval is required for tool execution.
+            approval_timeout: Timeout in seconds for approval requests.
+        """
         self.approval_required = approval_required
         self.approval_timeout = approval_timeout
 
@@ -19,9 +38,17 @@ class ApprovalChannel:
 
     @property
     def open(self) -> bool:
+        """Whether an `ApprovalClient` is currently connected."""
         return self._websocket is not None
 
     async def connect(self, websocket: WebSocket):
+        """Accept a `WebSocket` connection and process approval responses.
+
+        This method runs until the `WebSocket` is disconnected.
+
+        Args:
+            websocket: The `WebSocket` connection to accept.
+        """
         await websocket.accept()
         self._websocket = websocket
 
@@ -33,14 +60,32 @@ class ApprovalChannel:
             await self.disconnect()
 
     async def disconnect(self):
+        """Disconnect the `WebSocket` and error all pending approval requests."""
         if self._websocket is not None:
             self._websocket = None
             for future in self._requests.values():
                 if not future.done():
-                    future.cancel()
+                    future.set_exception(RuntimeError("Approval channel disconnected"))
             self._requests.clear()
 
     async def request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> bool:
+        """Request approval for a tool call.
+
+        If `approval_required` is False, returns `True` immediately. Otherwise, sends an
+        approval request to the connected `ApprovalClient` and waits for a response.
+
+        Args:
+            server_name: Name of the MCP server providing the tool.
+            tool_name: Name of the tool to execute.
+            tool_args: Arguments to pass to the tool.
+
+        Returns:
+            `True` if approved, `False` if rejected.
+
+        Raises:
+            RuntimeError: If no `ApprovalClient` is connected.
+            TimeoutError: If the approval request times out.
+        """
         if not self.approval_required:
             return True
 

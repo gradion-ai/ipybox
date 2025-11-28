@@ -22,6 +22,28 @@ class ToolCall(BaseModel):
 
 
 class ToolServer:
+    """HTTP server that manages MCP servers and executes their tools with optional approval.
+
+    ToolServer provides HTTP endpoints for executing MCP tools and a WebSocket endpoint
+    for sending approval requests to clients. MCP servers are started on demand when tools
+    are first executed and cached for subsequent calls.
+
+    Endpoints:
+
+    - `PUT /reset`: Closes all started MCP servers
+    - `POST /run`: Executes an MCP tool (with optional approval)
+    - `WS /approval`: WebSocket endpoint for
+        [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient] connections
+
+    Example:
+        ```python
+        async with ToolServer(approval_required=True) as server:
+            async with ApprovalClient(callback=on_approval):
+                # Execute code that calls MCP tools
+                ...
+        ```
+    """
+
     def __init__(
         self,
         host="localhost",
@@ -32,6 +54,17 @@ class ToolServer:
         log_to_stderr: bool = False,
         log_level: str = "INFO",
     ):
+        """Initialize a `ToolServer`.
+
+        Args:
+            host: Hostname the server binds to.
+            port: Port number the server listens on.
+            approval_required: Whether tool calls require approval.
+            approval_timeout: Timeout in seconds for approval requests.
+            connect_timeout: Timeout in seconds for starting MCP servers.
+            log_to_stderr: Whether to log to stderr instead of stdout.
+            log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        """
         self.host = host
         self.port = port
 
@@ -106,6 +139,11 @@ class ToolServer:
         await self.stop()
 
     async def start(self):
+        """Start the HTTP server.
+
+        Raises:
+            RuntimeError: If the server is already running.
+        """
         if self._server_task is not None:
             raise RuntimeError("Server already running")
 
@@ -130,6 +168,7 @@ class ToolServer:
         await self._ready()
 
     async def stop(self):
+        """Stop the HTTP server and close all managed MCP servers."""
         if self._server_task is None:
             return
 
@@ -145,6 +184,7 @@ class ToolServer:
         self._server = None
 
     async def join(self):
+        """Wait for the HTTP server task to stop."""
         if self._server_task is not None:
             try:
                 await self._server_task
