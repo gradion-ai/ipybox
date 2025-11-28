@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import os
+import signal
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Any
@@ -227,10 +228,6 @@ class MCPServer:
         async with self._lock:
             result = await self._client.execute(code, timeout=timeout)
 
-            # -------------------------------------------------
-            #  TODO: consider returning structured output
-            # -------------------------------------------------
-
             output = result.text or ""
             if result.images:
                 output += "\n\nGenerated images:\n\n"
@@ -336,7 +333,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-async def main() -> None:
+async def main():
     args = parse_args()
 
     os.makedirs(args.workspace, exist_ok=True)
@@ -351,6 +348,16 @@ async def main() -> None:
         sandbox_settings=args.sandbox_settings,
         log_level=args.log_level,
     )
+
+    loop = asyncio.get_running_loop()
+
+    def handle_signal():
+        for task in asyncio.all_tasks(loop):
+            task.cancel()
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, handle_signal)
+
     await server.run()
 
 
