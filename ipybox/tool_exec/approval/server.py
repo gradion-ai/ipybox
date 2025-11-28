@@ -35,6 +35,9 @@ class ApprovalChannel:
     async def disconnect(self):
         if self._websocket is not None:
             self._websocket = None
+            for future in self._requests.values():
+                if not future.done():
+                    future.cancel()
             self._requests.clear()
 
     async def request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> bool:
@@ -44,12 +47,15 @@ class ApprovalChannel:
         if self._websocket is None:
             raise RuntimeError("Approval channel not connected")
 
+        request_id: str | None = None
+
         try:
             async with asyncio.timeout(self.approval_timeout):
                 request_id = await self._send_approval_request(server_name, tool_name, tool_args)
                 return await self._requests[request_id]
         finally:
-            self._requests.pop(request_id, None)
+            if request_id is not None:
+                self._requests.pop(request_id, None)
 
     async def _send_approval_request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> str:
         request_id = str(uuid.uuid4())

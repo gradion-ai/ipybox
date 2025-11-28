@@ -1,10 +1,13 @@
 import asyncio
 import json
+import logging
 from functools import partial
 from typing import Any, Awaitable, Callable
 
 import websockets
 from websockets import ClientConnection, ConnectionClosed
+
+logger = logging.getLogger(__name__)
 
 
 class ApprovalRequest:
@@ -24,10 +27,10 @@ class ApprovalRequest:
         kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.tool_args.items()])
         return f"{self.server_name}.{self.tool_name}({kwargs_str})"
 
-    async def reject(self) -> bool:
+    async def reject(self):
         return await self.respond(False)
 
-    async def approve(self) -> bool:
+    async def approve(self):
         return await self.respond(True)
 
     async def respond(self, result: bool):
@@ -98,7 +101,10 @@ class ApprovalClient:
                         tool_args=params["tool_args"],
                         respond=partial(self._send, request_id=data["id"]),
                     )
-                    await self.callback(approval)
+                    try:
+                        await self.callback(approval)
+                    except Exception:
+                        logger.exception("Error in approval callback")
 
         except ConnectionClosed:
             pass

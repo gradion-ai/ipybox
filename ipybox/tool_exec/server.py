@@ -63,7 +63,8 @@ class ToolServer:
 
     async def approval(self, websocket: WebSocket):
         if self._approval_channel.open:
-            raise RuntimeError("Approval channel already open")
+            await websocket.close(code=1008, reason="Approval channel already open")
+            return
 
         await self._approval_channel.connect(websocket)
 
