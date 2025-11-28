@@ -22,23 +22,18 @@ logger = logging.getLogger(__name__)
 
 
 class ExecutionError(Exception):
-    """Raised when code executed in an IPython kernel raises an error.
+    """Raised when code executed in an IPython kernel raises an error."""
 
-    Args:
-        message: Error message including stack trace.
-    """
-
-    def __init__(self, message: str):
-        super().__init__(message)
+    pass
 
 
 @dataclass
 class ExecutionResult:
     """The result of a successful code execution.
 
-    Args:
-        text: Output text generated during execution
-        images: List of paths to images generated during execution
+    Attributes:
+        text: Output text generated during execution.
+        images: List of paths to images generated during execution.
     """
 
     text: str | None
@@ -48,12 +43,17 @@ class ExecutionResult:
 class Execution:
     """A code execution in an IPython kernel.
 
-    Args:
-        client: The client that initiated this code execution
-        req_id: Unique identifier of the code execution request
+    Represents an ongoing or completed code execution. Created by
+    [`KernelClient.submit`][ipybox.code_exec.client.KernelClient.submit].
     """
 
     def __init__(self, client: "KernelClient", req_id: str):
+        """Initializes `Execution` object.
+
+        Args:
+            client: The client that initiated this code execution.
+            req_id: Unique identifier of the code execution request.
+        """
         self.client = client
         self.req_id = req_id
 
@@ -63,15 +63,16 @@ class Execution:
         self._stream_consumed: bool = False
 
     async def result(self, timeout: float = 120) -> ExecutionResult:
-        """Retrieves the complete result of this code execution. Waits until the
-        result is available.
+        """Retrieves the complete result of this code execution.
+
+        Waits until the result is available.
 
         Args:
-            timeout: Maximum time in seconds to wait for the execution result
+            timeout: Maximum time in seconds to wait for the execution result.
 
         Raises:
-            ExecutionError: If code execution raises an error
-            asyncio.TimeoutError: If code execution duration exceeds the specified timeout
+            ExecutionError: If code execution raises an error.
+            asyncio.TimeoutError: If code execution duration exceeds the timeout.
         """
         if not self._stream_consumed:
             async for _ in self.stream(timeout=timeout):
@@ -83,19 +84,21 @@ class Execution:
         )
 
     async def stream(self, timeout: float = 120) -> AsyncIterator[str]:
-        """Streams the code execution result as it is generated. Once the stream
-        is consumed, a [`result`][ipybox.code_exec.client.Execution.result] is
-        immediately available without waiting.
+        """Streams the code execution output as it is generated.
 
-        Generated images are not streamed. Their file paths can be obtained from the
-        return value of [`result`][ipybox.code_exec.client.Execution.result].
+        Once the stream is consumed, [`result`][ipybox.code_exec.client.Execution.result]
+        returns immediately without waiting.
+
+        Note:
+            Generated images are not streamed. Their file paths can be obtained
+            from the [`result`][ipybox.code_exec.client.Execution.result].
 
         Args:
-            timeout: Maximum time in seconds to wait for the complete execution result
+            timeout: Maximum time in seconds to wait for execution to complete.
 
         Raises:
-            ExecutionError: If code execution raises an error
-            asyncio.TimeoutError: If code execution duration exceeds the specified timeout
+            ExecutionError: If code execution raises an error.
+            asyncio.TimeoutError: If code execution duration exceeds the timeout.
         """
         try:
             async with asyncio.timeout(timeout):
@@ -155,19 +158,19 @@ class Execution:
 
 
 class KernelClient:
-    """
-    Context manager for executing code in an IPython kernel. The kernel is
-    created on entering the context and destroyed on exit.
+    """Client for executing code in an IPython kernel.
 
-    Code execution is stateful for a given `KernelClient` instance. Definitions
-    and variables of previous executions are available to subsequent executions.
+    Connects to a [`KernelGateway`][ipybox.code_exec.server.KernelGateway] to
+    create and communicate with an IPython kernel. Code execution is stateful:
+    definitions and variables from previous executions are available to
+    subsequent executions.
 
-    Args:
-        host: Hostname or IP address of the kernel gateway
-        port: Port number of the kernel gateway
-        images_dir: Directory for saving images generated during code execution
-        heartbeat_interval: Interval in seconds for pings that keep the websocket
-            connection to the IPython kernel alive.
+    Example:
+        ```python
+        async with KernelClient(host="localhost", port=8888) as client:
+            result = await client.execute("x = 1 + 1")
+            result = await client.execute("print(x)")  # prints 2
+        ```
     """
 
     def __init__(
@@ -177,6 +180,16 @@ class KernelClient:
         images_dir: Path | None = None,
         heartbeat_interval: float = 10,
     ):
+        """Initializes a kernel client configuration.
+
+        Args:
+            host: Hostname or IP address of the kernel gateway.
+            port: Port number of the kernel gateway.
+            images_dir: Directory for saving images generated during code
+                execution. Defaults to `images` in the current directory.
+            heartbeat_interval: Interval in seconds for WebSocket pings that
+                keep the connection to the IPython kernel alive.
+        """
         self.host = host
         self.port = port
 
@@ -200,7 +213,7 @@ class KernelClient:
         """The ID of the running IPython kernel.
 
         Raises:
-            RuntimeError: If not connected to a kernel
+            RuntimeError: If not connected to a kernel.
         """
         if self._kernel_id is None:
             raise RuntimeError("Not connected to kernel")
@@ -226,7 +239,7 @@ class KernelClient:
             retry_interval: Delay between connection retries in seconds.
 
         Raises:
-            RuntimeError: If connection cannot be established after all retries
+            RuntimeError: If connection cannot be established after all retries.
         """
         for _ in range(retries):
             try:
@@ -259,26 +272,24 @@ class KernelClient:
         """Executes code in this client's IPython kernel and returns the result.
 
         Args:
-            code: Code to execute
-            timeout: Maximum time in seconds to wait for the execution result
+            code: Python code to execute.
+            timeout: Maximum time in seconds to wait for the execution result.
 
         Raises:
-            ExecutionError: If code execution raises an error
-            asyncio.TimeoutError: If code execution duration exceeds the specified timeout
+            ExecutionError: If code execution raises an error.
+            asyncio.TimeoutError: If code execution duration exceeds the timeout.
         """
         execution = await self.submit(code)
         return await execution.result(timeout=timeout)
 
     async def submit(self, code: str) -> Execution:
-        """Submits code for execution in this client's IPython kernel and returns an
-        [`Execution`][ipybox.code_exec.client.Execution] object for consuming the execution
-        result.
+        """Submits code for execution in this client's IPython kernel.
+
+        Returns immediately with an [`Execution`][ipybox.code_exec.client.Execution]
+        object for consuming the execution result.
 
         Args:
-            code: Python code to execute
-
-        Returns:
-            An [`Execution`][ipybox.code_exec.client.Execution] object to track the code execution.
+            code: Python code to execute.
         """
         req_id = uuid4().hex
         req = {

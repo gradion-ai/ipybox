@@ -8,6 +8,25 @@ import psutil
 
 
 class KernelGateway:
+    """Manages a Jupyter Kernel Gateway process.
+
+    The kernel gateway provides a REST and WebSocket API for creating and
+    communicating with IPython kernels. Use
+    [`KernelClient`][ipybox.code_exec.client.KernelClient] to create and
+    connect to an IPython kernel and execute code.
+
+    When sandboxing is enabled, the gateway runs inside Anthropic's
+    [sandbox-runtime](https://github.com/anthropics/sandbox-runtime), providing
+    secure isolation for code execution.
+
+    Example:
+        ```python
+        async with KernelGateway(host="localhost", port=8888) as gateway:
+            # Gateway is running, connect with KernelClient
+            await gateway.join()  # Wait until gateway stops
+        ```
+    """
+
     def __init__(
         self,
         host: str = "localhost",
@@ -18,6 +37,19 @@ class KernelGateway:
         log_to_stderr: bool = False,
         env: dict[str, str] | None = None,
     ):
+        """Initializes a kernel gateway configuration.
+
+        Args:
+            host: Hostname or IP address to bind the gateway to.
+            port: Port number the gateway listens on.
+            sandbox: Whether to run the gateway inside the sandbox-runtime.
+            sandbox_settings: Path to a JSON file with sandbox configuration.
+                See the Configuration section of the
+                [sandbox-runtime](https://github.com/anthropics/sandbox-runtime)
+                README for available options.
+            log_level: Logging level for the gateway process.
+            log_to_stderr: Whether to redirect gateway logs to stderr.
+        """
         self.host = host
         self.port = port
 
@@ -38,6 +70,11 @@ class KernelGateway:
         await self.stop()
 
     async def start(self):
+        """Starts the kernel gateway process.
+
+        Raises:
+            RuntimeError: If the gateway is already running.
+        """
         if self._process is not None:
             raise RuntimeError("Kernel gateway is already running")
 
@@ -68,6 +105,14 @@ class KernelGateway:
         )
 
     async def stop(self, timeout: float = 10):
+        """Stops the kernel gateway process.
+
+        Terminates the gateway and all child processes. If the process doesn't
+        stop within the timeout, it is forcefully killed.
+
+        Args:
+            timeout: Maximum time in seconds to wait for graceful termination.
+        """
         if self._process is None:
             return
 
@@ -95,6 +140,7 @@ class KernelGateway:
         self._process = None
 
     async def join(self):
+        """Waits for the kernel gateway process to exit."""
         if self._process is None:
             return
 
