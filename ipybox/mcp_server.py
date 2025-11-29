@@ -19,6 +19,8 @@ from ipybox.utils import find_free_port
 
 logger = logging.getLogger(__name__)
 
+KERNEL_ENV_PREFIX = "KERNEL_ENV_"
+
 
 class MCPServer:
     def __init__(
@@ -27,6 +29,7 @@ class MCPServer:
         tool_server_port: int | None = None,
         kernel_gateway_host: str = "localhost",
         kernel_gateway_port: int | None = None,
+        kernel_env: dict[str, str] | None = None,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
         log_level: str = "INFO",
@@ -40,6 +43,7 @@ class MCPServer:
         self.sandbox = sandbox
         self.sandbox_config = sandbox_config
         self.log_level = log_level
+        self.kernel_env = kernel_env or {}
 
         self._mcp = FastMCP("ipybox", lifespan=self.server_lifespan, log_level=log_level)
         self._mcp.tool(structured_output=False)(self.register_mcp_server)
@@ -65,7 +69,8 @@ class MCPServer:
                 sandbox_config=self.sandbox_config,
                 log_to_stderr=True,
                 log_level=self.log_level,
-                env={
+                env=self.kernel_env
+                | {
                     "TOOL_SERVER_HOST": self.tool_server_host,
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },
@@ -318,10 +323,10 @@ def parse_args() -> argparse.Namespace:
         help="Run kernel gateway in sandbox",
     )
     parser.add_argument(
-        "--sandbox-settings",
+        "--sandbox-config",
         type=Path,
         default=None,
-        help="Sandbox settings file (default: None)",
+        help="Sandbox config file (default: None)",
     )
     parser.add_argument(
         "--log-level",
@@ -331,6 +336,16 @@ def parse_args() -> argparse.Namespace:
         help="Logging level (default: INFO)",
     )
     return parser.parse_args()
+
+
+def extract_kernel_env() -> dict[str, str]:
+    kernel_env = {}
+
+    for key, value in os.environ.items():
+        if key.startswith(KERNEL_ENV_PREFIX):
+            kernel_env[key[len(KERNEL_ENV_PREFIX) :]] = value
+
+    return kernel_env
 
 
 async def main():
@@ -347,6 +362,7 @@ async def main():
         sandbox=args.sandbox,
         sandbox_config=args.sandbox_config,
         log_level=args.log_level,
+        kernel_env=extract_kernel_env(),
     )
 
     loop = asyncio.get_running_loop()

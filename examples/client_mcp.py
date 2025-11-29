@@ -18,6 +18,11 @@ result = bis.run(bis.Params(query="martin krasser", count=3))
 print(result.model_dump_json(indent=2))
 """
 
+CODE_3 = """
+import os
+print(os.environ["MY_VAR"])
+"""
+
 
 async def main():
     async with MCPClient(
@@ -32,12 +37,15 @@ async def main():
             ],
             "env": {
                 "BRAVE_API_KEY": os.getenv("BRAVE_API_KEY", ""),
+                "KERNEL_ENV_MY_VAR": "my_val",
             },
         },
     ) as client:
         result = await client.run("execute_ipython_cell", {"code": CODE_1})
         print(result)
         result = await client.run("execute_ipython_cell", {"code": CODE_2})
+        print(result)
+        result = await client.run("execute_ipython_cell", {"code": CODE_3})
         print(result)
 
 
