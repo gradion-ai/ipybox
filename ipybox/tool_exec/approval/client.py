@@ -15,9 +15,8 @@ class ApprovalRequest:
 
     `ApprovalRequest` instances are passed to the approval callback registered with
     [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient]. The callback
-    must call [`approve`][ipybox.tool_exec.approval.client.ApprovalRequest.approve],
-    [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject], or
-    [`respond`][ipybox.tool_exec.approval.client.ApprovalRequest.respond] to send
+    must call [`approve`][ipybox.tool_exec.approval.client.ApprovalRequest.approve]
+    or [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject] to send
     the approval decision back to the server.
 
     Example:
@@ -57,19 +56,11 @@ class ApprovalRequest:
 
     async def reject(self):
         """Reject the approval request."""
-        return await self.respond(False)
+        return await self._respond(False)
 
     async def approve(self):
         """Approve the approval request."""
-        return await self.respond(True)
-
-    async def respond(self, result: bool):
-        """Send an approval decision.
-
-        Args:
-            result: `True` to approve, `False` to reject.
-        """
-        await self._respond(result)
+        return await self._respond(True)
 
 
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
@@ -77,8 +68,8 @@ ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
 
 An approval callback is an async function that receives an
 [`ApprovalRequest`][ipybox.tool_exec.approval.client.ApprovalRequest] and must call
-one of its response methods (`approve()`, `reject()`, or `respond()`) to send the decision
-back to the server.
+one of its response methods (`approve()` or `reject()`) to send the decision back to
+the server.
 """
 
 
