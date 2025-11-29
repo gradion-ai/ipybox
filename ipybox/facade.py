@@ -90,6 +90,7 @@ class CodeExecutor:
         tool_server_port: int | None = None,
         kernel_gateway_host: str = "localhost",
         kernel_gateway_port: int | None = None,
+        kernel_env: dict[str, str] | None = None,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
         log_level: str = "INFO",
@@ -99,6 +100,8 @@ class CodeExecutor:
 
         self.kernel_gateway_host = kernel_gateway_host
         self.kernel_gateway_port = kernel_gateway_port or find_free_port()
+
+        self.kernel_env = kernel_env or {}
 
         self.sandbox = sandbox
         self.sandbox_config = sandbox_config
@@ -159,7 +162,8 @@ class CodeExecutor:
                 sandbox=self.sandbox,
                 sandbox_config=self.sandbox_config,
                 log_level=self.log_level,
-                env={
+                env=self.kernel_env
+                | {
                     "TOOL_SERVER_HOST": self.tool_server_host,
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },

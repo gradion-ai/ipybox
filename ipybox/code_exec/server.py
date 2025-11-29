@@ -49,6 +49,9 @@ class KernelGateway:
                 README for available options.
             log_level: Logging level for the gateway process.
             log_to_stderr: Whether to redirect gateway logs to stderr.
+            env: Environment variables to set for kernels created by the gateway.
+                Kernels do not inherit environment variables from the parent
+                process, so any required variables must be explicitly provided.
         """
         self.host = host
         self.port = port
