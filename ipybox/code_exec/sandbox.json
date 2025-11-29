@@ -6,7 +6,7 @@
     "denyWrite": []
   },
   "network": {
-    "allowedDomains": ["gradion.ai"],
+    "allowedDomains": [],
     "deniedDomains": [],
     "allowLocalBinding": true
   }

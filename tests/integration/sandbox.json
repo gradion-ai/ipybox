@@ -1,0 +1,13 @@
+{
+    "enableWeakerNestedSandbox": false,
+    "filesystem": {
+      "denyRead": [],
+      "allowWrite": [".", "~/Library/Jupyter", "~/.ipython"],
+      "denyWrite": []
+    },
+    "network": {
+      "allowedDomains": ["httpbin.org"],
+      "deniedDomains": [],
+      "allowLocalBinding": true
+    }
+  }

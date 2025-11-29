@@ -28,7 +28,7 @@ class MCPServer:
         kernel_gateway_host: str = "localhost",
         kernel_gateway_port: int | None = None,
         sandbox: bool = False,
-        sandbox_settings: Path | None = None,
+        sandbox_config: Path | None = None,
         log_level: str = "INFO",
     ):
         self.tool_server_host = tool_server_host
@@ -38,7 +38,7 @@ class MCPServer:
         self.kernel_gateway_port = kernel_gateway_port or find_free_port()
 
         self.sandbox = sandbox
-        self.sandbox_settings = sandbox_settings
+        self.sandbox_config = sandbox_config
         self.log_level = log_level
 
         self._mcp = FastMCP("ipybox", lifespan=self.server_lifespan, log_level=log_level)
@@ -62,7 +62,7 @@ class MCPServer:
                 host=self.kernel_gateway_host,
                 port=self.kernel_gateway_port,
                 sandbox=self.sandbox,
-                sandbox_settings=self.sandbox_settings,
+                sandbox_config=self.sandbox_config,
                 log_to_stderr=True,
                 log_level=self.log_level,
                 env={
@@ -345,7 +345,7 @@ async def main():
         kernel_gateway_host=args.kernel_gateway_host,
         kernel_gateway_port=args.kernel_gateway_port,
         sandbox=args.sandbox,
-        sandbox_settings=args.sandbox_settings,
+        sandbox_config=args.sandbox_config,
         log_level=args.log_level,
     )
 

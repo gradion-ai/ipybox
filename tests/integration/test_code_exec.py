@@ -1,4 +1,7 @@
 import asyncio
+import json
+import sys
+from pathlib import Path
 
 import pytest
 import pytest_asyncio
@@ -14,6 +17,31 @@ async def kernel_gateway():
         port=8888,
         log_level="WARNING",
         env={"TEST_VAR": "test_val"},
+    ) as gateway:
+        yield gateway
+
+
+@pytest_asyncio.fixture(scope="class")
+async def kernel_gateway_default_sandbox():
+    """Gateway with default sandbox config (no network access)."""
+    async with KernelGateway(
+        host="localhost",
+        port=8889,
+        log_level="WARNING",
+        sandbox=True,
+    ) as gateway:
+        yield gateway
+
+
+@pytest_asyncio.fixture(scope="class")
+async def kernel_gateway_custom_sandbox():
+    """Gateway with custom sandbox config (httpbin.org allowed)."""
+    async with KernelGateway(
+        host="localhost",
+        port=8890,
+        log_level="WARNING",
+        sandbox=True,
+        sandbox_config=Path("tests/integration/sandbox.json"),
     ) as gateway:
         yield gateway
 
@@ -361,3 +389,39 @@ class TestEnvironment:
         """Test that custom environment variables are accessible in kernel."""
         result = await kernel_client.execute("import os; print(os.environ['TEST_VAR'])")
         assert result.text == "test_val"
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="Sandbox tests only run on macOS")
+class TestSandbox:
+    """Tests for sandbox network isolation."""
+
+    HTTP_CODE = """
+import urllib.request
+response = urllib.request.urlopen('https://httpbin.org/get')
+content = response.read().decode('utf-8')
+print(content)
+"""
+
+    @pytest.mark.asyncio
+    async def test_default_sandbox_blocks_network(self, kernel_gateway_default_sandbox):
+        """Test that default sandbox config blocks all network access."""
+        async with KernelClient(
+            host=kernel_gateway_default_sandbox.host,
+            port=kernel_gateway_default_sandbox.port,
+        ) as client:
+            with pytest.raises(ExecutionError) as exc_info:
+                await client.execute(self.HTTP_CODE)
+            assert "URLError" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_custom_sandbox_allows_httpbin(self, kernel_gateway_custom_sandbox):
+        """Test that custom sandbox config allows httpbin.org access."""
+        async with KernelClient(
+            host=kernel_gateway_custom_sandbox.host,
+            port=kernel_gateway_custom_sandbox.port,
+        ) as client:
+            result = await client.execute(self.HTTP_CODE)
+            assert result.text is not None
+            data = json.loads(result.text)
+            assert data["url"] == "https://httpbin.org/get"
+            assert data["headers"]["Host"] == "httpbin.org"

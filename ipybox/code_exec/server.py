@@ -32,7 +32,7 @@ class KernelGateway:
         host: str = "localhost",
         port: int = 8888,
         sandbox: bool = False,
-        sandbox_settings: Path | None = None,
+        sandbox_config: Path | None = None,
         log_level: str = "INFO",
         log_to_stderr: bool = False,
         env: dict[str, str] | None = None,
@@ -43,7 +43,7 @@ class KernelGateway:
             host: Hostname or IP address to bind the gateway to.
             port: Port number the gateway listens on.
             sandbox: Whether to run the gateway inside the sandbox-runtime.
-            sandbox_settings: Path to a JSON file with sandbox configuration.
+            sandbox_config: Path to a JSON file with sandbox configuration.
                 See the Configuration section of the
                 [sandbox-runtime](https://github.com/anthropics/sandbox-runtime)
                 README for available options.
@@ -54,7 +54,7 @@ class KernelGateway:
         self.port = port
 
         self.sandbox = sandbox
-        self.sandbox_settings = sandbox_settings
+        self.sandbox_config = sandbox_config
 
         self.log_level = log_level
         self.log_to_stderr = log_to_stderr
@@ -92,7 +92,7 @@ class KernelGateway:
         ]
 
         if self.sandbox:
-            settings_path = self.sandbox_settings or Path(__file__).parent / "sandbox.json"
+            settings_path = self.sandbox_config or Path(__file__).parent / "sandbox.json"
             cmd = ["srt", "--settings", str(settings_path)] + cmd
 
         process_env = {"PATH": os.environ.get("PATH", "")}
