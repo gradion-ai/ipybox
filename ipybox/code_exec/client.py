@@ -180,7 +180,7 @@ class KernelClient:
         images_dir: Path | None = None,
         heartbeat_interval: float = 10,
     ):
-        """Initializes a kernel client configuration.
+        """Configures a kernel client.
 
         Args:
             host: Hostname or IP address of the kernel gateway.

@@ -30,14 +30,14 @@ class KernelGateway:
     def __init__(
         self,
         host: str = "localhost",
-        port: int = 8889,
+        port: int = 8888,
         sandbox: bool = False,
         sandbox_settings: Path | None = None,
         log_level: str = "INFO",
         log_to_stderr: bool = False,
         env: dict[str, str] | None = None,
     ):
-        """Initializes a kernel gateway configuration.
+        """Configures a kernel gateway.
 
         Args:
             host: Hostname or IP address to bind the gateway to.
