@@ -83,50 +83,23 @@ class MCPServer:
                     yield
 
     async def register_mcp_server(self, server_name: str, server_params: dict[str, Any]) -> list[str]:
-        """Register an MCP server and generate Python client functions for its tools.
+        """Register an MCP server and generate importable Python tool functions.
 
-        Connects to an external MCP server, introspects its tools, and generates a Python
-        package under mcptools/{server_name}/ with type-safe client functions. Generated
-        tools are immediately available for import in execute_ipython_cell.
-
-        Usage Pattern:
+        Connects to an MCP server, generates a package at mcptools/{server_name}/ with
+        type-safe client functions. Use generated tools via:
             from mcptools.{server_name} import {tool_name}
-            result = {tool_name}.run({tool_name}.Params(arg1=value1, arg2=value2))
+            result = {tool_name}.run({tool_name}.Params(...))
 
-        Each generated tool module provides:
-        - Params: Pydantic model for input parameters with type validation
-        - Result: Pydantic model for output (only if MCP tool defines output schema)
-        - run(params): Returns Result object if output schema exists, otherwise returns str
-
-        Important Behaviors:
-        - Re-registering the same server_name overwrites the previous registration
-        - After re-registration, call reset() to enable re-importing of updated tool definitions
-        - Environment variable placeholders like {BRAVE_API_KEY} in server_params are
-          automatically replaced with actual environment values
-        - Generated mcptools/ directory persists across reset() calls
-
-        Configuration Examples:
-
-        Stdio (local executable):
-        {"command": "npx", "args": ["-y", "@some/mcp-server-package"],
-         "env": {"API_KEY": "{API_KEY}"}}
-
-        HTTP (remote API):
-        {"url": "https://api.example.com/mcp/",
-         "headers": {"Authorization": "Bearer {API_TOKEN}"}}
+        - Environment variable placeholders like {API_KEY} in server_params are auto-replaced
+        - Re-registering overwrites previous; call reset() to re-import updated tools
+        - Generated mcptools/ persists across reset() calls
 
         Args:
-            server_name: Unique identifier that becomes the package name under mcptools/.
-                Must be a valid Python module name (lowercase, numbers, underscores;
-                cannot start with number).
-            server_params: MCP server configuration with either:
-                - stdio: {"command": str, "args": list[str], "env": dict}
-                - streamable-http or sse: {"url": str, "headers": dict}
+            server_name: Package name (valid Python identifier: lowercase, underscores, no leading digit).
+            server_params: Server config - stdio: {"command", "args", "env"} or http: {"url", "headers"}.
 
         Returns:
-            List of sanitized tool names available for import from mcptools.{server_name}.
-            Tool names are converted to valid Python identifiers (lowercase, special
-            characters replaced with underscores).
+            List of tool names available for import from mcptools.{server_name}.
         """
 
         return await generate_mcp_sources(
@@ -136,27 +109,16 @@ class MCPServer:
         )
 
     async def install_package(self, package_name: str) -> str:
-        """Install a Python package in the IPython kernel environment.
+        """Install a Python package via pip.
 
-        Installs packages using pip within the kernel's Python environment. Installed
-        packages are immediately available for import in subsequent execute_ipython_cell
-        calls and persist across reset() calls.
-
-        This is the required way to install packages.
-
-        Package Installation Examples:
-        - install_package("numpy") - Install latest version
-        - install_package("pandas==2.0.0") - Install specific version
-        - install_package("requests>=2.28.0") - Install with version constraint
-        - install_package("git+https://github.com/user/repo.git") - Install from git
+        Installed packages persist across reset() calls and are immediately importable.
+        Supports version specifiers (e.g., "numpy>=1.20.0") and git URLs.
 
         Args:
-            package_name: Package specification to install. Can be a simple package name,
-                a package with version specifier (e.g., "numpy>=1.20.0"), or a URL to a
-                git repository or wheel file.
+            package_name: Package spec (name, name==version, or git+https://... URL).
 
         Returns:
-            Installation output from pip, including success messages, warnings, and errors.
+            Pip output including success messages, warnings, and errors.
         """
         import sys
 
@@ -189,46 +151,22 @@ class MCPServer:
         ],
         timeout: Annotated[
             float,
-            Field(description="Maximum execution time in seconds before the kernel is interrupted"),
+            Field(description="Maximum execution time in seconds before kernel interruption"),
         ] = 120,
     ) -> str:
         """Execute Python code in a stateful IPython kernel.
 
-        The kernel maintains state across executions - variables, imports, and function
-        definitions persist between calls. Each execution builds on previous ones, enabling
-        complex multi-step workflows. Executions are sequential (not concurrent) to maintain
-        consistent kernel state.
-
-        The kernel has an active asyncio event loop, so use 'await' directly for async code.
-        DO NOT use asyncio.run() or create new event loops.
-
-        Using Registered MCP Tools:
-        Import and call tools registered via register_mcp_server():
-            from mcptools.{server_name} import {tool_name}
-            result = {tool_name}.run({tool_name}.Params(arg1=value1))
-
-        Package Installation:
-        Use the install_package() tool for installing packages, or include
-        '!uv add package_name' or '!pip install package_name' directly in the code.
-
-        Args:
-            code: Python code to execute. Can include imports, definitions, expressions,
-                and statements. Multi-line code blocks are supported.
-            timeout: Maximum seconds to wait before interrupting execution. Default is 120
-                seconds. If exceeded, the kernel is interrupted and asyncio.TimeoutError is
-                raised. Increase for long-running computations or large data processing.
+        State (variables, imports, definitions) persists across calls. Executions are sequential.
+        For async code, use 'await' directly (kernel has an active event loop).
 
         Returns:
-            String containing execution output (last expression value, stdout, stderr) and
-                generated image file paths in markdown format (e.g., [image_id](path/to/image_id.png)).
-                Returns empty string if no output was produced.
+            Execution output (stdout, stderr, last expression) plus image paths as markdown links.
+            Empty string if no output.
 
         Raises:
-            ExecutionError: If code execution raises an exception. Includes exception type,
-                message, and full traceback.
-            ToolRunnerError: If a registered MCP tool call fails. Includes error details
-                from the external tool.
-            asyncio.TimeoutError: If execution exceeds the timeout duration.
+            ExecutionError: Code raised an exception (includes traceback).
+            ToolRunnerError: MCP tool call failed.
+            asyncio.TimeoutError: Execution exceeded timeout.
         """
         async with self._lock:
             result = await self._client.execute(code, timeout=timeout)
@@ -242,29 +180,10 @@ class MCPServer:
     async def reset(self):
         """Reset the IPython kernel to a clean state.
 
-        Creates a new kernel instance, clearing all variables, imports, and function
-        definitions from memory. Use this when previous execution state is no longer needed
-        or to start fresh experiments.
+        Creates a new kernel, clearing all variables, imports, and definitions.
 
-        What Gets Cleared:
-        - All variables and their values
-        - All imported modules and packages
-        - All function and class definitions
-        - All registered MCP server connections (auto-reconnect on next tool use)
-
-        What Persists:
-        - Installed packages (via install_package tool)
-        - Files in the container filesystem
-        - The mcptools/ directory and generated tool definitions
-
-        After reset, you can immediately re-import tools from mcptools/ and they will
-        reconnect to their MCP servers automatically.
-
-        Common Use Cases:
-        - Starting a new analysis or experiment from scratch
-        - Clearing memory after processing large datasets
-        - Re-importing updated tool definitions after re-registering an MCP server
-        - Recovering from a problematic kernel state
+        - Cleared: all in-memory state, MCP server connections (auto-reconnect on next use)
+        - Persists: installed packages, filesystem files, mcptools/ directory
         """
         async with self._lock:
             await reset(
@@ -283,9 +202,7 @@ class MCPServer:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="IPyBox MCP Server - Provides IPython kernel execution via Model Context Protocol"
-    )
+    parser = argparse.ArgumentParser(description="ipybox MCP Server")
     parser.add_argument(
         "--workspace",
         type=Path,
