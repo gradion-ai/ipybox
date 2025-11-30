@@ -38,7 +38,7 @@ class ToolServer:
     Example:
         ```python
         async with ToolServer(approval_required=True) as server:
-            async with ApprovalClient(callback=on_approval):
+            async with ApprovalClient(callback=on_approval_request):
                 # Execute code that calls MCP tools
                 ...
         ```
@@ -54,7 +54,7 @@ class ToolServer:
         log_to_stderr: bool = False,
         log_level: str = "INFO",
     ):
-        """Initialize a `ToolServer`.
+        """Initialize a `ToolServer` for managing MCP tool execution.
 
         Args:
             host: Hostname the server binds to.

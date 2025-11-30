@@ -11,17 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 class ApprovalRequest:
-    """Represents a tool call approval request.
+    """A tool call approval request.
 
     `ApprovalRequest` instances are passed to the approval callback registered with
     [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient]. The callback
     must call [`accept`][ipybox.tool_exec.approval.client.ApprovalRequest.accept]
-    or [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject] to send
-    the approval decision back to the server.
+    or [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject] for making
+    an approval decision.
 
     Example:
         ```python
-        async def on_approval(request: ApprovalRequest):
+        async def on_approval_request(request: ApprovalRequest):
             print(f"Approval request: {request}")
             if request.tool_name == "dangerous_tool":
                 await request.reject()
@@ -37,13 +37,13 @@ class ApprovalRequest:
         tool_args: dict[str, Any],
         respond: Callable[[bool], Awaitable[None]],
     ):
-        """Initialize an `ApprovalRequest`.
+        """Initialize an `ApprovalRequest` for a tool call.
 
         Args:
             server_name: Name of the MCP server providing the tool.
             tool_name: Name of the tool to execute.
             tool_args: Arguments to pass to the tool.
-            respond: Callback to send the approval decision.
+            respond: Function to make an approval decision.
         """
         self.server_name = server_name
         self.tool_name = tool_name
@@ -68,8 +68,7 @@ ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
 
 An approval callback is an async function that receives an
 [`ApprovalRequest`][ipybox.tool_exec.approval.client.ApprovalRequest] and must call
-one of its response methods (`accept()` or `reject()`) to send the decision back to
-the server.
+one of its response methods (`accept()` or `reject()`) to make an approval decision.
 """
 
 
@@ -83,11 +82,11 @@ class ApprovalClient:
 
     Example:
         ```python
-        async def on_approval(request: ApprovalRequest):
+        async def on_approval_request(request: ApprovalRequest):
             print(f"Approval request: {request}")
             await request.accept()
 
-        async with ApprovalClient(callback=on_approval):
+        async with ApprovalClient(callback=on_approval_request):
             # Execute code that triggers MCP tool calls
             ...
         ```
@@ -99,7 +98,7 @@ class ApprovalClient:
         host: str = "localhost",
         port: int = 8900,
     ):
-        """Initialize an `ApprovalClient`.
+        """Initialize an `ApprovalClient` for an `ApprovalChannel`.
 
         Args:
             callback: Async function called for each approval request.

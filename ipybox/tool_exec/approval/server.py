@@ -6,13 +6,11 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 
 class ApprovalChannel:
-    """Server-side channel for sending tool call approval requests to clients.
+    """Server-side channel for tool call approval over WebSocket.
 
-    `ApprovalChannel` handles `WebSocket` connections from
-    [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient] instances and
-    sends approval requests via JSON-RPC. It is used internally by
-    [`ToolServer`][ipybox.tool_exec.server.ToolServer] to enforce tool call approval
-    before execution.
+    `ApprovalChannel` accepts WebSocket connections from an
+    [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient], sends approval
+    requests via JSON-RPC, and processes approval responses.
 
     When `approval_required` is `False`, all approval requests are automatically granted.
     When `True`, requests are sent to the connected `ApprovalClient` and the channel waits
@@ -42,12 +40,12 @@ class ApprovalChannel:
         return self._websocket is not None
 
     async def connect(self, websocket: WebSocket):
-        """Accept a `WebSocket` connection and process approval responses.
+        """Accept a WebSocket connection and process approval responses.
 
-        This method runs until the `WebSocket` is disconnected.
+        This method runs until the WebSocket disconnects.
 
         Args:
-            websocket: The `WebSocket` connection to accept.
+            websocket: The WebSocket connection to accept.
         """
         await websocket.accept()
         self._websocket = websocket
@@ -60,7 +58,7 @@ class ApprovalChannel:
             await self.disconnect()
 
     async def disconnect(self):
-        """Disconnect the `WebSocket` and error all pending approval requests."""
+        """Disconnect the WebSocket and error all pending approval requests."""
         if self._websocket is not None:
             self._websocket = None
             for future in self._requests.values():
@@ -80,7 +78,7 @@ class ApprovalChannel:
             tool_args: Arguments to pass to the tool.
 
         Returns:
-            `True` if approved, `False` if rejected.
+            `True` if accepted, `False` if rejected.
 
         Raises:
             RuntimeError: If no `ApprovalClient` is connected.

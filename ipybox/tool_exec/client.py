@@ -5,7 +5,7 @@ import requests
 
 
 class ToolRunnerError(Exception):
-    """Raised when tool execution fails on the server or when approval is denied."""
+    """Raised when tool execution fails on the server or when approval is rejected."""
 
 
 class ToolRunner:
@@ -14,10 +14,10 @@ class ToolRunner:
     Example:
         ```python
         runner = ToolRunner(
-            server_name="brave_search",
-            server_params={"command": "uvx", "args": ["mcp-server-brave-search"]},
+            server_name="fetch",
+            server_params={"command": "uvx", "args": ["mcp-server-fetch"]},
         )
-        result = await runner.run("brave_web_search", {"query": "python asyncio"})
+        result = await runner.run("fetch", {"url": "https://example.com"})
         ```
     """
 
@@ -28,11 +28,11 @@ class ToolRunner:
         host: str = "localhost",
         port: int = 8900,
     ):
-        """Initialize a `ToolRunner`.
+        """Initialize a `ToolRunner` for a specific MCP server.
 
         Args:
             server_name: Name of the MCP server.
-            server_params: MCP server parameters (command, args, env, url).
+            server_params: MCP server parameters.
             host: Hostname of the `ToolServer`.
             port: Port number of the `ToolServer`.
         """
@@ -49,7 +49,7 @@ class ToolRunner:
         await reset(host=self.host, port=self.port)
 
     async def run(self, tool_name: str, tool_args: dict[str, Any]) -> dict[str, Any] | str | None:
-        """Execute a tool of the MCP server identified by `self.server_name`.
+        """Execute a tool on the configured MCP server.
 
         Args:
             tool_name: Name of the tool to execute.
@@ -72,7 +72,7 @@ class ToolRunner:
                 return response_json["result"]
 
     def run_sync(self, tool_name: str, tool_args: dict[str, Any]) -> dict[str, Any] | str | None:
-        """Execute a tool of the MCP server identified by `self.server_name`.
+        """Synchronous version of [`run`][ipybox.tool_exec.client.ToolRunner.run].
 
         Args:
             tool_name: Name of the tool to execute.
