@@ -1,8 +1,10 @@
 import asyncio
+from datetime import datetime
 from typing import Any, Awaitable, Callable
 
 import pytest
 import pytest_asyncio
+from pydantic import BaseModel
 
 from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
 from ipybox.tool_exec.client import ToolRunner, ToolRunnerError
@@ -278,6 +280,39 @@ class TestToolRunnerErrors:
         runner = ToolRunner(MCP_SERVER_NAME, stdio_server_params, port=TOOL_SERVER_PORT)
         with pytest.raises(ToolRunnerError):
             await run_tool(runner, "tool_3", {"name": "test"})  # Missing 'level'
+
+
+class TestToolRunnerSerialization:
+    """Tests for ToolRunner input serialization using to_jsonable_python."""
+
+    @pytest.mark.asyncio
+    async def test_datetime_argument_serialization(
+        self, stdio_server_params: dict[str, Any], tool_server: ToolServer, run_tool: RunToolFunc
+    ):
+        """Test that datetime objects are serialized to ISO format strings."""
+        runner = ToolRunner(MCP_SERVER_NAME, stdio_server_params, port=TOOL_SERVER_PORT)
+        dt = datetime(2024, 1, 15, 10, 30, 0)
+        result = await run_tool(runner, "tool-1", {"s": dt})
+        assert result == "You passed to tool 1: 2024-01-15T10:30:00"
+
+    @pytest.mark.asyncio
+    async def test_pydantic_model_argument_serialization(
+        self, stdio_server_params: dict[str, Any], tool_server: ToolServer, run_tool: RunToolFunc
+    ):
+        """Test that tool_args containing a Pydantic model are serialized."""
+
+        class ToolArgs(BaseModel):
+            name: str
+            level: int
+
+        runner = ToolRunner(MCP_SERVER_NAME, stdio_server_params, port=TOOL_SERVER_PORT)
+        args = ToolArgs(name="pydantic_test", level=5)
+        # Pass the Pydantic model directly - to_jsonable_python converts it to a dict
+        result = await run_tool(runner, "tool_3", args)
+
+        assert isinstance(result, dict)
+        assert result["status"] == "completed_pydantic_test"
+        assert result["inner"]["code"] == 500
 
 
 class TestToolRunnerReset:

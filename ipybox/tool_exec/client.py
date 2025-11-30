@@ -2,6 +2,7 @@ from typing import Any
 
 import aiohttp
 import requests
+from pydantic_core import to_jsonable_python
 
 
 class ToolRunnerError(Exception):
@@ -98,7 +99,7 @@ class ToolRunner:
             "server_name": self.server_name,
             "server_params": self.server_params,
             "tool_name": tool_name,
-            "tool_args": tool_args,
+            "tool_args": to_jsonable_python(tool_args),
         }
 
 

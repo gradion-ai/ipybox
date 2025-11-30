@@ -2,11 +2,11 @@ import asyncio
 
 from ipybox.tool_exec.server import ToolServer
 from ipybox.utils import arun
-from mcptools.brave_search import brave_web_search as bws
+from mcptools.fetch import fetch
 
 
 def example() -> str:
-    return bws.run(bws.Params(query="martin krasser", count=3))
+    return fetch.run(fetch.Params(url="https://gradion.ai"))
 
 
 async def main():
