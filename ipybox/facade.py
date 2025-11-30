@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncIterator
 
-from ipybox.code_exec.client import Execution, ExecutionError, ExecutionResult, KernelClient
+from ipybox.code_exec.client import ExecutionError, ExecutionResult, KernelClient
 from ipybox.code_exec.server import KernelGateway
 from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
 from ipybox.tool_exec.client import reset
@@ -27,62 +27,6 @@ class CodeExecutionChunk:
     text: str
 
 
-class CodeExecution:
-    def __init__(self, code: str):
-        self._code = code
-        self._queue = asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]()
-
-        self._result: CodeExecutionResult | None = None
-        self._error: Exception | None = None
-
-    @property
-    def code(self) -> str:
-        return self._code
-
-    def completed(self) -> bool:
-        return self._result is not None or self._error is not None
-
-    async def complete(
-        self, stream: bool = False
-    ) -> AsyncIterator[ApprovalRequest | CodeExecutionChunk | CodeExecutionResult]:
-        if self.completed():
-            return
-
-        while True:
-            item = await self._queue.get()
-            match item:
-                case ApprovalRequest():
-                    yield item
-                case str() if stream:
-                    yield CodeExecutionChunk(text=item)
-                case ExecutionError():
-                    self._error = CodeExecutionError(item.args[0])
-                    raise self._error
-                case Exception():
-                    self._error = item
-                    raise self._error
-                case ExecutionResult():
-                    self._result = CodeExecutionResult(text=item.text, images=item.images)
-                    yield self._result
-                    break
-
-    async def result(self) -> CodeExecutionResult:
-        if self._error:
-            raise self._error
-
-        if self._result:
-            return self._result
-
-        async for item in self.complete(stream=False):
-            match item:
-                case ApprovalRequest():
-                    await item.approve()
-
-        assert self._error is None
-        assert self._result is not None
-        return self._result
-
-
 class CodeExecutor:
     def __init__(
         self,
@@ -91,6 +35,8 @@ class CodeExecutor:
         kernel_gateway_host: str = "localhost",
         kernel_gateway_port: int | None = None,
         kernel_env: dict[str, str] | None = None,
+        approval_timeout: float = 60,
+        connect_timeout: float = 30,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
         log_level: str = "INFO",
@@ -100,8 +46,10 @@ class CodeExecutor:
 
         self.kernel_gateway_host = kernel_gateway_host
         self.kernel_gateway_port = kernel_gateway_port or find_free_port()
-
         self.kernel_env = kernel_env or {}
+
+        self.approval_timeout = approval_timeout
+        self.connect_timeout = connect_timeout
 
         self.sandbox = sandbox
         self.sandbox_config = sandbox_config
@@ -109,10 +57,6 @@ class CodeExecutor:
 
         self._exit_stack = AsyncExitStack()
         self._client: KernelClient
-        self._lock = asyncio.Lock()
-
-        self._work_queue: asyncio.Queue[CodeExecution | None] = asyncio.Queue()
-        self._work_task: asyncio.Task[None]
 
     async def __aenter__(self):
         await self.start()
@@ -123,37 +67,68 @@ class CodeExecutor:
 
     async def start(self):
         self._client = await self._exit_stack.enter_async_context(self._executor())
-        self._work_task = asyncio.create_task(self._work())
 
     async def stop(self):
-        if self._work_task is not None:
-            await self._work_queue.put(None)
-            await self._work_task
         await self._exit_stack.aclose()
 
     async def reset(self):
-        async with self._lock:
-            await reset(
-                host=self.tool_server_host,
-                port=self.tool_server_port,
-            )
-            await self._client.disconnect()
-            self._client = KernelClient(
-                host=self.kernel_gateway_host,
-                port=self.kernel_gateway_port,
-            )
-            await self._client.connect()
+        await reset(
+            host=self.tool_server_host,
+            port=self.tool_server_port,
+        )
+        await self._client.disconnect()
+        self._client = KernelClient(
+            host=self.kernel_gateway_host,
+            port=self.kernel_gateway_port,
+        )
+        await self._client.connect()
 
-    async def submit(self, code: str) -> CodeExecution:
-        execution = CodeExecution(code)
-        await self._work_queue.put(execution)
-        return execution
+    async def execute(
+        self, code: str, timeout: float = 120, stream: bool = False
+    ) -> AsyncIterator[ApprovalRequest | CodeExecutionChunk | CodeExecutionResult]:
+        queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception] = asyncio.Queue()
+
+        async def stream_execution():
+            try:
+                execution = await self._client.submit(code)
+                async for chunk in execution.stream(timeout=timeout):
+                    await queue.put(chunk)
+                await queue.put(await execution.result())
+            except Exception as e:
+                await queue.put(e)
+
+        async with ApprovalClient(
+            callback=queue.put,
+            host=self.tool_server_host,
+            port=self.tool_server_port,
+        ):
+            task = asyncio.create_task(stream_execution())
+            try:
+                while True:
+                    item = await queue.get()
+                    match item:
+                        case ApprovalRequest():
+                            yield item
+                        case str() if stream:
+                            yield CodeExecutionChunk(text=item)
+                        case ExecutionError():
+                            raise CodeExecutionError(item.args[0])
+                        case Exception():
+                            raise item
+                        case ExecutionResult():
+                            yield CodeExecutionResult(text=item.text, images=item.images)
+                            break
+            finally:
+                await task
 
     @asynccontextmanager
     async def _executor(self) -> AsyncIterator[KernelClient]:
         async with ToolServer(
             host=self.tool_server_host,
             port=self.tool_server_port,
+            approval_required=True,
+            approval_timeout=self.approval_timeout,
+            connect_timeout=self.connect_timeout,
             log_level=self.log_level,
         ):
             async with KernelGateway(
@@ -173,33 +148,3 @@ class CodeExecutor:
                     port=self.kernel_gateway_port,
                 ) as client:
                     yield client
-
-    async def _complete(self, execution: Execution, queue: asyncio.Queue):
-        try:
-            async for chunk in execution.stream():
-                await queue.put(chunk)
-        except Exception as e:
-            await queue.put(e)
-        else:
-            await queue.put(await execution.result())
-
-    async def _work(self):
-        while True:
-            item = await self._work_queue.get()
-
-            match item:
-                case None:
-                    break
-                case CodeExecution(code=code):
-                    async with ApprovalClient(
-                        callback=item._queue.put,
-                        host=self.tool_server_host,
-                        port=self.tool_server_port,
-                    ):
-                        try:
-                            execution = await self._client.submit(code)
-                        except Exception as e:
-                            await item._queue.put(e)
-                            continue
-                        else:
-                            await self._complete(execution, item._queue)

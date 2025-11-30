@@ -47,11 +47,11 @@ class TestApprovalBasics:
     """Tests for basic approval request/response flow."""
 
     @pytest.mark.asyncio
-    async def test_approve_request(self, approval_channel: ApprovalChannel):
-        """Test that approving a request returns True."""
+    async def test_accept_request(self, approval_channel: ApprovalChannel):
+        """Test that accepting a request returns True."""
 
         async def on_approval(request: ApprovalRequest):
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             result = await approval_channel.request("test_server", "test_tool", {"arg1": "value1"})
@@ -80,7 +80,7 @@ class TestApprovalRequestData:
         async def on_approval(request: ApprovalRequest):
             nonlocal received_server_name
             received_server_name = request.server_name
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             await approval_channel.request("my_server", "my_tool", {})
@@ -95,7 +95,7 @@ class TestApprovalRequestData:
         async def on_approval(request: ApprovalRequest):
             nonlocal received_tool_name
             received_tool_name = request.tool_name
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             await approval_channel.request("my_server", "my_tool", {})
@@ -110,7 +110,7 @@ class TestApprovalRequestData:
         async def on_approval(request: ApprovalRequest):
             nonlocal received_tool_args
             received_tool_args = request.tool_args
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             await approval_channel.request("my_server", "my_tool", {"key1": "value1", "key2": 42, "key3": [1, 2, 3]})
@@ -125,7 +125,7 @@ class TestApprovalRequestData:
         async def on_approval(request: ApprovalRequest):
             nonlocal request_str
             request_str = str(request)
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             await approval_channel.request("server", "tool", {"name": "test"})
@@ -137,8 +137,8 @@ class TestApprovalNotRequired:
     """Tests for approval_required=False behavior."""
 
     @pytest.mark.asyncio
-    async def test_auto_approve_when_not_required(self):
-        """Test that requests are auto-approved when approval_required=False."""
+    async def test_auto_accept_when_not_required(self):
+        """Test that requests are auto-accepted when approval_required=False."""
         channel = ApprovalChannel(approval_required=False)
         result = await channel.request("server", "tool", {})
         assert result is True
@@ -165,7 +165,7 @@ class TestApprovalTimeout:
 
         async def on_approval(request: ApprovalRequest):
             await asyncio.sleep(0.2)
-            await request.approve()
+            await request.accept()
 
         async with await _serve_channel(approval_timeout=1.0) as channel:
             async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
@@ -188,7 +188,7 @@ class TestApprovalConnection:
         assert approval_channel.open is False
 
         async def on_approval(request: ApprovalRequest):
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             assert approval_channel.open is True
@@ -229,7 +229,7 @@ class TestMultipleRequests:
         async def on_approval(request: ApprovalRequest):
             nonlocal request_count
             request_count += 1
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             for i in range(5):
@@ -246,7 +246,7 @@ class TestMultipleRequests:
         async def on_approval(request: ApprovalRequest):
             requests_received.append(request.tool_name)
             await asyncio.sleep(0.1)
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval, host=HOST, port=PORT):
             tasks = [approval_channel.request("server", f"tool_{i}", {}) for i in range(3)]
@@ -257,12 +257,12 @@ class TestMultipleRequests:
         assert set(requests_received) == {"tool_0", "tool_1", "tool_2"}
 
     @pytest.mark.asyncio
-    async def test_mixed_approve_reject_concurrent(self, approval_channel: ApprovalChannel):
-        """Test concurrent requests with mixed approval/rejection."""
+    async def test_mixed_accept_reject_concurrent(self, approval_channel: ApprovalChannel):
+        """Test concurrent requests with mixed accept/reject responses."""
 
         async def on_approval(request: ApprovalRequest):
             if request.tool_args.get("index", 0) % 2 == 0:
-                await request.approve()
+                await request.accept()
             else:
                 await request.reject()
 

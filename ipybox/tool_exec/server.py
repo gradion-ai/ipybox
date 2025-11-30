@@ -50,7 +50,7 @@ class ToolServer:
         port: int = 8900,
         approval_required: bool = False,
         approval_timeout: float = 60,
-        connect_timeout: float = 10,
+        connect_timeout: float = 30,
         log_to_stderr: bool = False,
         log_level: str = "INFO",
     ):
@@ -111,7 +111,7 @@ class ToolServer:
     async def run(self, call: ToolCall) -> dict[str, Any] | str | None:
         try:
             if not await self._approval_channel.request(call.server_name, call.tool_name, call.tool_args):
-                return {"error": f"Approval request for {call.server_name}.{call.tool_name} denied"}
+                return {"error": f"Approval request for {call.server_name}.{call.tool_name} rejected"}
         except asyncio.TimeoutError:
             return {"error": f"Approval request for {call.server_name}.{call.tool_name} expired"}
         except Exception as e:

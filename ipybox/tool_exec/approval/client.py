@@ -15,7 +15,7 @@ class ApprovalRequest:
 
     `ApprovalRequest` instances are passed to the approval callback registered with
     [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient]. The callback
-    must call [`approve`][ipybox.tool_exec.approval.client.ApprovalRequest.approve]
+    must call [`accept`][ipybox.tool_exec.approval.client.ApprovalRequest.accept]
     or [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject] to send
     the approval decision back to the server.
 
@@ -26,7 +26,7 @@ class ApprovalRequest:
             if request.tool_name == "dangerous_tool":
                 await request.reject()
             else:
-                await request.approve()
+                await request.accept()
         ```
     """
 
@@ -54,13 +54,13 @@ class ApprovalRequest:
         kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.tool_args.items()])
         return f"{self.server_name}.{self.tool_name}({kwargs_str})"
 
+    async def accept(self):
+        """Accept the approval request."""
+        return await self._respond(True)
+
     async def reject(self):
         """Reject the approval request."""
         return await self._respond(False)
-
-    async def approve(self):
-        """Approve the approval request."""
-        return await self._respond(True)
 
 
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
@@ -68,7 +68,7 @@ ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
 
 An approval callback is an async function that receives an
 [`ApprovalRequest`][ipybox.tool_exec.approval.client.ApprovalRequest] and must call
-one of its response methods (`approve()` or `reject()`) to send the decision back to
+one of its response methods (`accept()` or `reject()`) to send the decision back to
 the server.
 """
 
@@ -79,13 +79,13 @@ class ApprovalClient:
     `ApprovalClient` connects to a [`ToolServer`][ipybox.tool_exec.server.ToolServer]'s
     [`ApprovalChannel`][ipybox.tool_exec.approval.server.ApprovalChannel] and receives
     approval requests. Each request is passed to the registered callback, which must
-    approve or reject the request.
+    accept or reject the request.
 
     Example:
         ```python
         async def on_approval(request: ApprovalRequest):
             print(f"Approval request: {request}")
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=on_approval):
             # Execute code that triggers MCP tool calls

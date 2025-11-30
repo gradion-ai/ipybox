@@ -339,10 +339,10 @@ class TestToolServerWithApproval:
         """Test that approved tool calls succeed."""
         runner = ToolRunner(MCP_SERVER_NAME, stdio_server_params, port=TOOL_SERVER_PORT)
 
-        async def approve_all(request: ApprovalRequest):
-            await request.approve()
+        async def accept_all(request: ApprovalRequest):
+            await request.accept()
 
-        async with ApprovalClient(callback=approve_all, port=TOOL_SERVER_PORT):
+        async with ApprovalClient(callback=accept_all, port=TOOL_SERVER_PORT):
             result = await run_tool(runner, "tool-1", {"s": "approved"})
             assert result == "You passed to tool 1: approved"
 
@@ -360,7 +360,7 @@ class TestToolServerWithApproval:
             await request.reject()
 
         async with ApprovalClient(callback=reject_all, port=TOOL_SERVER_PORT):
-            with pytest.raises(ToolRunnerError, match="denied"):
+            with pytest.raises(ToolRunnerError, match="rejected"):
                 await run_tool(runner, "tool-1", {"s": "rejected"})
 
     @pytest.mark.asyncio
@@ -377,7 +377,7 @@ class TestToolServerWithApproval:
         async def capture_request(request: ApprovalRequest):
             nonlocal received_request
             received_request = request
-            await request.approve()
+            await request.accept()
 
         async with ApprovalClient(callback=capture_request, port=TOOL_SERVER_PORT):
             await run_tool(runner, "tool_3", {"name": "test_name", "level": 42})
@@ -397,19 +397,19 @@ class TestToolServerWithApproval:
         """Test selective approval based on tool name."""
         runner = ToolRunner(MCP_SERVER_NAME, stdio_server_params, port=TOOL_SERVER_PORT)
 
-        async def selective_approve(request: ApprovalRequest):
+        async def selective_accept(request: ApprovalRequest):
             if request.tool_name == "tool_2":
                 await request.reject()
             else:
-                await request.approve()
+                await request.accept()
 
-        async with ApprovalClient(callback=selective_approve, port=TOOL_SERVER_PORT):
+        async with ApprovalClient(callback=selective_accept, port=TOOL_SERVER_PORT):
             # tool-1 should succeed
             result = await run_tool(runner, "tool-1", {"s": "allowed"})
             assert result == "You passed to tool 1: allowed"
 
             # tool_2 should be rejected
-            with pytest.raises(ToolRunnerError, match="denied"):
+            with pytest.raises(ToolRunnerError, match="rejected"):
                 await run_tool(runner, "tool_2", {"s": "blocked"})
 
     @pytest.mark.asyncio
@@ -432,7 +432,7 @@ class TestToolServerWithApproval:
             runner = ToolRunner(MCP_SERVER_NAME, stdio_server_params, port=TOOL_SERVER_PORT)
 
             async def never_respond(request: ApprovalRequest):
-                pass  # Never calls approve() or reject()
+                pass  # Never calls accept() or reject()
 
             async with ApprovalClient(callback=never_respond, port=TOOL_SERVER_PORT):
                 with pytest.raises(ToolRunnerError, match="expired"):

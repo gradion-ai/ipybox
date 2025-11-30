@@ -16,7 +16,7 @@ print(result)
 async def main():
     async def on_approval(approval: ApprovalRequest):
         print(f"Approval request: {approval}")
-        await approval.approve()
+        await approval.accept()
 
     async with KernelGateway():
         async with ToolServer(approval_required=True):
