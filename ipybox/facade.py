@@ -90,10 +90,8 @@ class CodeExecutor:
 
         async def stream_execution():
             try:
-                execution = await self._client.submit(code)
-                async for chunk in execution.stream(timeout=timeout):
-                    await queue.put(chunk)
-                await queue.put(await execution.result())
+                async for item in self._client.stream(code, timeout=timeout):
+                    await queue.put(item)
             except Exception as e:
                 await queue.put(e)
 

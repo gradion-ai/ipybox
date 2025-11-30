@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from ipybox.code_exec.client import ExecutionError, KernelClient
+from ipybox.code_exec.client import ExecutionError, ExecutionResult, KernelClient
 from ipybox.code_exec.server import KernelGateway
 
 
@@ -155,15 +155,14 @@ foo()
     @pytest.mark.asyncio
     async def test_stream_raises_error(self, kernel_client: KernelClient):
         """Test streaming also raises ExecutionError."""
-        execution = await kernel_client.submit("1 / 0")
         with pytest.raises(ExecutionError) as exc_info:
-            async for _ in execution.stream():
+            async for _ in kernel_client.stream("1 / 0"):
                 pass
         assert "ZeroDivisionError" in str(exc_info.value)
 
 
 class TestStreaming:
-    """Tests for submit and streaming functionality."""
+    """Tests for streaming functionality."""
 
     @pytest.mark.asyncio
     async def test_stream_outputs_incrementally(self, kernel_client: KernelClient):
@@ -174,10 +173,10 @@ print('first')
 time.sleep(0.5)
 print('second')
 """
-        execution = await kernel_client.submit(code)
         chunks = []
-        async for chunk in execution.stream():
-            chunks.append(chunk)
+        async for item in kernel_client.stream(code):
+            if isinstance(item, str):
+                chunks.append(item)
 
         # Verify we got exactly 2 chunks (one per print statement)
         assert len(chunks) == 2
@@ -185,34 +184,37 @@ print('second')
         assert chunks[1] == "second\n"
 
     @pytest.mark.asyncio
-    async def test_stream_then_result(self, kernel_client: KernelClient):
-        """Test result() is immediate after stream consumed."""
-        execution = await kernel_client.submit("print('hello')")
+    async def test_stream_yields_final_result(self, kernel_client: KernelClient):
+        """Test stream yields ExecutionResult as final item."""
+        items = []
+        async for item in kernel_client.stream("print('hello')"):
+            items.append(item)
 
-        # Consume stream
-        chunks = []
-        async for chunk in execution.stream():
-            chunks.append(chunk)
-
-        # result() should be immediate
-        result = await execution.result(timeout=0.1)
-        assert result.text == "hello"
+        # Last item should be ExecutionResult
+        assert len(items) >= 1
+        assert isinstance(items[-1], ExecutionResult)
+        assert items[-1].text == "hello"
 
     @pytest.mark.asyncio
-    async def test_result_without_stream(self, kernel_client: KernelClient):
-        """Test result() works without calling stream()."""
-        execution = await kernel_client.submit("print('direct')")
-        result = await execution.result()
-        assert result.text == "direct"
+    async def test_stream_mixed_output(self, kernel_client: KernelClient):
+        """Test streaming with both chunks and final result."""
+        code = """
+import time
+print('chunk1')
+time.sleep(0.5)
+print('chunk2')
+"""
+        str_chunks = []
+        result = None
+        async for item in kernel_client.stream(code):
+            if isinstance(item, str):
+                str_chunks.append(item)
+            elif isinstance(item, ExecutionResult):
+                result = item
 
-    @pytest.mark.asyncio
-    async def test_execution_result_multiple_calls(self, kernel_client: KernelClient):
-        """Test result() is idempotent."""
-        execution = await kernel_client.submit("print('test')")
-        result1 = await execution.result()
-        result2 = await execution.result()
-        assert result1.text == result2.text
-        assert result1.images == result2.images
+        assert str_chunks == ["chunk1\n", "chunk2\n"]
+        assert result is not None
+        assert result.text == "chunk1\nchunk2"
 
 
 class TestStatePersistence:

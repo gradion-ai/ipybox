@@ -9,7 +9,7 @@ async def main():
     async with KernelGateway():
         async with ToolServer():
             async with KernelClient() as client:
-                result = await client.execute("print('Hello, world!')")
+                result = await client.stream("print('Hello, world!')")
                 print(result.text)
 
 

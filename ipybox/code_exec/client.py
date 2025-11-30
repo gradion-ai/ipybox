@@ -1,9 +1,3 @@
-"""Internal IPython kernel client implementation.
-
-This module is not part of the public API. Applications should use the
-[`CodeExecutor`][ipybox.CodeExecutor] facade instead.
-"""
-
 import asyncio
 import logging
 from base64 import b64decode
@@ -40,123 +34,6 @@ class ExecutionResult:
     images: list[Path]
 
 
-class Execution:
-    """A code execution in an IPython kernel.
-
-    Represents an ongoing or completed code execution. Created by
-    [`KernelClient.submit`][ipybox.code_exec.client.KernelClient.submit].
-    """
-
-    def __init__(self, client: "KernelClient", req_id: str):
-        """Initializes `Execution` object.
-
-        Args:
-            client: The client that initiated this code execution.
-            req_id: Unique identifier of the code execution request.
-        """
-        self.client = client
-        self.req_id = req_id
-
-        self._chunks: list[str] = []
-        self._images: list[Path] = []
-
-        self._stream_consumed: bool = False
-
-    async def result(self, timeout: float = 120) -> ExecutionResult:
-        """Retrieves the complete result of this code execution.
-
-        Waits until the result is available.
-
-        Args:
-            timeout: Maximum time in seconds to wait for the execution result.
-
-        Raises:
-            ExecutionError: If code execution raises an error.
-            asyncio.TimeoutError: If code execution duration exceeds the timeout.
-        """
-        if not self._stream_consumed:
-            async for _ in self.stream(timeout=timeout):
-                pass
-
-        return ExecutionResult(
-            text="".join(self._chunks).strip() if self._chunks else None,
-            images=self._images,
-        )
-
-    async def stream(self, timeout: float = 120) -> AsyncIterator[str]:
-        """Streams the code execution output as it is generated.
-
-        Once the stream is consumed, [`result`][ipybox.code_exec.client.Execution.result]
-        returns immediately without waiting.
-
-        Note:
-            Generated images are not streamed. Their file paths can be obtained
-            from the [`result`][ipybox.code_exec.client.Execution.result].
-
-        Args:
-            timeout: Maximum time in seconds to wait for execution to complete.
-
-        Raises:
-            ExecutionError: If code execution raises an error.
-            asyncio.TimeoutError: If code execution duration exceeds the timeout.
-        """
-        try:
-            async with asyncio.timeout(timeout):
-                async for elem in self._stream():
-                    match elem:
-                        case str():
-                            self._chunks.append(elem)
-                            yield elem
-                        case Path():
-                            self._images.append(elem)
-        except asyncio.TimeoutError:
-            await self.client._interrupt_kernel()
-            await asyncio.sleep(0.2)  # TODO: make configurable
-            raise
-        finally:
-            self._stream_consumed = True
-
-    async def _stream(self) -> AsyncIterator[str | Path]:
-        saved_error = None
-        while True:
-            msg_dict = await self.client._read_message()
-            msg_type = msg_dict["msg_type"]
-            msg_id = msg_dict["parent_header"].get("msg_id", None)
-
-            if msg_id != self.req_id:
-                continue
-
-            if msg_type == "stream":
-                yield msg_dict["content"]["text"]
-            elif msg_type == "error":
-                saved_error = msg_dict
-            elif msg_type == "execute_reply":
-                if msg_dict["content"]["status"] == "error":
-                    self._raise_error(saved_error or msg_dict)
-                break
-            elif msg_type in ["execute_result", "display_data"]:
-                msg_data = msg_dict["content"]["data"]
-                if "text/plain" in msg_data:
-                    yield msg_data["text/plain"]
-                if "image/png" in msg_data:
-                    self.client.images_dir.mkdir(parents=True, exist_ok=True)
-
-                    img_id = uuid4().hex[:8]
-                    img_bytes = b64decode(msg_data["image/png"])
-                    img_path = self.client.images_dir / f"{img_id}.png"
-
-                    async with aiofiles.open(img_path, "wb") as f:
-                        await f.write(img_bytes)
-
-                    yield img_path
-
-    def _raise_error(self, msg_dict):
-        error_name = msg_dict["content"].get("ename", "Unknown Error")
-        error_value = msg_dict["content"].get("evalue", "")
-        error_trace = "\n".join(msg_dict["content"].get("traceback", []))
-        raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")
-
-
 class KernelClient:
     """Client for executing code in an IPython kernel.
 
@@ -168,8 +45,17 @@ class KernelClient:
     Example:
         ```python
         async with KernelClient(host="localhost", port=8888) as client:
-            result = await client.execute("x = 1 + 1")
-            result = await client.execute("print(x)")  # prints 2
+            # Simple execution
+            result = await client.execute("print('hello')")
+            print(result.text)
+
+            # Streaming execution
+            async for item in client.stream("print('hello')"):
+                match item:
+                    case str():
+                        print(f"Chunk: {item}")
+                    case ExecutionResult():
+                        print(f"Result: {item}")
         ```
     """
 
@@ -178,7 +64,7 @@ class KernelClient:
         host: str = "localhost",
         port: int = 8888,
         images_dir: Path | None = None,
-        heartbeat_interval: float = 10,
+        ping_interval: float = 10,
     ):
         """Configures a kernel client.
 
@@ -187,15 +73,14 @@ class KernelClient:
             port: Port number of the kernel gateway.
             images_dir: Directory for saving images generated during code
                 execution. Defaults to `images` in the current directory.
-            heartbeat_interval: Interval in seconds for WebSocket pings that
+            ping_interval: Interval in seconds for WebSocket pings that
                 keep the connection to the IPython kernel alive.
         """
         self.host = host
         self.port = port
 
         self.images_dir = images_dir or Path("images")
-
-        self._heartbeat_interval = heartbeat_interval
+        self.ping_interval = ping_interval
 
         self._kernel_id = None
         self._session_id = uuid4().hex
@@ -252,10 +137,10 @@ class KernelClient:
 
         self._ws = await websocket_connect(
             HTTPRequest(url=self.kernel_ws_url),
-            ping_interval=self._heartbeat_interval,
-            ping_timeout=self._heartbeat_interval,
+            ping_interval=self.ping_interval,
+            ping_timeout=self.ping_interval * 0.9,
         )
-        logger.info(f"Connected to kernel (ping_interval={self._heartbeat_interval}s)")
+        logger.info(f"Connected to kernel (ping_interval={self.ping_interval}s)")
 
         await self._init_kernel()
 
@@ -268,28 +153,48 @@ class KernelClient:
             async with session.delete(self.kernel_http_url):
                 pass
 
-    async def execute(self, code: str, timeout: float = 120) -> ExecutionResult:
+    async def execute(self, code: str, timeout: float = 120) -> ExecutionResult:  # type: ignore
         """Executes code in this client's IPython kernel and returns the result.
+
+        Waits for execution to complete and returns the final result.
+        Use [`stream`][ipybox.code_exec.client.KernelClient.stream] for
+        incremental output.
 
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for the execution result.
 
+        Returns:
+            The execution result containing output text and generated images.
+
         Raises:
             ExecutionError: If code execution raises an error.
             asyncio.TimeoutError: If code execution duration exceeds the timeout.
         """
-        execution = await self.submit(code)
-        return await execution.result(timeout=timeout)
+        async for item in self.stream(code, timeout):
+            match item:
+                case str():
+                    pass
+                case ExecutionResult():
+                    return item
 
-    async def submit(self, code: str) -> Execution:
-        """Submits code for execution in this client's IPython kernel.
+    async def stream(self, code: str, timeout: float = 120) -> AsyncIterator[str | ExecutionResult]:
+        """Executes code in this client's IPython kernel.
 
-        Returns immediately with an [`Execution`][ipybox.code_exec.client.Execution]
-        object for consuming the execution result.
+        Yields output chunks as strings during execution, and yields the
+        final ExecutionResult as the last item.
 
         Args:
             code: Python code to execute.
+            timeout: Maximum time in seconds to wait for the execution result.
+
+        Yields:
+            str: Output text chunks generated during execution.
+            ExecutionResult: The final result containing complete text and images.
+
+        Raises:
+            ExecutionError: If code execution raises an error.
+            asyncio.TimeoutError: If code execution duration exceeds the timeout.
         """
         req_id = uuid4().hex
         req = {
@@ -314,7 +219,54 @@ class KernelClient:
         }
 
         await self._send_request(req)
-        return Execution(client=self, req_id=req_id)
+
+        chunks: list[str] = []
+        images: list[Path] = []
+        saved_error = None
+
+        try:
+            async with asyncio.timeout(timeout):
+                while True:
+                    msg_dict = await self._read_message()
+                    msg_type = msg_dict["msg_type"]
+                    msg_id = msg_dict["parent_header"].get("msg_id", None)
+
+                    if msg_id != req_id:
+                        continue
+
+                    if msg_type == "stream":
+                        text = msg_dict["content"]["text"]
+                        chunks.append(text)
+                        yield text
+                    elif msg_type == "error":
+                        saved_error = msg_dict
+                    elif msg_type == "execute_reply":
+                        if msg_dict["content"]["status"] == "error":
+                            self._raise_error(saved_error or msg_dict)
+                        break
+                    elif msg_type in ["execute_result", "display_data"]:
+                        msg_data = msg_dict["content"]["data"]
+                        if "text/plain" in msg_data:
+                            text = msg_data["text/plain"]
+                            chunks.append(text)
+                            yield text
+                        if "image/png" in msg_data:
+                            self.images_dir.mkdir(parents=True, exist_ok=True)
+                            img_id = uuid4().hex[:8]
+                            img_bytes = b64decode(msg_data["image/png"])
+                            img_path = self.images_dir / f"{img_id}.png"
+                            async with aiofiles.open(img_path, "wb") as f:
+                                await f.write(img_bytes)
+                            images.append(img_path)
+        except asyncio.TimeoutError:
+            await self._interrupt_kernel()
+            await asyncio.sleep(0.2)
+            raise
+
+        yield ExecutionResult(
+            text="".join(chunks).strip() if chunks else None,
+            images=images,
+        )
 
     async def _send_request(self, req):
         if self._ws is None:
@@ -343,4 +295,11 @@ class KernelClient:
                 logger.info(f"Kernel interrupted: {response.status}")
 
     async def _init_kernel(self):
-        await self.execute("%colors nocolor")
+        async for _ in self.stream("%colors nocolor"):
+            pass
+
+    def _raise_error(self, msg_dict):
+        error_name = msg_dict["content"].get("ename", "Unknown Error")
+        error_value = msg_dict["content"].get("evalue", "")
+        error_trace = "\n".join(msg_dict["content"].get("traceback", []))
+        raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")

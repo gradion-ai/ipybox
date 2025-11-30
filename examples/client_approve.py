@@ -22,7 +22,7 @@ async def main():
         async with ToolServer(approval_required=True):
             async with ApprovalClient(callback=on_approval):
                 async with KernelClient() as client:
-                    result = await client.execute(CODE_1)
+                    result = await client.stream(CODE_1)
                     print(result.text)
 
 

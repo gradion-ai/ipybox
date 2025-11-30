@@ -232,7 +232,6 @@ class MCPServer:
         """
         async with self._lock:
             result = await self._client.execute(code, timeout=timeout)
-
             output = result.text or ""
             if result.images:
                 output += "\n\nGenerated images:\n\n"
