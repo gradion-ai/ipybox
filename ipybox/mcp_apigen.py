@@ -51,11 +51,20 @@ def generate_init_definition(server_name: str, server_params: dict[str, Any]):
     return INIT_TEMPLATE.format(server_name=server_name, server_params=server_params)
 
 
-def generate_function_definition(original_name: str, description: str, structured_output: bool):
+def indent_description(description: str, indent: str = "    ") -> str:
+    """Indent all lines of a description after the first line."""
+    lines = description.split("\n")
+    if len(lines) <= 1:
+        return description
+    return lines[0] + "\n" + "\n".join(indent + line if line else line for line in lines[1:])
+
+
+def generate_function_definition(original_name: str, description: str, structured_output: bool) -> str:
     template = FUNCTION_TEMPLATE_STRUCTURED if structured_output else FUNCTION_TEMPLATE_UNSTRUCTURED
+    indented_description = indent_description(description)
     return template.format(
         original_name=original_name,
-        description=description.replace('"""', '\\"\\"\\"'),
+        description=indented_description.replace('"""', '\\"\\"\\"'),
     )
 
 
