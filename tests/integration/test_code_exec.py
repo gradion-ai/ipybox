@@ -10,7 +10,7 @@ from ipybox.code_exec.client import ExecutionError, ExecutionResult, KernelClien
 from ipybox.code_exec.server import KernelGateway
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="module")
 async def kernel_gateway():
     async with KernelGateway(
         host="localhost",

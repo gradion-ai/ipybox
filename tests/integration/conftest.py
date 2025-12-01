@@ -16,7 +16,7 @@ def ip_address() -> str:
     return s.getsockname()[0]
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture
 async def stdio_server_params() -> AsyncIterator[dict[str, Any]]:
     yield {
         "command": "python",
@@ -24,7 +24,7 @@ async def stdio_server_params() -> AsyncIterator[dict[str, Any]]:
     }
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture
 async def http_server_params(ip_address) -> AsyncIterator[dict[str, Any]]:
     async with streamable_http_server() as server:
         yield {
@@ -33,7 +33,7 @@ async def http_server_params(ip_address) -> AsyncIterator[dict[str, Any]]:
         }
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture
 async def sse_server_params(ip_address) -> AsyncIterator[dict[str, Any]]:
     async with sse_server() as server:
         yield {
