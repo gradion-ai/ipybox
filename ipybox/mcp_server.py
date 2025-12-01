@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 KERNEL_ENV_PREFIX = "KERNEL_ENV_"
 
 
-class MCPServer:
+class IpyboxMCPServer:
     def __init__(
         self,
         tool_server_host: str = "localhost",
@@ -270,7 +270,7 @@ async def main():
     os.makedirs(args.workspace, exist_ok=True)
     os.chdir(args.workspace)
 
-    server = MCPServer(
+    server = IpyboxMCPServer(
         tool_server_host=args.tool_server_host,
         tool_server_port=args.tool_server_port,
         kernel_gateway_host=args.kernel_gateway_host,

@@ -45,7 +45,7 @@ async def code_executor(generated_mcp_package: dict):
 
     async with CodeExecutor(
         kernel_env={"PYTHONPATH": str(root_dir)},
-        log_level="WARNING",
+        log_level="ERROR",
     ) as executor:
         yield executor
 
