@@ -16,8 +16,8 @@ class KernelGateway:
     connect to an IPython kernel and execute code.
 
     When sandboxing is enabled, the gateway runs inside Anthropic's
-    [sandbox-runtime](https://github.com/anthropics/sandbox-runtime), providing
-    secure isolation for code execution.
+    [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime),
+    providing secure isolation for code execution.
 
     Example:
         ```python
@@ -45,7 +45,7 @@ class KernelGateway:
             sandbox: Whether to run the gateway inside the sandbox-runtime.
             sandbox_config: Path to a JSON file with sandbox configuration.
                 See the Configuration section of the
-                [sandbox-runtime](https://github.com/anthropics/sandbox-runtime)
+                [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
                 README for available options.
             log_level: Logging level for the gateway process.
             log_to_stderr: Whether to redirect gateway logs to stderr.

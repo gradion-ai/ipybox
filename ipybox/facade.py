@@ -123,12 +123,12 @@ class CodeExecutor:
                 the tool call fails.
             connect_timeout: Timeout in seconds for starting MCP servers.
             sandbox: Whether to run the kernel gateway inside Anthropic's
-                [sandbox-runtime](https://github.com/anthropics/sandbox-runtime).
+                [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime).
                 When enabled, IPython kernels run in a secure sandbox with no
                 network access except to the local tool server.
             sandbox_config: Path to a JSON file with sandbox configuration.
                 See the Configuration section of the
-                [sandbox-runtime](https://github.com/anthropics/sandbox-runtime)
+                [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
                 README for available options.
             log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
         """
