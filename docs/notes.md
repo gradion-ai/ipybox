@@ -1,8 +1,8 @@
 ## Overview
 
-- ipybox is a Python code execution sandbox with first class support for MCP servers
-- ipybox generates Python functions from the schema definitions of MCP server tools
-- ipybox supports Python function generation from both, local stdio and http MCP servers
+- ipybox is a Python code execution sandbox with first class support for calling and composing MCP servers in Python code 
+- ipybox generates Python wrapper functions for MCP server tools from their schema definitions
+- ipybox supports Python wrapper function generation from both, local stdio and http MCP servers
 
 - Python code that calls the generated functions is executed in a sandboxed IPython kernel
 - MCP servers are executed in a managed environment that supports tool call approval
@@ -21,6 +21,12 @@
 - Code generation enables agents to compose multiple tool calls into a single code action
 - Code actions cannot be trusted and must be executed in a secure execution environment
 - Applications must be able to approve any MCP tool call during code action execution
+
+## Important aspects
+
+- Local code execution, sandboxed or not, no cloud dependencies or API keys required
+- Generating code for calling MCP server tools is more reliable than tool calls via JSON
+- Generated code actions can be saved locally and reused as skills in other code actions
 
 ## Key packages, modules, classes and functions
 
