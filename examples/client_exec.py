@@ -4,12 +4,19 @@ from ipybox.code_exec.client import KernelClient
 from ipybox.code_exec.server import KernelGateway
 from ipybox.tool_exec.server import ToolServer
 
+CODE = """
+from mcptools.fetch import fetch
+
+result = fetch.run(fetch.Params(url="https://gradion.ai"))
+print(result)
+"""
+
 
 async def main():
-    async with KernelGateway():
-        async with ToolServer():
+    async with ToolServer():
+        async with KernelGateway():
             async with KernelClient() as client:
-                result = await client.stream("print('Hello, world!')")
+                result = await client.execute(CODE)
                 print(result.text)
 
 

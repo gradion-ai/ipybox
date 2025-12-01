@@ -101,6 +101,59 @@ def _generate_model_code(schema: dict[str, Any], class_name: str) -> str:
 
 
 async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], root_dir: Path) -> list[str]:
+    """Generate Python wrapper functions for tools of an MCP server.
+
+    Connects to an MCP server, discovers available tools, and generates a Python
+    package with Pydantic models and wrapper functions. Each wrapper function is
+    defined in its own module with a `Params` class for input validation and a
+    `run()` function to invoke the tool.
+
+    When calling generated wrapper functions, the corresponding tools are executed
+    on a [`ToolServer`][ipybox.tool_exec.server.ToolServer].
+
+    If a directory for the server already exists under `root_dir`, it is removed
+    and recreated.
+
+    Args:
+        server_name: Name for the generated package directory. Also used to
+            identify the server in the generated client code.
+        server_params: MCP server connection parameters. For stdio servers,
+            provide `command`, `args`, and optionally `env`. For HTTP servers,
+            provide `url` and optionally `headers`.
+        root_dir: Parent directory where the package will be created. The
+            generated package is written to `root_dir/server_name/`.
+
+    Returns:
+        List of sanitized tool names corresponding to the generated module files.
+
+    Example:
+        Generate wrapper functions for the fetch MCP server:
+
+        ```python
+        server_params = {
+            "command": "uvx",
+            "args": ["mcp-server-fetch"],
+        }
+        await generate_mcp_sources("fetch_mcp", server_params, Path("mcptools"))
+        ```
+
+        Execute code that uses the generated wrapper functions:
+
+        ```python
+        from ipybox.facade import CodeExecutor
+
+        code = \"\"\"
+        from mcptools.fetch_mcp import fetch
+
+        result = fetch.run(fetch.Params(url="https://example.com"))
+        print(result)
+        \"\"\"
+
+        async with CodeExecutor() as executor:
+            async for item in executor.execute(code):
+                ...
+        ```
+    """
     async with MCPClient(server_params) as server:
         if await aiofiles.os.path.exists(root_dir / server_name):
             await asyncio.get_running_loop().run_in_executor(None, shutil.rmtree, root_dir / server_name)
