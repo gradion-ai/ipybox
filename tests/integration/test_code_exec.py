@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
+from flaky import flaky
 
 from ipybox.code_exec.client import ExecutionError, ExecutionResult, KernelClient
 from ipybox.code_exec.server import KernelGateway
@@ -41,7 +42,7 @@ async def kernel_gateway_custom_sandbox():
         port=8890,
         log_level="WARNING",
         sandbox=True,
-        sandbox_config=Path("tests/integration/sandbox.json"),
+        sandbox_config=Path("tests", "integration", "sandbox.json"),
     ) as gateway:
         yield gateway
 
@@ -415,6 +416,7 @@ print(content)
                 await client.execute(self.HTTP_CODE)
             assert "URLError" in str(exc_info.value)
 
+    @flaky(max_runs=3, min_passes=1)
     @pytest.mark.asyncio
     async def test_custom_sandbox_allows_httpbin(self, kernel_gateway_custom_sandbox):
         """Test that custom sandbox config allows httpbin.org access."""

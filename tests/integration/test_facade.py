@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
+from flaky import flaky
 
 from ipybox import ApprovalRequest, CodeExecutionChunk, CodeExecutionError, CodeExecutionResult, CodeExecutor
 from ipybox.mcp_apigen import generate_mcp_sources
@@ -322,12 +323,13 @@ content = response.read().decode('utf-8')
 print(content)
 """
 
+    @flaky(max_runs=3, min_passes=1)
     @pytest.mark.asyncio
     async def test_custom_sandbox_allows_httpbin(self):
         """Test that custom sandbox config allows httpbin.org access."""
         async with CodeExecutor(
             sandbox=True,
-            sandbox_config=Path("tests/integration/sandbox.json"),
+            sandbox_config=Path("tests", "integration", "sandbox.json"),
             log_level="WARNING",
         ) as executor:
             result = None
