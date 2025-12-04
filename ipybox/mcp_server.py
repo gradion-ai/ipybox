@@ -276,12 +276,12 @@ def extract_kernel_env() -> dict[str, str]:
 
 
 async def main():
-    load_dotenv()
-
     args = parse_args()
 
     os.makedirs(args.workspace, exist_ok=True)
     os.chdir(args.workspace)
+
+    load_dotenv(args.workspace / ".env")
 
     server = IpyboxMCPServer(
         tool_server_host=args.tool_server_host,

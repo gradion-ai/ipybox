@@ -20,17 +20,21 @@ COPY --from=ghcr.io/astral-sh/uv:0.9.15 /uv /uvx /bin/
 
 WORKDIR ${HOME}
 
+# Bypass dynamic versioning since .git is not available
+ENV UV_DYNAMIC_VERSIONING_BYPASS=0.0.0+docker
+
 # Copy dependency files first for better Docker layer caching
-COPY pyproject.toml .python-version ${HOME}/
+COPY pyproject.toml uv.lock .python-version ${HOME}/
 
-# Create virtual environment and install dependencies only (not the project itself)
-RUN uv venv && uv pip install -r pyproject.toml
+# Install dependencies only (not the project itself)
+RUN uv sync --no-install-project --no-dev
 
-# Copy source code
+# Copy source code and README (required for package metadata)
 COPY ipybox ${HOME}/ipybox/
+COPY README.md ${HOME}/
 
-# Install the project in editable mode (no git needed for this)
-RUN uv pip install --no-deps -e .
+# Install the project
+RUN uv sync --no-dev
 
 # Create workspace directory
 RUN mkdir -p /app/workspace
