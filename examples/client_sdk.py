@@ -6,7 +6,7 @@ from ipybox import ApprovalRequest, CodeExecutionResult, CodeExecutor, generate_
 SERVER_PARAMS = {
     "command": "npx",
     "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
-    "env": {"BRAVE_API_KEY": "{BRAVE_API_KEY}"},
+    "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
 }
 
 CODE = """

@@ -5,7 +5,7 @@ class TestReplaceVariables:
     """Tests for replace_variables function."""
 
     def test_basic_replacement(self):
-        template = {"env": {"KEY": "{VAR}"}}
+        template = {"env": {"KEY": "${VAR}"}}
         variables = {"VAR": "value"}
 
         result = replace_variables(template, variables)
@@ -18,7 +18,7 @@ class TestReplaceVariables:
         template = {
             "command": "npx",
             "args": ["-y", "@brave/brave-search-mcp-server"],
-            "env": {"BRAVE_API_KEY": "{BRAVE_API_KEY}"},
+            "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
         }
         variables = {"BRAVE_API_KEY": "secret123"}
 
@@ -33,7 +33,7 @@ class TestReplaceVariables:
     def test_mcp_headers_params(self):
         template = {
             "url": "https://api.github.com/mcp/",
-            "headers": {"Authorization": "Bearer {GITHUB_API_KEY}"},
+            "headers": {"Authorization": "Bearer ${GITHUB_API_KEY}"},
         }
         variables = {"GITHUB_API_KEY": "ghp_token123"}
 
@@ -44,20 +44,20 @@ class TestReplaceVariables:
         assert result.replaced_variables == {"GITHUB_API_KEY"}
 
     def test_missing_variable_preserved(self):
-        template = {"env": {"KEY": "{MISSING_VAR}"}}
+        template = {"env": {"KEY": "${MISSING_VAR}"}}
         variables = {}  # type: ignore
 
         result = replace_variables(template, variables)
 
-        assert result.replaced == {"env": {"KEY": "{MISSING_VAR}"}}
+        assert result.replaced == {"env": {"KEY": "${MISSING_VAR}"}}
         assert result.replaced_variables == set()
         assert result.missing_variables == {"MISSING_VAR"}
 
     def test_mixed_replaced_and_missing(self):
         template = {
             "env": {
-                "API_KEY": "{API_KEY}",
-                "SECRET": "{SECRET}",
+                "API_KEY": "${API_KEY}",
+                "SECRET": "${SECRET}",
             }
         }
         variables = {"API_KEY": "provided_key"}
@@ -65,12 +65,12 @@ class TestReplaceVariables:
         result = replace_variables(template, variables)
 
         assert result.replaced["env"]["API_KEY"] == "provided_key"
-        assert result.replaced["env"]["SECRET"] == "{SECRET}"
+        assert result.replaced["env"]["SECRET"] == "${SECRET}"
         assert result.replaced_variables == {"API_KEY"}
         assert result.missing_variables == {"SECRET"}
 
     def test_nested_dicts(self):
-        template = {"a": {"b": {"c": {"d": "{VAR}"}}}}
+        template = {"a": {"b": {"c": {"d": "${VAR}"}}}}
         variables = {"VAR": "deep_value"}
 
         result = replace_variables(template, variables)
@@ -79,7 +79,7 @@ class TestReplaceVariables:
         assert result.replaced_variables == {"VAR"}
 
     def test_list_of_strings(self):
-        template = {"args": ["-y", "{PKG}", "--option", "{OPT}"]}
+        template = {"args": ["-y", "${PKG}", "--option", "${OPT}"]}
         variables = {"PKG": "my-package", "OPT": "value"}
 
         result = replace_variables(template, variables)
@@ -90,8 +90,8 @@ class TestReplaceVariables:
     def test_list_of_dicts(self):
         template = {
             "servers": [
-                {"name": "server1", "token": "{TOKEN1}"},
-                {"name": "server2", "token": "{TOKEN2}"},
+                {"name": "server1", "token": "${TOKEN1}"},
+                {"name": "server2", "token": "${TOKEN2}"},
             ]
         }
         variables = {"TOKEN1": "t1", "TOKEN2": "t2"}
@@ -119,7 +119,7 @@ class TestReplaceVariables:
         assert result.missing_variables == set()
 
     def test_multiple_variables_in_one_string(self):
-        template = {"auth": "Bearer {TOKEN} for user {USER}"}
+        template = {"auth": "Bearer ${TOKEN} for user ${USER}"}
         variables = {"TOKEN": "abc123", "USER": "john"}
 
         result = replace_variables(template, variables)
@@ -149,7 +149,7 @@ class TestReplaceVariables:
         assert result.missing_variables == set()
 
     def test_total_variables_property(self):
-        template = {"a": "{VAR1}", "b": "{VAR2}", "c": "{VAR3}"}
+        template = {"a": "${VAR1}", "b": "${VAR2}", "c": "${VAR3}"}
         variables = {"VAR1": "v1", "VAR2": "v2"}
 
         result = replace_variables(template, variables)
@@ -168,22 +168,22 @@ class TestReplaceVariables:
         assert result.replaced_variables == set()
 
     def test_special_chars_not_matched(self):
-        # Patterns with special chars don't match: {foo-bar} has hyphen
-        template = {"key": "{foo-bar}", "other": "{valid}"}
+        # Patterns with special chars don't match: ${foo-bar} has hyphen
+        template = {"key": "${foo-bar}", "other": "${valid}"}
         variables = {"foo-bar": "should_not_match", "valid": "matched"}
 
         result = replace_variables(template, variables)
 
-        assert result.replaced["key"] == "{foo-bar}"  # Not replaced (hyphen not in pattern)
+        assert result.replaced["key"] == "${foo-bar}"  # Not replaced (hyphen not in pattern)
         assert result.replaced["other"] == "matched"
         assert result.replaced_variables == {"valid"}
         assert result.missing_variables == set()
 
     def test_same_variable_multiple_occurrences(self):
         template = {
-            "first": "{VAR}",
-            "second": "{VAR}",
-            "nested": {"third": "{VAR}"},
+            "first": "${VAR}",
+            "second": "${VAR}",
+            "nested": {"third": "${VAR}"},
         }
         variables = {"VAR": "value"}
 
@@ -196,7 +196,7 @@ class TestReplaceVariables:
         assert result.replaced_variables == {"VAR"}
 
     def test_mixed_content_list(self):
-        template = {"items": ["{VAR}", 123, True, None, {"nested": "{VAR2}"}]}
+        template = {"items": ["${VAR}", 123, True, None, {"nested": "${VAR2}"}]}
         variables = {"VAR": "str_val", "VAR2": "nested_val"}
 
         result = replace_variables(template, variables)

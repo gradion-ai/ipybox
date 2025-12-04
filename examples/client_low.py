@@ -7,13 +7,13 @@ from ipybox.mcp_client import MCPClient
 server_params_1 = {
     "command": "npx",
     "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
-    "env": {"BRAVE_API_KEY": "{BRAVE_API_KEY}"},
+    "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
 }
 
 
 server_params_2 = {
     "url": "https://api.githubcopilot.com/mcp/",
-    "headers": {"Authorization": "Bearer {GITHUB_API_KEY}"},
+    "headers": {"Authorization": "Bearer ${GITHUB_API_KEY}"},
 }
 
 

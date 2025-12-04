@@ -47,9 +47,9 @@ def replace_variables(template: dict[str, Any], variables: Mapping[str, str]) ->
 
 
 def _replace_variables(template: str, variables: Mapping[str, str]) -> ReplaceResult[str]:
-    """Replace variables of pattern {VAR_NAME} with values from dict."""
+    """Replace variables of pattern ${VAR_NAME} with values from dict."""
     # Find all variable patterns (a-zA-Z0-9_)
-    pattern = r"\{([a-zA-Z0-9_]+)\}"
+    pattern = r"\$\{([a-zA-Z0-9_]+)\}"
     matches = re.findall(pattern, template)
 
     # Track what we've seen
@@ -61,7 +61,7 @@ def _replace_variables(template: str, variables: Mapping[str, str]) -> ReplaceRe
     rendered = template
     for var_name in found_vars:
         if var_name in variables:
-            rendered = rendered.replace(f"{{{var_name}}}", variables[var_name])
+            rendered = rendered.replace(f"${{{var_name}}}", variables[var_name])
             replaced_vars.add(var_name)
         else:
             missing_vars.add(var_name)
