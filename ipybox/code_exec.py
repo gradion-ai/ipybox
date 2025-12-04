@@ -35,7 +35,7 @@ class CodeExecutionResult:
 class CodeExecutionChunk:
     """A chunk of output text generated during streaming code execution.
 
-    Only yielded by [`CodeExecutor.execute`][ipybox.facade.CodeExecutor.execute]
+    Only yielded by [`CodeExecutor.execute`][ipybox.code_exec.CodeExecutor.execute]
     when `stream=True`.
 
     Attributes:
@@ -206,19 +206,19 @@ class CodeExecutor:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for execution to complete.
             stream: Whether to yield
-                [`CodeExecutionChunk`][ipybox.facade.CodeExecutionChunk] objects
+                [`CodeExecutionChunk`][ipybox.code_exec.CodeExecutionChunk] objects
                 during execution. When `False`, only
                 [`ApprovalRequest`][ipybox.tool_exec.approval.client.ApprovalRequest]
-                and [`CodeExecutionResult`][ipybox.facade.CodeExecutionResult]
+                and [`CodeExecutionResult`][ipybox.code_exec.CodeExecutionResult]
                 are yielded.
 
         Yields:
             [`ApprovalRequest`][ipybox.tool_exec.approval.client.ApprovalRequest]:
                 When executed code calls an MCP tool. Accept to execute the tool,
                 reject to fail the tool call.
-            [`CodeExecutionChunk`][ipybox.facade.CodeExecutionChunk]: Output text
+            [`CodeExecutionChunk`][ipybox.code_exec.CodeExecutionChunk]: Output text
                 chunks generated during execution (emitted only if `stream=True`).
-            [`CodeExecutionResult`][ipybox.facade.CodeExecutionResult]: The final
+            [`CodeExecutionResult`][ipybox.code_exec.CodeExecutionResult]: The final
                 result when execution completes successfully.
 
         Raises:

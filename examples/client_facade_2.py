@@ -1,6 +1,6 @@
 import asyncio
 
-from ipybox.facade import CodeExecutionResult, CodeExecutor
+from ipybox.code_exec import CodeExecutionResult, CodeExecutor
 from ipybox.tool_exec.approval.client import ApprovalRequest
 
 CODE = """

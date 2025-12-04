@@ -140,7 +140,7 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
         Execute code that uses the generated wrapper functions:
 
         ```python
-        from ipybox.facade import CodeExecutor
+        from ipybox.code_exec import CodeExecutor
 
         code = \"\"\"
         from mcptools.fetch_mcp import fetch
