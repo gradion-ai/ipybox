@@ -11,10 +11,25 @@ ipybox is designed for agents that interact with their environment through code 
 
 ## Features
 
+- Python code execution in sandboxed IPython kernels
+- Programmatic MCP tool use based on generated Python wrapper functions
+- Supports MCP servers with stdio, http and sse transports
+- Tool call approval that cannot be bypassed by executing code
 - ...
 
 ## Additional features
 
-- configurable sandboxing of IPython kernels
-- application-level sandboxing of MCP servers
--
+- any python package can be installed and used in IPython kernels
+- fully local code execution in IPython kernels, no cloud dependencies
+- supports any MCP server for programmatic tool use
+- sandboxing based on Anthropic's sandbox-runtime (`srt`)
+- configurable sandboxing of IPython kernels, turned off by default
+- optional, application-level sandboxing of MCP servers (via `srt`)
+- ipybox MCP server can also be run as a Docker container
+- support for plotting figures with matplotlib and other libraries
+
+## Current limitations
+
+- srt sandboxing not working yet on Linux, but runs without sandboxing
+- OAuth workflow for MCP servers not supported yet
+- only text returned by MCP servers is processed, media not yet
