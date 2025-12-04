@@ -6,7 +6,7 @@
       "denyWrite": []
     },
     "network": {
-      "allowedDomains": ["httpbin.org"],
+      "allowedDomains": ["example.org"],
       "deniedDomains": [],
       "allowLocalBinding": true
     }

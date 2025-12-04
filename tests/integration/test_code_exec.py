@@ -1,11 +1,9 @@
-import json
 import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 import pytest_asyncio
-from flaky import flaky
 
 from ipybox import ApprovalRequest, CodeExecutionChunk, CodeExecutionError, CodeExecutionResult, CodeExecutor
 from ipybox.mcp_apigen import generate_mcp_sources
@@ -318,15 +316,14 @@ class TestSandbox:
 
     HTTP_CODE = """
 import urllib.request
-response = urllib.request.urlopen('https://httpbin.org/get')
+response = urllib.request.urlopen('https://example.org')
 content = response.read().decode('utf-8')
 print(content)
 """
 
-    @flaky(max_runs=3, min_passes=1)
     @pytest.mark.asyncio
-    async def test_custom_sandbox_allows_httpbin(self):
-        """Test that custom sandbox config allows httpbin.org access."""
+    async def test_custom_sandbox_allows_example_org(self):
+        """Test that custom sandbox config allows example.org access."""
         async with CodeExecutor(
             sandbox=True,
             sandbox_config=Path("tests", "integration", "sandbox.json"),
@@ -339,6 +336,4 @@ print(content)
 
             assert result is not None
             assert result.text is not None
-            data = json.loads(result.text)
-            assert data["url"] == "https://httpbin.org/get"
-            assert data["headers"]["Host"] == "httpbin.org"
+            assert "Example Domain" in result.text

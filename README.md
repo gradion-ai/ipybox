@@ -28,6 +28,7 @@ ipybox is designed for agents that interact with their environment through code 
 - optional, application-level sandboxing of MCP servers (via `srt`)
 - ipybox MCP server can also be run as a Docker container
 - support for plotting figures with matplotlib and other libraries
+- Code action or "code-mode" plugin for Claude Code
 
 ## Current limitations
 

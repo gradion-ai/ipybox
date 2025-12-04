@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
-from flaky import flaky
 
 from ipybox.mcp_client import MCPClient
 from tests.integration.mcp_server import STDIO_SERVER_PATH
@@ -198,14 +197,14 @@ class TestSandbox:
 
     HTTP_CODE = """
 import urllib.request
-response = urllib.request.urlopen('https://httpbin.org/get')
+response = urllib.request.urlopen('https://example.org')
 content = response.read().decode('utf-8')
 print(content)
 """
 
     @pytest_asyncio.fixture
     async def mcp_client_custom_sandbox(self, tmp_path: Path):
-        """Create an MCPClient with custom sandbox config (httpbin.org allowed)."""
+        """Create an MCPClient with custom sandbox config (example.org allowed)."""
         sandbox_config = Path("tests", "integration", "sandbox.json").absolute()
         server_params = {
             "command": sys.executable,
@@ -224,12 +223,10 @@ print(content)
         async with MCPClient(server_params, connect_timeout=30) as client:
             yield client
 
-    @flaky(max_runs=3, min_passes=1)
     @pytest.mark.asyncio
-    async def test_custom_sandbox_allows_httpbin(self, mcp_client_custom_sandbox: MCPClient):
-        """Test that custom sandbox config allows httpbin.org access."""
+    async def test_custom_sandbox_allows_example_org(self, mcp_client_custom_sandbox: MCPClient):
+        """Test that custom sandbox config allows example.org access."""
         result = await mcp_client_custom_sandbox.run("execute_ipython_cell", {"code": self.HTTP_CODE})
 
         assert result is not None
-        assert "httpbin.org" in result
-        assert '"url": "https://httpbin.org/get"' in result
+        assert "Example Domain" in result
