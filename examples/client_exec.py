@@ -1,7 +1,7 @@
 import asyncio
 
-from ipybox.code_exec.client import KernelClient
-from ipybox.code_exec.server import KernelGateway
+from ipybox.kernel_mgr.client import KernelClient
+from ipybox.kernel_mgr.server import KernelGateway
 from ipybox.tool_exec.server import ToolServer
 
 CODE = """

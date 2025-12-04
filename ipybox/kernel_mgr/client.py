@@ -37,7 +37,7 @@ class ExecutionResult:
 class KernelClient:
     """Client for executing code in an IPython kernel.
 
-    Connects to a [`KernelGateway`][ipybox.code_exec.server.KernelGateway] to
+    Connects to a [`KernelGateway`][ipybox.kernel_mgr.server.KernelGateway] to
     create and communicate with an IPython kernel. Code execution is stateful:
     definitions and variables from previous executions are available to
     subsequent executions.
@@ -157,7 +157,7 @@ class KernelClient:
         """Executes code in this client's IPython kernel and returns the result.
 
         Waits for execution to complete and returns the final result.
-        Use [`stream`][ipybox.code_exec.client.KernelClient.stream] for
+        Use [`stream`][ipybox.kernel_mgr.client.KernelClient.stream] for
         incremental output.
 
         Args:

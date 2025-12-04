@@ -12,7 +12,7 @@ class KernelGateway:
 
     The kernel gateway provides a REST and WebSocket API for creating and
     communicating with IPython kernels. Use
-    [`KernelClient`][ipybox.code_exec.client.KernelClient] to create and
+    [`KernelClient`][ipybox.kernel_mgr.client.KernelClient] to create and
     connect to an IPython kernel and execute code.
 
     When sandboxing is enabled, the gateway runs inside Anthropic's

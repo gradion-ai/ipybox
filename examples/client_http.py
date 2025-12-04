@@ -1,8 +1,8 @@
 import asyncio
 from pathlib import Path
 
-from ipybox.code_exec.client import KernelClient
-from ipybox.code_exec.server import KernelGateway
+from ipybox.kernel_mgr.client import KernelClient
+from ipybox.kernel_mgr.server import KernelGateway
 
 CODE = """
 import urllib.request

@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncIterator
 
-from ipybox.code_exec.client import ExecutionError, ExecutionResult, KernelClient
-from ipybox.code_exec.server import KernelGateway
+from ipybox.kernel_mgr.client import ExecutionError, ExecutionResult, KernelClient
+from ipybox.kernel_mgr.server import KernelGateway
 from ipybox.tool_exec.approval.client import ApprovalClient, ApprovalRequest
 from ipybox.tool_exec.client import reset
 from ipybox.tool_exec.server import ToolServer
@@ -49,7 +49,7 @@ class CodeExecutor:
     """Executes Python code in an IPython kernel with MCP tool support.
 
     `CodeExecutor` launches an embedded
-    [`KernelGateway`][ipybox.code_exec.server.KernelGateway] for running Python
+    [`KernelGateway`][ipybox.kernel_mgr.server.KernelGateway] for running Python
     code and an embedded [`ToolServer`][ipybox.tool_exec.server.ToolServer] for
     executing MCP tools. Code is executed in an IPython kernel, providing a
     stateful environment where variables and definitions persist across executions.
@@ -112,7 +112,7 @@ class CodeExecutor:
             tool_server_port: Port for the tool server. If `None`, a free port
                 is selected automatically.
             kernel_gateway_host: Hostname for the
-                [`KernelGateway`][ipybox.code_exec.server.KernelGateway].
+                [`KernelGateway`][ipybox.kernel_mgr.server.KernelGateway].
             kernel_gateway_port: Port for the kernel gateway. If `None`, a free
                 port is selected automatically.
             kernel_env: Environment variables to set for the IPython kernel.

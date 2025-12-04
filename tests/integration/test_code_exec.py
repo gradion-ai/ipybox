@@ -7,8 +7,8 @@ import pytest
 import pytest_asyncio
 from flaky import flaky
 
-from ipybox.code_exec.client import ExecutionError, ExecutionResult, KernelClient
-from ipybox.code_exec.server import KernelGateway
+from ipybox.kernel_mgr.client import ExecutionError, ExecutionResult, KernelClient
+from ipybox.kernel_mgr.server import KernelGateway
 
 
 @pytest_asyncio.fixture(scope="module")

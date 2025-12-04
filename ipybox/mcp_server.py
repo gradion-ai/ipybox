@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
-from ipybox.code_exec.client import KernelClient
-from ipybox.code_exec.server import KernelGateway
+from ipybox.kernel_mgr.client import KernelClient
+from ipybox.kernel_mgr.server import KernelGateway
 from ipybox.mcp_apigen import generate_mcp_sources
 from ipybox.tool_exec.client import reset
 from ipybox.tool_exec.server import ToolServer
