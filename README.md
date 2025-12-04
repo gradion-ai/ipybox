@@ -15,6 +15,7 @@ ipybox is designed for agents that interact with their environment through code 
 - Programmatic MCP tool use based on generated Python wrapper functions
 - Supports MCP servers with stdio, http and sse transports
 - Tool call approval that cannot be bypassed by executing code
+- Composition and chaining of MCP tool calls in code actions
 - ...
 
 ## Additional features
