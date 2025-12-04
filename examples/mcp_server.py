@@ -81,7 +81,7 @@ def create_server(**kwargs) -> FastMCP:
         kwargs["lifespan"] = server_lifespan
 
     server = FastMCP("Test MCP Server", **kwargs)
-    server.add_tool(tool_1, structured_output=False, name="tool-1")
+    server.add_tool(tool_1, structured_output=True, name="tool-1")
     server.add_tool(tool_2, structured_output=False)
     server.add_tool(tool_3)
     return server

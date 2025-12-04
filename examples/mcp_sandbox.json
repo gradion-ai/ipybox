@@ -2,11 +2,11 @@
     "enableWeakerNestedSandbox": false,
     "filesystem": {
       "denyRead": [".env"],
-      "allowWrite": [".", "~/Library/Jupyter", "~/.ipython"],
+      "allowWrite": [".", "~/.npm"],
       "denyWrite": []
     },
     "network": {
-      "allowedDomains": ["httpbin.org"],
+      "allowedDomains": ["registry.npmjs.org"],
       "deniedDomains": [],
       "allowLocalBinding": true
     }

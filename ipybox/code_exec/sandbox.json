@@ -1,7 +1,7 @@
 {
   "enableWeakerNestedSandbox": false,
   "filesystem": {
-    "denyRead": [],
+    "denyRead": [".env"],
     "allowWrite": [".", "~/Library/Jupyter", "~/.ipython"],
     "denyWrite": []
   },
