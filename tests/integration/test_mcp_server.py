@@ -56,6 +56,39 @@ class TestBasicExecution:
 
         assert result == "42"
 
+    @pytest.mark.asyncio
+    async def test_max_output_chars_truncation(self, mcp_client: MCPClient):
+        """Test that output is truncated when exceeding max_output_chars."""
+        # Generate output longer than the limit
+        code = "print('x' * 100)"
+        result = await mcp_client.run("execute_ipython_cell", {"code": code, "max_output_chars": 50})
+
+        assert isinstance(result, str)
+        assert len(result) > 50  # Includes truncation message
+        assert result.startswith("x" * 50)
+        assert "[Output truncated: exceeded 50 character limit]" in result
+
+    @pytest.mark.asyncio
+    async def test_max_output_chars_no_truncation(self, mcp_client: MCPClient):
+        """Test that output is not truncated when within max_output_chars."""
+        code = "print('hello world')"
+        result = await mcp_client.run("execute_ipython_cell", {"code": code, "max_output_chars": 100})
+
+        assert isinstance(result, str)
+        assert result == "hello world"
+        assert "[Output truncated" not in result
+
+    @pytest.mark.asyncio
+    async def test_max_output_chars_default(self, mcp_client: MCPClient):
+        """Test that default max_output_chars (5000) is used when not specified."""
+        # Generate output slightly over 5000 chars
+        code = "print('x' * 5001)"
+        result = await mcp_client.run("execute_ipython_cell", {"code": code})
+
+        assert isinstance(result, str)
+        assert "[Output truncated: exceeded 5000 character limit]" in result
+        assert result.startswith("x" * 5000)
+
 
 class TestMcpServerRegistration:
     """MCP server registration tests."""

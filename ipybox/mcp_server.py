@@ -153,6 +153,10 @@ class IpyboxMCPServer:
             float,
             Field(description="Maximum execution time in seconds before kernel interruption"),
         ] = 120,
+        max_output_chars: Annotated[
+            int,
+            Field(description="Maximum number of characters to return in output (truncates if exceeded)"),
+        ] = 5000,
     ) -> str:
         """Execute Python code in a stateful IPython kernel.
 
@@ -175,6 +179,12 @@ class IpyboxMCPServer:
                 output += "\n\nGenerated images:\n\n"
                 for img_path in result.images:
                     output += f"- [{img_path.stem}]({img_path.absolute()})\n"
+
+            if len(output) > max_output_chars:
+                output = (
+                    output[:max_output_chars] + f"\n\n[Output truncated: exceeded {max_output_chars} character limit]"
+                )
+
             return output
 
     async def reset(self):
