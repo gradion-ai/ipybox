@@ -23,14 +23,14 @@ WORKDIR ${HOME}
 # Copy dependency files first for better Docker layer caching
 COPY pyproject.toml .python-version ${HOME}/
 
-# Install Python dependencies using uv (skip project install to avoid git dependency)
-RUN uv sync --no-dev --no-install-project
+# Create virtual environment and install dependencies only (not the project itself)
+RUN uv venv && uv pip install -r pyproject.toml
 
 # Copy source code
 COPY ipybox ${HOME}/ipybox/
 
-# Install the project
-RUN uv sync --no-dev
+# Install the project in editable mode (no git needed for this)
+RUN uv pip install --no-deps -e .
 
 # Create workspace directory
 RUN mkdir -p /app/workspace
