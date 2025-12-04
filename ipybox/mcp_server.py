@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Any
 
+from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
@@ -275,6 +276,8 @@ def extract_kernel_env() -> dict[str, str]:
 
 
 async def main():
+    load_dotenv()
+
     args = parse_args()
 
     os.makedirs(args.workspace, exist_ok=True)
