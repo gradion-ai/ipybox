@@ -18,7 +18,7 @@ async def main():
         sandbox_config=Path("tests/integration/sandbox.json"),
     ):
         async with KernelClient() as client:
-            result = await client.stream(CODE)
+            result = await client.execute(CODE)
             print(result.text)
 
 
