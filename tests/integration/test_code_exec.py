@@ -55,7 +55,7 @@ class TestBasicExecution:
     @pytest.mark.asyncio
     async def test_simple_code_execution(self, code_executor: CodeExecutor):
         """Test executing a simple print statement."""
-        result = await code_executor.run("print('hello world')")
+        result = await code_executor.execute("print('hello world')")
 
         assert result.text == "hello world"
 
@@ -63,24 +63,14 @@ class TestBasicExecution:
     async def test_code_execution_error(self, code_executor: CodeExecutor):
         """Test that CodeExecutionError is raised on runtime error."""
         with pytest.raises(CodeExecutionError) as exc_info:
-            await code_executor.run("raise ValueError('test error')")
+            await code_executor.execute("raise ValueError('test error')")
 
         assert "ValueError" in str(exc_info.value)
         assert "test error" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_run_returns_result_directly(self, code_executor: CodeExecutor):
-        """Test that run() returns CodeExecutionResult directly."""
-        code = "print('hello world')"
-
-        result = await code_executor.run(code)
-
-        assert isinstance(result, CodeExecutionResult)
-        assert result.text == "hello world"
-
-    @pytest.mark.asyncio
     async def test_streaming_execution(self, code_executor: CodeExecutor):
-        """Test that CodeExecutionChunk is yielded when stream=True."""
+        """Test that CodeExecutionChunk is yielded when chunks=True."""
         code = """
 import time
 for i in range(3):
@@ -90,7 +80,7 @@ for i in range(3):
 
         chunks = []
         result = None
-        async for item in code_executor.execute(code, stream=True):
+        async for item in code_executor.stream(code, chunks=True):
             match item:
                 case CodeExecutionChunk():
                     chunks.append(item)
@@ -118,7 +108,7 @@ print(result)
 """
 
         results = []
-        async for item in code_executor.execute(code):
+        async for item in code_executor.stream(code):
             match item:
                 case ApprovalRequest():
                     await item.accept()
@@ -131,14 +121,14 @@ print(result)
 
     @pytest.mark.asyncio
     async def test_run_auto_approves_tool_calls(self, code_executor: CodeExecutor):
-        """Test that run() auto-approves tool calls and returns result."""
+        """Test that execute() auto-approves tool calls and returns result."""
         code = f"""
 from {MCP_SERVER_NAME}.tool_2 import run, Params
 result = run(Params(s="hello"))
 print(result)
 """
 
-        result = await code_executor.run(code)
+        result = await code_executor.execute(code)
 
         assert isinstance(result, CodeExecutionResult)
         assert result.text is not None
@@ -154,7 +144,7 @@ print(result)
 """
 
         with pytest.raises(CodeExecutionError) as exc_info:
-            async for item in code_executor.execute(code):
+            async for item in code_executor.stream(code):
                 match item:
                     case ApprovalRequest():
                         await item.reject()
@@ -172,7 +162,7 @@ print(f"count={{result.count}}")
 print(f"inner_code={{result.inner.code}}")
 """
 
-        result = await code_executor.run(code)
+        result = await code_executor.execute(code)
 
         assert result.text is not None
         assert "status=completed_test" in result.text
@@ -195,7 +185,7 @@ print(f"result2: {{r2}}")
 
         approvals = []
         results = []
-        async for item in code_executor.execute(code):
+        async for item in code_executor.stream(code):
             match item:
                 case ApprovalRequest():
                     approvals.append(item)
@@ -223,7 +213,7 @@ print(f"after tool call: {{result}}", flush=True)
         chunks = []
         approvals = []
         result = None
-        async for item in code_executor.execute(code, stream=True):
+        async for item in code_executor.stream(code, chunks=True):
             match item:
                 case CodeExecutionChunk():
                     chunks.append(item)
@@ -252,7 +242,7 @@ result = run(Params(s="hello"))
 """
 
         approval = None
-        async for item in code_executor.execute(code):
+        async for item in code_executor.stream(code):
             match item:
                 case ApprovalRequest():
                     approval = item
@@ -272,7 +262,7 @@ result = run(Params(s="test"))
 """
 
         approval = None
-        async for item in code_executor.execute(code):
+        async for item in code_executor.stream(code):
             match item:
                 case ApprovalRequest():
                     approval = item
@@ -290,10 +280,10 @@ class TestExecutorLifecycle:
     async def test_reset_clears_kernel_state(self, code_executor: CodeExecutor):
         """Test that reset() clears kernel state but allows continued execution."""
         # Set a variable
-        await code_executor.run("x = 42")
+        await code_executor.execute("x = 42")
 
         # Verify it exists
-        result = await code_executor.run("print(x)")
+        result = await code_executor.execute("print(x)")
         assert result.text == "42"
 
         # Reset the executor
@@ -301,11 +291,11 @@ class TestExecutorLifecycle:
 
         # Verify the variable no longer exists
         with pytest.raises(CodeExecutionError) as exc_info:
-            await code_executor.run("print(x)")
+            await code_executor.execute("print(x)")
         assert "NameError" in str(exc_info.value)
 
         # Verify we can still execute code
-        result = await code_executor.run("print('after reset')")
+        result = await code_executor.execute("print('after reset')")
         assert result.text == "after reset"
 
 
@@ -328,7 +318,7 @@ print(content)
             sandbox_config=Path("tests", "integration", "sandbox.json"),
             log_level="WARNING",
         ) as executor:
-            result = await executor.run(self.HTTP_CODE)
+            result = await executor.execute(self.HTTP_CODE)
 
             assert result.text is not None
             assert "Example Domain" in result.text

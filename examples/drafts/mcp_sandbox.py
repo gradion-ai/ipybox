@@ -37,7 +37,7 @@ async def main():
     await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
     async with CodeExecutor(sandbox=True) as executor:
-        async for item in executor.execute(CODE):
+        async for item in executor.stream(CODE):
             match item:
                 case ApprovalRequest():
                     await item.accept()

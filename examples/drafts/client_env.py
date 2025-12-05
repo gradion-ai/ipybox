@@ -11,7 +11,7 @@ print(os.environ["TEST_VAR"])
 
 async def main():
     async with CodeExecutor(kernel_env={"TEST_VAR": "test_val"}) as executor:
-        async for item in executor.execute(CODE_1, stream=True):
+        async for item in executor.stream(CODE_1, chunks=True):
             match item:
                 case ApprovalRequest():
                     print(f"Approval request: {item}")

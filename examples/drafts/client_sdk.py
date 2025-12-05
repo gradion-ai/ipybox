@@ -23,7 +23,7 @@ async def main():
     await generate_mcp_sources("brave_search", SERVER_PARAMS, Path("mcptools"))
 
     async with CodeExecutor() as executor:
-        async for item in executor.execute(CODE):
+        async for item in executor.stream(CODE):
             match item:
                 case ApprovalRequest():
                     await item.accept()

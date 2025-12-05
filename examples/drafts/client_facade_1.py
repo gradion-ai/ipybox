@@ -23,7 +23,7 @@ print("Done")
 
 async def main():
     async with CodeExecutor() as executor:
-        async for item in executor.execute(CODE_1, stream=True):
+        async for item in executor.stream(CODE_1, chunks=True):
             match item:
                 case ApprovalRequest():
                     print(f"Approval request: {item}")

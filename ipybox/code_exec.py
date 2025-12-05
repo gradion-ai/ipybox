@@ -35,8 +35,8 @@ class CodeExecutionResult:
 class CodeExecutionChunk:
     """A chunk of output text generated during streaming code execution.
 
-    Only yielded by [`CodeExecutor.execute`][ipybox.code_exec.CodeExecutor.execute]
-    when `stream=True`.
+    Only yielded by [`CodeExecutor.stream`][ipybox.code_exec.CodeExecutor.stream]
+    when `chunks=True`.
 
     Attributes:
         text: A chunk of output text.
@@ -81,7 +81,7 @@ class CodeExecutor:
         \"\"\"
 
         async with CodeExecutor() as executor:
-            async for item in executor.execute(code):
+            async for item in executor.stream(code):
                 match item:
                     case ApprovalRequest():
                         print(f"Tool call: {item}")
@@ -189,8 +189,8 @@ class CodeExecutor:
         )
         await self._client.connect()
 
-    async def execute(
-        self, code: str, timeout: float = 120, stream: bool = False
+    async def stream(
+        self, code: str, timeout: float = 120, chunks: bool = False
     ) -> AsyncIterator[ApprovalRequest | CodeExecutionChunk | CodeExecutionResult]:
         """Execute Python code in the IPython kernel.
 
@@ -205,7 +205,7 @@ class CodeExecutor:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for execution to complete.
-            stream: Whether to yield
+            chunks: Whether to yield
                 [`CodeExecutionChunk`][ipybox.code_exec.CodeExecutionChunk] objects
                 during execution. When `False`, only
                 [`ApprovalRequest`][ipybox.tool_exec.approval.client.ApprovalRequest]
@@ -217,7 +217,7 @@ class CodeExecutor:
                 When executed code calls an MCP tool. Accept to execute the tool,
                 reject to fail the tool call.
             [`CodeExecutionChunk`][ipybox.code_exec.CodeExecutionChunk]: Output text
-                chunks generated during execution (emitted only if `stream=True`).
+                chunks generated during execution (emitted only if `chunks=True`).
             [`CodeExecutionResult`][ipybox.code_exec.CodeExecutionResult]: The final
                 result when execution completes successfully.
 
@@ -248,7 +248,7 @@ class CodeExecutor:
                     match item:
                         case ApprovalRequest():
                             yield item
-                        case str() if stream:
+                        case str() if chunks:
                             yield CodeExecutionChunk(text=item)
                         case ExecutionError():
                             raise CodeExecutionError(item.args[0])
@@ -260,8 +260,8 @@ class CodeExecutor:
             finally:
                 await task
 
-    async def run(self, code: str, timeout: float = 120) -> CodeExecutionResult:
-        """[Execute][ipybox.code_exec.CodeExecutor.execute] Python code with automatic approval of all tool calls.
+    async def execute(self, code: str, timeout: float = 120) -> CodeExecutionResult:
+        """[`stream`][ipybox.code_exec.CodeExecutor.stream] Python code with automatic approval of all tool calls.
 
         Convenience method that executes code, auto-approves any MCP tool calls,
         and returns the final result directly.
@@ -277,7 +277,7 @@ class CodeExecutor:
             CodeExecutionError: If code execution raises an error.
             asyncio.TimeoutError: If code execution exceeds the timeout.
         """
-        async for item in self.execute(code, timeout=timeout, stream=False):
+        async for item in self.stream(code, timeout=timeout, chunks=False):
             match item:
                 case ApprovalRequest():
                     await item.accept()

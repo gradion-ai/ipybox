@@ -13,7 +13,7 @@ print(result)
 
 async def main():
     async with CodeExecutor() as executor:
-        async for item in executor.execute(CODE):
+        async for item in executor.stream(CODE):
             match item:
                 case ApprovalRequest():
                     await item.accept()
