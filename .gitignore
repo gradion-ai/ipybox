@@ -8,9 +8,9 @@ __pycache__
 .venv/
 site/
 mcptools/
-images/
 .env
 GEMINI.md
+/images/
 /mcptools/
 /mcpparse/
 /codeact/

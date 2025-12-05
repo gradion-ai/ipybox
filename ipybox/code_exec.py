@@ -102,7 +102,7 @@ class CodeExecutor:
         connect_timeout: float = 30,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
-        log_level: str = "INFO",
+        log_level: str = "WARNING",
     ):
         """Configure a code executor with optional sandboxing.
 
