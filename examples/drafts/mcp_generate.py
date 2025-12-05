@@ -29,7 +29,7 @@ async def main():
 
     server_params_5 = {
         "command": "python",
-        "args": ["-m", "examples.mcp_server"],
+        "args": ["-m", "examples.drafts.mcp_server"],
     }
 
     root_dir = Path("mcptools")

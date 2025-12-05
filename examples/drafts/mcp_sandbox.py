@@ -24,7 +24,7 @@ server_params = {
     "command": "srt",
     "args": [
         "--settings",
-        "examples/mcp_sandbox.json",
+        "examples/drafts/mcp_sandbox.json",
         "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
