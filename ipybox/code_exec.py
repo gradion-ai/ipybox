@@ -98,6 +98,7 @@ class CodeExecutor:
         kernel_gateway_host: str = "localhost",
         kernel_gateway_port: int | None = None,
         kernel_env: dict[str, str] | None = None,
+        images_dir: Path | None = None,
         approval_timeout: float = 60,
         connect_timeout: float = 30,
         sandbox: bool = False,
@@ -118,6 +119,8 @@ class CodeExecutor:
             kernel_env: Environment variables to set for the IPython kernel.
                 Kernels do not inherit environment variables from the parent
                 process.
+            images_dir: Directory for saving images generated during code
+                execution. Defaults to `images` in the current directory.
             approval_timeout: Timeout in seconds for approval requests. If an
                 approval request is not accepted or rejected within this time,
                 the tool call fails.
@@ -138,6 +141,7 @@ class CodeExecutor:
         self.kernel_gateway_host = kernel_gateway_host
         self.kernel_gateway_port = kernel_gateway_port or find_free_port()
         self.kernel_env = kernel_env or {}
+        self.images_dir = images_dir
 
         self.approval_timeout = approval_timeout
         self.connect_timeout = connect_timeout
@@ -285,7 +289,7 @@ class CodeExecutor:
                 case CodeExecutionResult():
                     return item
 
-        raise CodeExecutionError("Code execution completed without result")
+        raise RuntimeError("Code execution completed without result")
 
     @asynccontextmanager
     async def _executor(self) -> AsyncIterator[KernelClient]:
@@ -312,5 +316,6 @@ class CodeExecutor:
                 async with KernelClient(
                     host=self.kernel_gateway_host,
                     port=self.kernel_gateway_port,
+                    images_dir=self.images_dir,
                 ) as client:
                     yield client

@@ -87,7 +87,10 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 nav:
-  - User Guide: index.md
-  - API Documentation:
-    - Server: api/server.md
-    - Client: api/client.md
+  - User Guide:
+    - Overview: index.md
+    - Installation: installation.md
+    - Quickstart: quickstart.md
+    - Tool wrappers: codegen.md
+    - Code execution: codeexec.md
+    - Sandbox config: sandbox.md
