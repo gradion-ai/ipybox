@@ -10,5 +10,8 @@ site/
 mcptools/
 images/
 .env
-/sandbox.*
 GEMINI.md
+/mcptools/
+/mcpparse/
+/codeact/
+/sandbox.*
