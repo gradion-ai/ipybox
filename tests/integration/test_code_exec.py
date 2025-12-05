@@ -55,27 +55,28 @@ class TestBasicExecution:
     @pytest.mark.asyncio
     async def test_simple_code_execution(self, code_executor: CodeExecutor):
         """Test executing a simple print statement."""
-        code = "print('hello world')"
+        result = await code_executor.run("print('hello world')")
 
-        results = []
-        async for item in code_executor.execute(code):
-            results.append(item)
-
-        assert len(results) == 1
-        assert isinstance(results[0], CodeExecutionResult)
-        assert results[0].text == "hello world"
+        assert result.text == "hello world"
 
     @pytest.mark.asyncio
     async def test_code_execution_error(self, code_executor: CodeExecutor):
         """Test that CodeExecutionError is raised on runtime error."""
-        code = "raise ValueError('test error')"
-
         with pytest.raises(CodeExecutionError) as exc_info:
-            async for _ in code_executor.execute(code):
-                pass
+            await code_executor.run("raise ValueError('test error')")
 
         assert "ValueError" in str(exc_info.value)
         assert "test error" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_run_returns_result_directly(self, code_executor: CodeExecutor):
+        """Test that run() returns CodeExecutionResult directly."""
+        code = "print('hello world')"
+
+        result = await code_executor.run(code)
+
+        assert isinstance(result, CodeExecutionResult)
+        assert result.text == "hello world"
 
     @pytest.mark.asyncio
     async def test_streaming_execution(self, code_executor: CodeExecutor):
@@ -129,6 +130,21 @@ print(result)
         assert "You passed to tool 2: hello" in results[0].text
 
     @pytest.mark.asyncio
+    async def test_run_auto_approves_tool_calls(self, code_executor: CodeExecutor):
+        """Test that run() auto-approves tool calls and returns result."""
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+result = run(Params(s="hello"))
+print(result)
+"""
+
+        result = await code_executor.run(code)
+
+        assert isinstance(result, CodeExecutionResult)
+        assert result.text is not None
+        assert "You passed to tool 2: hello" in result.text
+
+    @pytest.mark.asyncio
     async def test_tool_call_with_approval_rejected(self, code_executor: CodeExecutor):
         """Test calling a tool and rejecting the approval request."""
         code = f"""
@@ -156,19 +172,12 @@ print(f"count={{result.count}}")
 print(f"inner_code={{result.inner.code}}")
 """
 
-        results = []
-        async for item in code_executor.execute(code):
-            match item:
-                case ApprovalRequest():
-                    await item.accept()
-                case CodeExecutionResult():
-                    results.append(item)
+        result = await code_executor.run(code)
 
-        assert len(results) == 1
-        assert results[0].text is not None
-        assert "status=completed_test" in results[0].text
-        assert "count=4" in results[0].text
-        assert "inner_code=200" in results[0].text
+        assert result.text is not None
+        assert "status=completed_test" in result.text
+        assert "count=4" in result.text
+        assert "inner_code=200" in result.text
 
     @pytest.mark.asyncio
     async def test_multiple_tool_calls_in_sequence(self, code_executor: CodeExecutor):
@@ -281,15 +290,10 @@ class TestExecutorLifecycle:
     async def test_reset_clears_kernel_state(self, code_executor: CodeExecutor):
         """Test that reset() clears kernel state but allows continued execution."""
         # Set a variable
-        async for _ in code_executor.execute("x = 42"):
-            pass
+        await code_executor.run("x = 42")
 
         # Verify it exists
-        result = None
-        async for item in code_executor.execute("print(x)"):
-            if isinstance(item, CodeExecutionResult):
-                result = item
-        assert result is not None
+        result = await code_executor.run("print(x)")
         assert result.text == "42"
 
         # Reset the executor
@@ -297,16 +301,11 @@ class TestExecutorLifecycle:
 
         # Verify the variable no longer exists
         with pytest.raises(CodeExecutionError) as exc_info:
-            async for _ in code_executor.execute("print(x)"):
-                pass
+            await code_executor.run("print(x)")
         assert "NameError" in str(exc_info.value)
 
         # Verify we can still execute code
-        result = None
-        async for item in code_executor.execute("print('after reset')"):
-            if isinstance(item, CodeExecutionResult):
-                result = item
-        assert result is not None
+        result = await code_executor.run("print('after reset')")
         assert result.text == "after reset"
 
 
@@ -329,11 +328,7 @@ print(content)
             sandbox_config=Path("tests", "integration", "sandbox.json"),
             log_level="WARNING",
         ) as executor:
-            result = None
-            async for item in executor.execute(self.HTTP_CODE):
-                if isinstance(item, CodeExecutionResult):
-                    result = item
+            result = await executor.run(self.HTTP_CODE)
 
-            assert result is not None
             assert result.text is not None
             assert "Example Domain" in result.text

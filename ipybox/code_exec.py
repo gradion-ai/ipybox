@@ -260,6 +260,32 @@ class CodeExecutor:
             finally:
                 await task
 
+    async def run(self, code: str, timeout: float = 120) -> CodeExecutionResult:
+        """[Execute][ipybox.code_exec.CodeExecutor.execute] Python code with automatic approval of all tool calls.
+
+        Convenience method that executes code, auto-approves any MCP tool calls,
+        and returns the final result directly.
+
+        Args:
+            code: Python code to execute.
+            timeout: Maximum time in seconds to wait for execution to complete.
+
+        Returns:
+            The execution result containing output text and generated images.
+
+        Raises:
+            CodeExecutionError: If code execution raises an error.
+            asyncio.TimeoutError: If code execution exceeds the timeout.
+        """
+        async for item in self.execute(code, timeout=timeout, stream=False):
+            match item:
+                case ApprovalRequest():
+                    await item.accept()
+                case CodeExecutionResult():
+                    return item
+
+        raise CodeExecutionError("Code execution completed without result")
+
     @asynccontextmanager
     async def _executor(self) -> AsyncIterator[KernelClient]:
         async with ToolServer(
