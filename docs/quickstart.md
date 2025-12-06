@@ -50,7 +50,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your e
 
 ### Generating a Python tool API
 
-`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates typed Python modules from their schema:
+[`generate_mcp_sources()`][ipybox.generate_mcp_sources] connects to the MCP server, discovers its tools, and generates typed Python modules from their schema:
 
 ```python
 await generate_mcp_sources(
@@ -75,7 +75,7 @@ Each module contains a Pydantic `Params` class for input validation, a `Result` 
 
 ### Code execution
 
-`CodeExecutor` runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.
+[`CodeExecutor`][ipybox.CodeExecutor] runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.
 
 ```python
 async with CodeExecutor() as executor:
@@ -83,11 +83,14 @@ async with CodeExecutor() as executor:
         ...
 ```
 
-The `stream()` method yields events as execution progresses. You'll receive `ApprovalRequest` events when the code calls an MCP tool, and a final `CodeExecutionResult` with the output.
+The `stream()` method yields events as execution progresses. You'll receive
+[`ApprovalRequest`][ipybox.ApprovalRequest] events when the code calls an MCP tool, and a final
+[`CodeExecutionResult`][ipybox.CodeExecutionResult] with the output.
 
 ### Tool call approval
 
-When executed code calls the generated Python tool API, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
+When executed code calls the generated Python tool API, ipybox pauses execution and sends an
+[`ApprovalRequest`][ipybox.ApprovalRequest] to your application. You must explicitly approve or reject each tool call:
 
 ```python
 case ApprovalRequest() as req:
@@ -97,7 +100,7 @@ case ApprovalRequest() as req:
         await req.reject()
 ```
 
-The `ApprovalRequest` includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.
+The [`ApprovalRequest`][ipybox.ApprovalRequest] includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.
 
 ## Next steps
 

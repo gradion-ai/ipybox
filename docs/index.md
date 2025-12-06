@@ -4,7 +4,7 @@ ipybox is a Python code execution sandbox with first-class support for programma
 
 <figure markdown>
   ![Architecture](images/architecture-light.png){ width="100%" }
-  <figcaption>CodeExecutor coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
+  <figcaption><code>CodeExecutor</code> coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
 </figure>
 
 ## Agent integration

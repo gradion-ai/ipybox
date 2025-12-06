@@ -4,7 +4,7 @@
 --8<-- "examples/codexec.py:imports"
 ```
 
-`CodeExecutor` runs Python code in an IPython kernel where variables and definitions persist across executions.
+[`CodeExecutor`][ipybox.CodeExecutor] runs Python code in an IPython kernel where variables and definitions persist across executions.
 
 ## Basic execution
 
@@ -18,13 +18,13 @@ For application-level approval control, use `stream()` instead.
 
 ## Tool call approval
 
-When code calls the generated Python tool API, ipybox yields an `ApprovalRequest`. You must call `accept()` before execution continues:
+When code calls the generated Python tool API, ipybox yields an [`ApprovalRequest`][ipybox.ApprovalRequest]. You must call `accept()` before execution continues:
 
 ```python
 --8<-- "examples/codexec.py:basic_approval"
 ```
 
-The request includes `tool_name` and `tool_args` so you can inspect what's being called. Calling `reject()` raises a `CodeExecutionError`.
+The request includes `tool_name` and `tool_args` so you can inspect what's being called. Calling `reject()` raises a [`CodeExecutionError`][ipybox.CodeExecutionError].
 
 ## Stream output chunks
 
@@ -34,7 +34,7 @@ Enable `chunks=True` to receive output incrementally as it's produced:
 --8<-- "examples/codexec.py:basic_chunks"
 ```
 
-`CodeExecutionChunk` events contain partial output. The final `CodeExecutionResult` still contains the complete output.
+[`CodeExecutionChunk`][ipybox.CodeExecutionChunk] events contain partial output. The final [`CodeExecutionResult`][ipybox.CodeExecutionResult] still contains the complete output.
 
 ## Capturing plots
 

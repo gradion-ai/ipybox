@@ -4,7 +4,7 @@
 --8<-- "examples/apigen.py:imports"
 ```
 
-`generate_mcp_sources()` generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic `Params` class, a `Result` class or `str` return type, and a `run()` function.
+[`generate_mcp_sources()`][ipybox.generate_mcp_sources] generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic `Params` class, a `Result` class or `str` return type, and a `run()` function.
 
 ## Stdio servers
 
