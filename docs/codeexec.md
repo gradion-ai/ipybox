@@ -1,4 +1,4 @@
-# Code Execution
+# Code execution
 
 ```python
 --8<-- "examples/codexec.py:imports"

@@ -2,13 +2,13 @@
 
 The ipybox MCP server can be run in a Docker container.
 
-## Building the Image
+## Building the image
 
 ```bash
 docker build -t ipybox .
 ```
 
-## Running as MCP Server
+## Running as MCP server
 
 Configure your MCP client to use the container with stdio transport:
 
@@ -54,7 +54,7 @@ The workspace directory inside the container is `/app/workspace`. Mount your loc
 
 Files created by the MCP server (e.g., generated images, MCP tool packages) will be written to this directory.
 
-## Environment Variables
+## Environment variables
 
 Environment variables prefixed with `KERNEL_ENV_` are passed to the IPython kernel (with the prefix stripped). For example:
 

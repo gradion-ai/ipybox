@@ -1,4 +1,4 @@
-# Python Tool API Generation
+# Python tool API generation
 
 ```python
 --8<-- "examples/apigen.py:imports"
