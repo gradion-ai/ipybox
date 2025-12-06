@@ -54,8 +54,7 @@ class ToolServer:
         log_to_stderr: bool = False,
         log_level: str = "INFO",
     ):
-        """Initialize a `ToolServer` for managing MCP tool execution.
-
+        """
         Args:
             host: Hostname the server binds to.
             port: Port number the server listens on.

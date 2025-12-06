@@ -37,8 +37,7 @@ class KernelGateway:
         log_to_stderr: bool = False,
         env: dict[str, str] | None = None,
     ):
-        """Configures a kernel gateway.
-
+        """
         Args:
             host: Hostname or IP address to bind the gateway to.
             port: Port number the gateway listens on.

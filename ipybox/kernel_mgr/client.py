@@ -66,8 +66,7 @@ class KernelClient:
         images_dir: Path | None = None,
         ping_interval: float = 10,
     ):
-        """Configures a kernel client.
-
+        """
         Args:
             host: Hostname or IP address of the kernel gateway.
             port: Port number of the kernel gateway.

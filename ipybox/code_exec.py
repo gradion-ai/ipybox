@@ -46,7 +46,7 @@ class CodeExecutionChunk:
 
 
 class CodeExecutor:
-    """Executes Python code in an IPython kernel with MCP tool support.
+    """Executes Python code in an IPython kernel with programmatic MCP tool call support.
 
     `CodeExecutor` launches an embedded
     [`KernelGateway`][ipybox.kernel_mgr.server.KernelGateway] for running Python
@@ -180,7 +180,7 @@ class CodeExecutor:
 
         Restarts the IPython kernel and stops all started MCP servers. Kernel state
         (variables, definitions, imports) is lost. MCP servers are lazily restarted
-        on the next tool call.
+        on their next tool call.
         """
         await reset(
             host=self.tool_server_host,

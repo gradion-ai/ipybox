@@ -29,8 +29,7 @@ class ToolRunner:
         host: str = "localhost",
         port: int = 8900,
     ):
-        """Initialize a `ToolRunner` for a specific MCP server.
-
+        """
         Args:
             server_name: Name of the MCP server.
             server_params: MCP server parameters.

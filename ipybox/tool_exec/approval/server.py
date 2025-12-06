@@ -22,8 +22,7 @@ class ApprovalChannel:
         approval_required: bool = False,
         approval_timeout: float = 60,
     ):
-        """Initialize an `ApprovalChannel`.
-
+        """
         Args:
             approval_required: Whether approval is required for tool execution.
             approval_timeout: Timeout in seconds for approval requests.

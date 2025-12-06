@@ -87,6 +87,9 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - User Guide:
     - Overview: index.md
@@ -95,6 +98,9 @@ nav:
     - API generation: apigen.md
     - Code execution: codeexec.md
     - Sandboxing: sandbox.md
-
-extra_css:
-  - stylesheets/extra.css
+  - API Reference:
+    - High-level API:
+      - Code Executor: api/code_executor.md
+    - Low-level API:
+      - Tool Executor: api/tool_executor.md
+      - Kernel Manager: api/kernel_manager.md

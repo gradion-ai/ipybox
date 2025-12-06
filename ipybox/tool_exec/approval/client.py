@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ApprovalRequest:
-    """A tool call approval request.
+    """An MCP tool call approval request.
 
     `ApprovalRequest` instances are passed to the approval callback registered with
     [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient]. The callback
@@ -37,8 +37,7 @@ class ApprovalRequest:
         tool_args: dict[str, Any],
         respond: Callable[[bool], Awaitable[None]],
     ):
-        """Initialize an `ApprovalRequest` for a tool call.
-
+        """
         Args:
             server_name: Name of the MCP server providing the tool.
             tool_name: Name of the tool to execute.
@@ -98,8 +97,7 @@ class ApprovalClient:
         host: str = "localhost",
         port: int = 8900,
     ):
-        """Initialize an `ApprovalClient` for an `ApprovalChannel`.
-
+        """
         Args:
             callback: Async function called for each approval request.
             host: Hostname of the `ToolServer`.
