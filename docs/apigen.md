@@ -60,8 +60,3 @@ for image in result.items:
 ```
 
 The `Params` class is generated from the tool's input schema. Tools with an output schema get a typed `Result` class; others return `str`.
-
-## Next steps
-
-- [Code Execution](codeexec.md) - Running code and handling tool approvals
-- [Sandboxing](sandbox.md) - Secure execution with network and filesystem isolation

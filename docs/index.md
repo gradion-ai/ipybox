@@ -19,7 +19,7 @@ ipybox is designed for agents that interact with their environment through [code
 - **Generated Python tool API** — typed functions generated from MCP server schemas
 - **MCP tool call approval** — every tool call requires application-level approval
 - **Any MCP server** — supports stdio, Streamable HTTP, and SSE transports
-- **Any Python package** — install and use any package in IPython kernels
+- **Any Python package** — install and use any Python package in IPython kernels
 - **Local code execution** — no cloud dependencies, everything runs on your machine
 - **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
 - **Claude Code plugin** — programmatic MCP tool use and code action development

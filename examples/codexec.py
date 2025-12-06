@@ -127,14 +127,14 @@ async def working_directory():
 
 
 async def main():
-    # await basic_execution()
-    # await basic_streaming()
-    # await basic_approval()
+    await basic_execution()
+    await basic_approval()
+    await basic_chunks()
     await basic_plotting()
-    # await custom_timeouts()
-    # await kernel_environment()
-    # await kernel_reset()
-    # await working_directory()
+    await custom_timeouts()
+    await kernel_environment()
+    await kernel_reset()
+    await working_directory()
 
 
 if __name__ == "__main__":

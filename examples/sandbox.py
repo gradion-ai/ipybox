@@ -87,8 +87,8 @@ async def sandboxed_mcp_server():
 
 
 async def main():
-    # await default_sandbox()
-    # await custom_sandbox()
+    await default_sandbox()
+    await custom_sandbox()
     await sandboxed_mcp_server()
 
 

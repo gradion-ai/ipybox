@@ -65,7 +65,9 @@ The IPython kernel does not inherit environment variables from the parent proces
 --8<-- "examples/codexec.py:kernel_environment"
 ```
 
-Note: Environment variables referenced in `server_params` via `${VAR_NAME}` placeholders are substituted automatically and do not need to be passed to `kernel_env`.
+!!! note
+
+    Environment variables referenced in `server_params` via `${VAR_NAME}` are taken from the parent process and do not need to be passed to `kernel_env`.
 
 ## Kernel reset
 
@@ -84,7 +86,3 @@ The kernel shares the working directory with the parent process:
 ```python
 --8<-- "examples/codexec.py:working_directory"
 ```
-
-## Next steps
-
-- [Sandboxing](sandbox.md) - Secure execution with network and filesystem isolation
