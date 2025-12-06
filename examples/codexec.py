@@ -3,7 +3,12 @@ import tempfile
 from pathlib import Path
 
 # --8<-- [start:imports]
-from ipybox import ApprovalRequest, CodeExecutionChunk, CodeExecutionResult, CodeExecutor
+from ipybox import (
+    ApprovalRequest,
+    CodeExecutionChunk,
+    CodeExecutionResult,
+    CodeExecutor,
+)
 
 # --8<-- [end:imports]
 

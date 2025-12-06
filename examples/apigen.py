@@ -15,8 +15,6 @@ async def generate_brave_search_wrappers():
         "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
     }
 
-    # Generates mcptools/brave_search/<tool_name>.py
-    # modules for each tool of Brave Search MCP server
     await generate_mcp_sources(
         server_name="brave_search",
         server_params=brave_mcp_params,
@@ -32,8 +30,6 @@ async def generate_github_wrappers():
         "headers": {"Authorization": "Bearer ${GITHUB_API_KEY}"},
     }
 
-    # Generates mcptools/github/<tool_name>.py
-    # modules for each tool of GitHub MCP server
     await generate_mcp_sources(
         server_name="github",
         server_params=github_mcp_params,

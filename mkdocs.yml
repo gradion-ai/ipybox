@@ -92,9 +92,9 @@ nav:
     - Overview: index.md
     - Installation: installation.md
     - Quickstart: quickstart.md
-    - API generation: codegen.md
+    - API generation: apigen.md
     - Code execution: codeexec.md
-    - Sandbox config: sandbox.md
+    - Sandboxing: sandbox.md
 
 extra_css:
   - stylesheets/extra.css

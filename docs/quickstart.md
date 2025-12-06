@@ -1,6 +1,6 @@
 # Quickstart
 
-This guide walks through a complete example: generating a Python tool API for the Brave Search MCP server, executing code that calls it, and handling tool call approvals.
+This guide walks through a complete example: generating a Python tool API for the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server), executing code that calls it, and handling tool call approvals.
 
 ## Installation
 
@@ -50,7 +50,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your e
 
 ### Generating a Python tool API
 
-`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates typed Python modules:
+`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates typed Python modules from their schema:
 
 ```python
 await generate_mcp_sources(
@@ -87,7 +87,7 @@ The `stream()` method yields events as execution progresses. You'll receive `App
 
 ### Tool call approval
 
-When executed code calls the generated API, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
+When executed code calls the generated Python tool API, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
 
 ```python
 case ApprovalRequest() as req:
@@ -101,6 +101,6 @@ The `ApprovalRequest` includes the server name, tool name, and arguments, so you
 
 ## Next steps
 
-- [Code Generation](codegen.md) - Python API generation for MCP server tools
-- [Code Execution](codeexec.md) - All `CodeExecutor` features and options
+- [API Generation](apigen.md) - Generating typed Python APIs from MCP tools
+- [Code Execution](codeexec.md) - Running code and handling tool approvals
 - [Sandboxing](sandbox.md) - Secure execution with network and filesystem isolation

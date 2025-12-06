@@ -1,10 +1,10 @@
 # Code Execution
 
-`CodeExecutor` runs Python code in an IPython kernel where variables and definitions persist across executions.
-
 ```python
 --8<-- "examples/codexec.py:imports"
 ```
+
+`CodeExecutor` runs Python code in an IPython kernel where variables and definitions persist across executions.
 
 ## Basic execution
 
@@ -14,17 +14,17 @@ Use `execute()` for non-interactive execution where MCP tool calls, if any, are 
 --8<-- "examples/codexec.py:basic_execution"
 ```
 
-`execute()` auto-approves all tool calls. For explicit approval control, use `stream()` instead.
+For application-level approval control, use `stream()` instead.
 
 ## Tool call approval
 
-When code calls the generated API, ipybox yields an `ApprovalRequest`. You must call `accept()` or `reject()` before execution continues:
+When code calls the generated Python tool API, ipybox yields an `ApprovalRequest`. You must call `accept()` before execution continues:
 
 ```python
 --8<-- "examples/codexec.py:basic_approval"
 ```
 
-The request includes `tool_name` and `tool_args` so you can inspect what's being called.
+The request includes `tool_name` and `tool_args` so you can inspect what's being called. Calling `reject()` raises a `CodeExecutionError`.
 
 ## Stream output chunks
 
@@ -38,7 +38,7 @@ Enable `chunks=True` to receive output incrementally as it's produced:
 
 ## Capturing plots
 
-Set `images_dir` to capture plots as PNG files:
+Plots are automatically captured as PNG files in the `images` directory. Use `images_dir` to customize the location:
 
 ```python
 --8<-- "examples/codexec.py:basic_plotting"
@@ -64,6 +64,8 @@ The IPython kernel does not inherit environment variables from the parent proces
 ```python
 --8<-- "examples/codexec.py:kernel_environment"
 ```
+
+Note: Environment variables referenced in `server_params` via `${VAR_NAME}` placeholders are substituted automatically and do not need to be passed to `kernel_env`.
 
 ## Kernel reset
 

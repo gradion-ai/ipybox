@@ -47,9 +47,6 @@ async def custom_sandbox():
 
 async def sandboxed_mcp_server():
     # --8<-- [start:sandboxed_mcp_server]
-    # MCP server running in a sandbox with custom config
-    # may access current working dir and sub-directories
-    # but is blocked by sandbox to read .env file
     server_params = {
         "command": "srt",
         "args": [
@@ -62,7 +59,6 @@ async def sandboxed_mcp_server():
         ],
     }
 
-    # Generate a Python tool API for the filesystem MCP server
     await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
     list_dir_code = """

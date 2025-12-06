@@ -9,12 +9,12 @@ ipybox is a Python code execution sandbox with first-class support for programma
 
 ## Agent integration
 
-ipybox is designed for agents that interact with their environment through code actions[^1] rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.
+ipybox is designed for agents that interact with their environment through [code actions](https://arxiv.org/abs/2402.01030) rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.
 
 ## Features
 
 - **Stateful code execution** — state persists across executions in IPython kernels
-- **Lightweight sandboxing** — kernel isolation via Anthropic's sandbox-runtime
+- **Lightweight sandboxing** — kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
 - **Programmatic MCP tool use** — MCP tools called via Python code, not JSON directly
 - **Generated Python tool API** — typed functions generated from MCP server schemas
 - **MCP tool call approval** — every tool call requires application-level approval
@@ -23,5 +23,3 @@ ipybox is designed for agents that interact with their environment through code 
 - **Local code execution** — no cloud dependencies, everything runs on your machine
 - **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
 - **Claude Code plugin** — programmatic MCP tool use and code action development
-
-[^1]: Code actions can significantly outperform JSON-based approaches as shown in the [CodeAct](https://arxiv.org/abs/2402.01030) paper.

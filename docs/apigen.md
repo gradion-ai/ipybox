@@ -1,17 +1,17 @@
 # Python Tool API Generation
 
-`generate_mcp_sources()` generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic `Params` class, a `Result` class or `str` return type, and a `run()` function.
-
 ```python
---8<-- "examples/codegen.py:imports"
+--8<-- "examples/apigen.py:imports"
 ```
+
+`generate_mcp_sources()` generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic `Params` class, a `Result` class or `str` return type, and a `run()` function.
 
 ## Stdio servers
 
 For MCP servers that run as local processes, specify `command`, `args`, and optional `env`:
 
 ```python
---8<-- "examples/codegen.py:gen_brave_search_wrappers"
+--8<-- "examples/apigen.py:gen_brave_search_wrappers"
 ```
 
 ## HTTP servers
@@ -19,7 +19,7 @@ For MCP servers that run as local processes, specify `command`, `args`, and opti
 For remote MCP servers over HTTP, specify `url` and optional `headers`:
 
 ```python
---8<-- "examples/codegen.py:gen_github_wrappers"
+--8<-- "examples/apigen.py:gen_github_wrappers"
 ```
 
 ipybox auto-detects the transport type from the URL. URLs containing `/mcp` use streamable HTTP, URLs containing `/sse` use SSE. You can also set `type` explicitly to `"streamable_http"` or `"sse"`.
@@ -59,9 +59,9 @@ for image in result.items:
     print(image.title)
 ```
 
-The `Params` class is generated from the tool's input schema, providing IDE autocomplete and validation. Tools with an `outputSchema` get a typed `Result` class; others return `str`.
+The `Params` class is generated from the tool's input schema. Tools with an output schema get a typed `Result` class; others return `str`.
 
 ## Next steps
 
-- [Code Execution](codeexec.md) - Executing code with the generated API
-- [Sandboxing](sandbox.md) - Secure execution with isolation
+- [Code Execution](codeexec.md) - Running code and handling tool approvals
+- [Sandboxing](sandbox.md) - Secure execution with network and filesystem isolation
