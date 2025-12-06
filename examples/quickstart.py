@@ -28,8 +28,8 @@ for image in result.items:
 
 
 async def main():
-    # Generate Python wrapper functions
-    # for Brave Search MCP server tools
+    # Generate a Python tool API
+    # for the Brave Search MCP server
     await generate_mcp_sources(
         server_name="brave_search",
         server_params=SERVER_PARAMS,

@@ -14,7 +14,7 @@ MCP_SERVER_NAME = "test_mcp"
 
 @pytest_asyncio.fixture(scope="module")
 async def generated_mcp_package():
-    """Generate MCP wrapper sources to a temp directory."""
+    """Generate a Python tool API to a temp directory."""
     server_params = {
         "command": "python",
         "args": [str(STDIO_SERVER_PATH)],

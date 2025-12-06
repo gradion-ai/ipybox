@@ -62,7 +62,7 @@ async def sandboxed_mcp_server():
         ],
     }
 
-    # Generate Python wrapper functions for filesystem MCP server tools
+    # Generate a Python tool API for the filesystem MCP server
     await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
     list_dir_code = """

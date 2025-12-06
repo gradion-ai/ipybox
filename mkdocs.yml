@@ -70,6 +70,7 @@ plugins:
               domains: [py, std]
 
 markdown_extensions:
+  - footnotes
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -91,6 +92,9 @@ nav:
     - Overview: index.md
     - Installation: installation.md
     - Quickstart: quickstart.md
-    - Tool wrappers: codegen.md
+    - API generation: codegen.md
     - Code execution: codeexec.md
     - Sandbox config: sandbox.md
+
+extra_css:
+  - stylesheets/extra.css

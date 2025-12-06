@@ -1,6 +1,6 @@
-# Code Generation
+# Python Tool API Generation
 
-`generate_mcp_sources()` creates typed Python wrapper modules from MCP server tool schemas. Each tool becomes a module with a Pydantic `Params` class, a `Result` class or `str` return type, and a `run()` function.
+`generate_mcp_sources()` generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic `Params` class, a `Result` class or `str` return type, and a `run()` function.
 
 ```python
 --8<-- "examples/codegen.py:imports"
@@ -30,7 +30,7 @@ Use `${VAR_NAME}` placeholders in `server_params` values. ipybox replaces them w
 
 ## Generated package structure
 
-After generating wrappers for `brave_search` with `root_dir=Path("mcptools")`:
+After generating the API for `brave_search` with `root_dir=Path("mcptools")`:
 
 ```
 mcptools/
@@ -42,7 +42,7 @@ mcptools/
     └── ...
 ```
 
-## Using generated wrappers
+## Using the generated API
 
 Each tool module provides typed interfaces:
 
@@ -63,5 +63,5 @@ The `Params` class is generated from the tool's input schema, providing IDE auto
 
 ## Next steps
 
-- [Code Execution](codeexec.md) - Running generated wrappers in `CodeExecutor`
+- [Code Execution](codeexec.md) - Executing code with the generated API
 - [Sandboxing](sandbox.md) - Secure execution with isolation

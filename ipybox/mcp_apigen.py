@@ -101,15 +101,15 @@ def _generate_model_code(schema: dict[str, Any], class_name: str) -> str:
 
 
 async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], root_dir: Path) -> list[str]:
-    """Generate Python wrapper functions for tools of an MCP server.
+    """Generate a typed Python tool API for an MCP server.
 
     Connects to an MCP server, discovers available tools, and generates a Python
-    package with Pydantic models and wrapper functions. Each wrapper function is
-    defined in its own module with a `Params` class for input validation and a
-    `run()` function to invoke the tool.
+    package with typed functions backed by Pydantic models. Each tool becomes a
+    module with a `Params` class for input validation and a `run()` function to
+    invoke the tool.
 
-    When calling generated wrapper functions, the corresponding tools are executed
-    on a [`ToolServer`][ipybox.tool_exec.server.ToolServer].
+    When calling the generated API, the corresponding tools are executed on a
+    [`ToolServer`][ipybox.tool_exec.server.ToolServer].
 
     If a directory for the server already exists under `root_dir`, it is removed
     and recreated.
@@ -127,7 +127,7 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
         List of sanitized tool names corresponding to the generated module files.
 
     Example:
-        Generate wrapper functions for the fetch MCP server:
+        Generate a Python tool API for the fetch MCP server:
 
         ```python
         server_params = {
@@ -137,7 +137,7 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
         await generate_mcp_sources("fetch_mcp", server_params, Path("mcptools"))
         ```
 
-        Execute code that uses the generated wrapper functions:
+        Execute code that uses the generated API:
 
         ```python
         from ipybox.code_exec import CodeExecutor

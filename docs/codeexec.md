@@ -18,7 +18,7 @@ Use `execute()` for non-interactive execution where MCP tool calls, if any, are 
 
 ## Tool call approval
 
-When code calls a generated MCP wrapper, ipybox yields an `ApprovalRequest`. You must call `accept()` or `reject()` before execution continues:
+When code calls the generated API, ipybox yields an `ApprovalRequest`. You must call `accept()` or `reject()` before execution continues:
 
 ```python
 --8<-- "examples/codexec.py:basic_approval"

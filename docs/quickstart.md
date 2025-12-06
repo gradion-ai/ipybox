@@ -1,6 +1,6 @@
 # Quickstart
 
-This guide walks through a complete example: generating Python wrappers for the Brave Search MCP server, executing code that calls them, and handling tool call approvals.
+This guide walks through a complete example: generating a Python tool API for the Brave Search MCP server, executing code that calls it, and handling tool call approvals.
 
 ## Installation
 
@@ -48,7 +48,7 @@ SERVER_PARAMS = {
 
 The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your environment when ipybox starts the MCP server.
 
-### Generating Python wrappers
+### Generating a Python tool API
 
 `generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates typed Python modules:
 
@@ -87,7 +87,7 @@ The `stream()` method yields events as execution progresses. You'll receive `App
 
 ### Tool call approval
 
-When code execution calls a generated wrapper function, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
+When executed code calls the generated API, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
 
 ```python
 case ApprovalRequest() as req:
@@ -101,6 +101,6 @@ The `ApprovalRequest` includes the server name, tool name, and arguments, so you
 
 ## Next steps
 
-- [Code Generation](codegen.md) - Generating wrappers for different MCP server types
+- [Code Generation](codegen.md) - Python API generation for MCP server tools
 - [Code Execution](codeexec.md) - All `CodeExecutor` features and options
 - [Sandboxing](sandbox.md) - Secure execution with network and filesystem isolation

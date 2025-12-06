@@ -18,7 +18,7 @@ MCP_SERVER_NAME = "test_mcp"
 
 @pytest_asyncio.fixture(scope="module")
 async def generated_package():
-    """Generate MCP wrapper sources to a temp directory."""
+    """Generate a Python tool API to a temp directory."""
     server_params = {
         "command": "python",
         "args": [str(STDIO_SERVER_PATH)],
@@ -53,7 +53,7 @@ async def generated_package():
 
 @pytest_asyncio.fixture
 async def tool_server():
-    """Start a ToolServer for executing generated tool wrappers."""
+    """Start a ToolServer for executing the generated API."""
     async with ToolServer(port=TOOL_SERVER_PORT, log_level="WARNING") as server:
         yield server
 
@@ -80,7 +80,7 @@ class TestGenerateMcpSources:
 
     @pytest.mark.asyncio
     async def test_tool_with_unstructured_output(self, generated_package: dict, tool_server: ToolServer):
-        """Test executing a generated tool wrapper with unstructured (string) output."""
+        """Test executing a generated tool with unstructured (string) output."""
         # Set environment variables for the generated CLIENT
         os.environ["TOOL_SERVER_PORT"] = str(TOOL_SERVER_PORT)
 
@@ -109,7 +109,7 @@ class TestGenerateMcpSources:
 
     @pytest.mark.asyncio
     async def test_tool_with_structured_output(self, generated_package: dict, tool_server: ToolServer):
-        """Test executing a generated tool wrapper with structured output."""
+        """Test executing a generated tool with structured output."""
         os.environ["TOOL_SERVER_PORT"] = str(TOOL_SERVER_PORT)
 
         # Import generated module with structured output
@@ -132,7 +132,7 @@ class TestGenerateMcpSources:
 
     @pytest.mark.asyncio
     async def test_multiple_tool_calls(self, generated_package: dict, tool_server: ToolServer):
-        """Test multiple sequential calls to generated tool wrappers."""
+        """Test multiple sequential calls to the generated API."""
         os.environ["TOOL_SERVER_PORT"] = str(TOOL_SERVER_PORT)
 
         tool_1 = importlib.import_module(f"{MCP_SERVER_NAME}.tool_1")
