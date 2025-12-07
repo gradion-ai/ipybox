@@ -1,11 +1,11 @@
 # Saving Code Actions as Reusable Tools
 
-Save executed Python code as a codeact tool for later reuse.
+Save executed Python code as a tool for later reuse.
 
 ## Package Structure
 
 ```
-codeact/<category>/<tool>/
+gentools/<category>/<tool>/
 ├── __init__.py          # Empty file
 ├── api.py              # Public interface with structured models
 └── impl.py             # Implementation details
@@ -16,7 +16,7 @@ codeact/<category>/<tool>/
 ### 1. Create Package Directory
 
 ```bash
-mkdir -p codeact/<category>/<tool>
+mkdir -p gentools/<category>/<tool>
 ```
 
 Create empty `__init__.py` files in both `<category>` and `<tool>` directories.
@@ -53,6 +53,13 @@ Requirements:
 - Create `run()` function with typed parameters
 - Use lazy import from `impl.py` inside `run()`
 - Include comprehensive docstring
+- Export `OutputModel` and `run` in `gentools/<category>/<tool>/__init__.py`:
+
+```python
+from .api import OutputModel, run
+
+__all__ = ["OutputModel", "run"]
+```
 
 ### 3. Implement Details (`impl.py`)
 
@@ -65,7 +72,7 @@ from .api import OutputModel
 
 def implementation_function(param1: type, param2: type) -> OutputModel:
     """Implementation description."""
-    # Use tools from mcptools or other codeact packages
+    # Use tools from mcptools or gentools packages
     result = run_parsed(Params(...))
 
     # Transform and return structured output
@@ -73,14 +80,14 @@ def implementation_function(param1: type, param2: type) -> OutputModel:
 ```
 
 Requirements:
-- Import tools from `mcptools` or other `codeact` packages
+- Import tools from `mcptools` or `gentools` packages
 - Import models from `api.py`
 - Return structured models defined in `api.py`
 
 ### 4. Test the Tool
 
 ```python
-from codeact.<category>.<tool>.api import run
+from gentools.<category>.<tool>.api import run
 
 result = run(param1=value1, param2=value2)
 print(result)
