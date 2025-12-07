@@ -98,7 +98,9 @@ nav:
     - API generation: apigen.md
     - Code execution: codeexec.md
     - Sandboxing: sandbox.md
-    - MCP Server: mcpserver.md
+    - Agent Integration:
+      - ipybox MCP Server: mcpserver.md
+      - Claude Code plugin: ccplugin.md
   - API Reference:
     - High-level API:
       - Code Executor: api/code_executor.md
