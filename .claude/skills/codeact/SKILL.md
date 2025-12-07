@@ -9,9 +9,9 @@ You must use the `execute_ipython_cell` tool of the `ipybox` MCP server for exec
 
 All operations must follow the tool usage restrictions and workflows defined below.
 
-## Working Directory
+## Tool Directories
 
-All paths are relative to the current working directory.
+The `gentools/` and `mcptools/` directories are in the **working directory** shown in your `<env>` block. All paths are relative to the working directory, NOT to this skill's base directory.
 
 ## Tool Usage Restrictions
 
@@ -20,7 +20,7 @@ You are restricted to these tools only:
 ### Python Tools
 
 - Functions in `mcptools/<category>/<tool>.py` (use `run_parsed` if defined, otherwise `run`)
-- Functions in `codeact/<category>/<tool>/api.py`
+- Functions in `gentools/<category>/<tool>/api.py`
 
 ### `ipybox` MCP Server Tools
 
@@ -35,14 +35,13 @@ You are restricted to these tools only:
 
 ### 1. Python Tool Selection
 
-In the current working directory:
-1. List available categories in `codeact/` and `mcptools/`
+1. List available categories in `gentools/` and `mcptools/`
 2. List available tools in relevant categories
 3. Read tool files to understand interfaces and parameters.
 
 ### 2. Python Tool Priority
 
-1. Search `codeact` package first
+1. Search `gentools` package first
 2. If not found, search `mcptools` package
 3. If no appropriate tool exists, generate custom code
 
@@ -63,4 +62,4 @@ When generating output parsers for Python tools in the `mcptools` package, see [
 
 ## Saving Code Actions
 
-To save executed code as a reusable codeact tool, see [references/saving-codeacts.md](references/saving-codeacts.md).
+To save executed code as a reusable gentools tool, see [references/saving-codeacts.md](references/saving-codeacts.md).
