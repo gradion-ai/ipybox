@@ -1,5 +1,9 @@
 # ipybox
 
+!!! info "Next generation ipybox"
+
+    This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x). To use the older version, add the version constraint `<0.7` to your dependency.
+
 ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
 
 <figure markdown>
