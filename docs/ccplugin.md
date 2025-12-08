@@ -1,6 +1,8 @@
 # Claude Code plugin
 
-This plugin installs ipybox as an MCP server in Claude Code along with a *codeact* skill. It enables Claude Code to act by generating and executing code rather than JSON tool calls. The generated code calls MCP tools and previously saved code actions programmatically. 
+This plugin installs the [ipybox MCP server](mcpserver.md) in Claude Code along with a *codeact*[^1] skill. It enables Claude Code to act by generating and executing code rather than JSON tool calls. The generated code calls MCP tools and previously saved code actions programmatically. 
+
+[^1]: Executable Code Actions Elicit Better LLM Agents: [https://arxiv.org/abs/2402.01030](https://arxiv.org/abs/2402.01030)
 
 With this "code as tool" approach, saved code actions become tools themselves, available for use in future code actions. Over time, a library of code actions can be built, each composing other code actions and MCP tools.
 
@@ -31,15 +33,55 @@ Claude Code:
 - Adds output parsers and structured result types to MCP tools that lack output schemas
 - Saves successful code actions with a structure optimized for discovery and reuse
 
-## Installation
-
-...
-
 ## Environment setup
 
-- empty project
-- install ipybox (optional)
-- .env file with API keys
+Create a workspace with [uv](https://docs.astral.sh/uv/) and install ipybox:
+
+```bash
+uv init --bare --python 3.13 workspace
+cd workspace
+uv add ipybox
+```
+
+Activate the virtual environment. The plugin requires an activated environment with ipybox installed:
+
+```bash
+source .venv/bin/activate
+```
+
+The examples below use the GitHub MCP server. Create a `.env` file with your GitHub API key:
+
+```env title=".env"
+GITHUB_API_KEY=your-github-api-key
+```
+
+## Installation
+
+Add the ipybox repository to the Claude Code plugin marketplace:
+
+```bash
+claude plugin marketplace add https://github.com/gradion-ai/ipybox
+```
+
+Then install one of the available plugins:
+
+| Plugin | Description |
+|--------|-------------|
+| `codeact-default` | Runs ipybox without a sandbox |
+| `codeact-sandbox` | Runs ipybox with a [sandboxed](sandbox.md) IPython kernel |
+| `codeact-docker` | Runs ipybox as a Docker container |
+
+```bash
+claude plugin install codeact-default@ipybox
+```
+
+!!! warning
+
+    Only install one plugin at a time. Installing multiple plugins from this marketplace will cause conflicts.
+
+### Sandbox configuration
+
+When using `codeact-sandbox`, you can optionally provide a `sandbox-config.json` file in the workspace directory to customize the sandbox configuration. If not provided, ipybox runs with the [default sandbox](sandbox.md#default-sandbox).
 
 ## Usage example
 
@@ -48,7 +90,7 @@ This example demonstrates the complete workflow: registering an MCP server, usin
 ### Register the GitHub MCP server
 
 ``` title="User prompt"
-Register this MCP server under name github: 
+Register this MCP server at ipybox under name github: 
 {
   "url": "https://api.githubcopilot.com/mcp/", 
   "headers": {

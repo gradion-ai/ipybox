@@ -1,5 +1,5 @@
 {
-  "name": "codeact",
+  "name": "ipybox",
   "version": "0.0.0",
   "description": "Code action plugins for Claude Code using ipybox",
   "owner": {
