@@ -4,13 +4,14 @@ __pycache__
 .ruff_cache/
 .mypy_cache/
 .vscode/
-.claude/settings.local.json
 .venv/
 site/
-.env
-GEMINI.md
 /images/
 /mcptools/
 /mcpparse/
 /codeact/
 /sandbox.*
+.claude/settings.local.json
+.mcpregistry*
+.env
+GEMINI.md

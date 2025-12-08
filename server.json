@@ -1,0 +1,51 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.gradion-ai/ipybox",
+  "description": "Python code execution sandbox with IPython and programmatic MCP tool use.",
+  "repository": {
+    "url": "https://github.com/gradion-ai/ipybox",
+    "source": "github"
+  },
+  "version": "0.0.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "ipybox",
+      "version": "0.0.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "--workspace",
+          "description": "Code workspace directory",
+          "valueHint": "directory_path",
+          "isRequired": false
+        },
+        {
+          "type": "named",
+          "name": "--sandbox",
+          "description": "Run kernel gateway in sandbox (macOS only)",
+          "isRequired": false
+        },
+        {
+          "type": "named",
+          "name": "--sandbox-config",
+          "description": "Sandbox config file path",
+          "valueHint": "file_path",
+          "isRequired": false
+        },
+        {
+          "type": "named",
+          "name": "--log-level",
+          "description": "Logging level",
+          "valueHint": "DEBUG|INFO|WARNING|ERROR|CRITICAL",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

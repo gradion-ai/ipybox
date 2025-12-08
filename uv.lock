@@ -1236,6 +1236,7 @@ dependencies = [
 dev = [
     { name = "flaky" },
     { name = "invoke" },
+    { name = "jsonschema" },
     { name = "matplotlib" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1273,6 +1274,7 @@ requires-dist = [
 dev = [
     { name = "flaky", specifier = ">=3.8.1" },
     { name = "invoke", specifier = ">=2.2,<3" },
+    { name = "jsonschema", specifier = ">=4.25" },
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "pre-commit", specifier = ">=4.3.0,<5" },
     { name = "pytest", specifier = ">=8.4.2,<9" },
