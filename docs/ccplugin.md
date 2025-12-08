@@ -79,7 +79,7 @@ claude plugin install codeact-default@ipybox
 
 !!! warning
 
-    Only install one plugin at a time. Installing multiple plugins from this marketplace will cause conflicts.
+    Only **one** plugin from this marketplace should be active at a time. Having multiple plugins active simultaneously will cause conflicts.
 
 ### Sandbox configuration
 
