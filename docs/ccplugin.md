@@ -1,12 +1,12 @@
 # Claude Code plugin
 
-This plugin installs the [ipybox MCP server](mcpserver.md) in Claude Code along with a *codeact*[^1] skill. It enables Claude Code to act by generating and executing code rather than JSON tool calls. The generated code calls MCP tools and previously saved code actions programmatically. 
+This plugin installs the [ipybox MCP server](mcpserver.md) in Claude Code along with a `codeact`[^1] skill. It enables Claude Code to act by generating and executing code rather than JSON tool calls. The generated code calls MCP tools and previously saved code actions programmatically. 
 
 [^1]: Executable Code Actions Elicit Better LLM Agents: [https://arxiv.org/abs/2402.01030](https://arxiv.org/abs/2402.01030)
 
 With this "code as tool" approach, saved code actions become tools themselves, available for use in future code actions. Over time, a library of code actions can be built, each composing other code actions and MCP tools.
 
-The *codeact* skill provides guidance for Claude Code to discover MCP tools and code actions via agentic filesystem search, inspect the interfaces of relevant tools, generate code actions that use them, and save successful code actions for later reuse. 
+The `codeact` skill provides guidance for Claude Code to discover MCP tools and code actions via agentic filesystem search, inspect the interfaces of relevant tools, generate code actions that use them, and save successful code actions for later reuse. 
 
 Tool search and inspection is performed on demand based on the current task. This progressive disclosure approach frees Claude Code from pre-loading tool sources into its context window, saving tokens and improving performance.
 
@@ -18,7 +18,7 @@ Code actions are stored with interface separated from implementation. This separ
 
 ## Separation of responsibilities
 
-The *codeact* skill distributes responsibilities between ipybox and Claude Code:
+The `codeact` skill distributes responsibilities between ipybox and Claude Code:
 
 ipybox:
 
@@ -49,11 +49,13 @@ Activate the virtual environment. The plugin requires an activated environment w
 source .venv/bin/activate
 ```
 
-The examples below use the GitHub MCP server. Create a `.env` file with your GitHub API key:
+The [example below](#usage-example) uses the [GitHub MCP server](https://github.com/github/github-mcp-server). Create a `.env` file with your GitHub personal access token (PAT):
 
 ```env title=".env"
-GITHUB_API_KEY=your-github-api-key
+GITHUB_API_KEY=your-github-personal-access-token
 ```
+
+The plugin automatically loads environment variables from this file.
 
 ## Installation
 
@@ -90,20 +92,22 @@ This example demonstrates the complete workflow: registering an MCP server, usin
 ### Register the GitHub MCP server
 
 ``` title="User prompt"
-Register this MCP server at ipybox under name github: 
+Register this MCP server at ipybox under name github:
 {
-  "url": "https://api.githubcopilot.com/mcp/", 
+  "url": "https://api.githubcopilot.com/mcp/",
   "headers": {
     "Authorization": "Bearer ${GITHUB_API_KEY}"
   }
 }
 ```
 
+The `${GITHUB_API_KEY}` placeholder is automatically replaced with the value from your `.env` file.
+
 This registers the GitHub MCP server and generates a typed Python API for its tools under `mcptools/github/`. Each tool becomes a module named after the tool (`search_repositories.py`, `list_commits.py`, etc.).
 
 ### Use the GitHub MCP server programmatically
 
-The codeact skill can be activated with phrases like "use the codeact skill" or similar:
+The codeact skill can be activated in Claude Code with phrases like "use the codeact skill" or similar:
 
 ``` title="User prompt"
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
@@ -111,7 +115,7 @@ of torvalds with the most stars. For each repo, output name, stars and
 the first line of commit messages, and the link to the commit
 ```
 
-Claude Code first lists directories under `mcptools/` to see which tools are available. It then reads the tool files [search_repositories.py](generated/mcptools/github/search_repositories_orig.py) and [list_commits.py](generated/mcptools/github/list_commits.py) to understand their interfaces, as these appear relevant to the task.
+Claude Code first lists directories under `mcptools/` to see which tools are available. It then reads the tool files [search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/search_repositories_orig.py) and [list_commits.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/list_commits.py) to understand their interfaces, as these appear relevant to the task.
 
 Claude Code generates two code actions. The first searches for the top 3 repos of Linus Torvalds sorted by stars:
 
@@ -180,9 +184,9 @@ To compensate for the lack of output schemas, we generate an output parser for t
 Generate an output parser for search_repositories
 ```
 
-This adds a `run_parsed()` function to [search_repositories.py](generated/mcptools/github/search_repositories.py), returning a structured `ParseResult`. Claude Code infers this type by interacting with the tool using example inputs. The codeact skill encourages Claude Code to prioritize `run_parsed()` over `run()` when generating code actions.
+This adds a `run_parsed()` function to [search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/search_repositories.py), returning a structured `ParseResult`. Claude Code infers this type by interacting with the tool using example inputs. The codeact skill encourages Claude Code to prioritize `run_parsed()` over `run()` when generating code actions.
 
-The implementation details of parsing are stored separately in [mcpparse/github/search_repositories.py](generated/mcpparse/github/search_repositories.py). Keeping implementation separate from interface prevents polluting the interfaces that Claude Code reads.
+The implementation details of parsing are stored separately in [mcpparse/github/search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcpparse/github/search_repositories.py). Keeping implementation separate from interface prevents polluting the interfaces that Claude Code reads.
 
 ### Chaining tools in a single code action
 
@@ -247,7 +251,7 @@ Save this as code action under github category with name commits_of_top_repos.
 Make username, top_n_repos and last_n_commits parameters
 ```
 
-This creates a new package `gentools/github/commits_of_top_repos/` with an [api.py](generated/gentools/github/commits_of_top_repos/api.py) module that defines the typed interface and an [impl.py](generated/gentools/github/commits_of_top_repos/impl.py) module that contains the implementation. The interface in `api.py` exposes the tool's parameters and return types. The implementation in `impl.py` contains the code that Claude Code does not need to inspect when using the tool.
+This creates a new package `gentools/github/commits_of_top_repos/` with an [api.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/api.py) module that defines the typed interface and an [impl.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/impl.py) module that contains the implementation. The interface in `api.py` exposes the tool's parameters and return types. The implementation in `impl.py` contains the code that Claude Code does not need to inspect when using the tool.
 
 ### Using saved code actions as tools
 
