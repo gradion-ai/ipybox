@@ -18,7 +18,7 @@ Enable sandboxing with `sandbox=True`. The [default configuration](https://githu
 --8<-- "examples/sandbox.py:default_sandbox"
 ```
 
-## Custom sandbox config
+## Custom sandbox
 
 Provide a JSON configuration file to customize restrictions. The example below fetches content from `example.org`, which would fail with the default config:
 
@@ -28,7 +28,7 @@ Provide a JSON configuration file to customize restrictions. The example below f
 
 The [custom config](https://github.com/gradion-ai/ipybox/blob/main/examples/sandbox-kernel.json) adds `example.org` to `allowedDomains`, permitting network access to that domain while keeping all other restrictions from the default. See the [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) documentation for all configuration options.
 
-## Sandboxed MCP servers
+## Sandboxing MCP servers
 
 stdio MCP servers can also run in a sandbox using `srt` as command. MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed. The example below uses a [custom MCP server sandbox config](https://github.com/gradion-ai/ipybox/blob/main/examples/sandbox-mcp.json):
 
