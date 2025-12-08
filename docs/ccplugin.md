@@ -64,9 +64,9 @@ This registers the GitHub MCP server and generates a typed Python API for its to
 The codeact skill can be activated with phrases like "use the codeact skill" or similar:
 
 ``` title="User prompt"
-Use codeact to get the latest 5 commits of the 3 github repos of torvalds 
-with the most stars. For each repo, output name, stars and the first line 
-of commit messages, and the link to the commit
+Use the codeact skill to get the latest 5 commits of the 3 github repos 
+of torvalds with the most stars. For each repo, output name, stars and 
+the first line of commit messages, and the link to the commit
 ```
 
 Claude Code first lists directories under `mcptools/` to see which tools are available. It then reads the tool files [search_repositories.py](generated/mcptools/github/search_repositories_orig.py) and [list_commits.py](generated/mcptools/github/list_commits.py) to understand their interfaces, as these appear relevant to the task.
@@ -147,9 +147,9 @@ The implementation details of parsing are stored separately in [mcpparse/github/
 Running the same task again (optionally after restarting Claude Code), Claude Code now chains the tools in a single code action because it knows the structure of the `search_repositories` result up-front. It uses the new `run_parsed()` function and navigates the structured output based on the `ParseResult` type:
 
 ``` title="User prompt"
-Use codeact to get the latest 5 commits of the 3 github repos of torvalds 
-with the most stars. For each repo, output name, stars and the first line 
-of commit messages, and the link to the commit
+Use the codeact skill to get the latest 5 commits of the 3 github repos 
+of torvalds with the most stars. For each repo, output name, stars and 
+the first line of commit messages, and the link to the commit
 ```
 
 ```python title="Code action"
@@ -212,9 +212,9 @@ This creates a new package `gentools/github/commits_of_top_repos/` with an [api.
 After restarting Claude Code (to force re-discovery of tools), the same task now uses the saved code action:
 
 ``` title="User prompt"
-Use codeact to get the latest 5 commits of the 3 github repos of torvalds 
-with the most stars. For each repo, output name, stars and the first line 
-of commit messages, and the link to the commit
+Use the codeact skill to get the latest 5 commits of the 3 github repos 
+of torvalds with the most stars. For each repo, output name, stars and 
+the first line of commit messages, and the link to the commit
 ```
 
 ```python title="Code action"

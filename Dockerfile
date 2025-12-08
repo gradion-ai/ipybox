@@ -1,6 +1,14 @@
 FROM ubuntu:22.04
 
-ENV HOME=/root
+# Build arguments for user ID matching
+ARG UID=1000
+ARG GID=1000
+
+# Create user with matching UID/GID
+RUN groupadd -g ${GID} ipybox && \
+    useradd -m -u ${UID} -g ipybox ipybox
+
+ENV HOME=/home/ipybox
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -23,26 +31,29 @@ WORKDIR ${HOME}
 # Bypass dynamic versioning since .git is not available
 ENV UV_DYNAMIC_VERSIONING_BYPASS=0.0.0+docker
 
+# Create workspace directory with correct ownership
+RUN mkdir -p /app/workspace && chown ipybox:ipybox /app/workspace
+
+# Copy entrypoint script (requires root)
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Copy dependency files first for better Docker layer caching
-COPY pyproject.toml uv.lock .python-version ${HOME}/
+COPY --chown=ipybox:ipybox pyproject.toml uv.lock .python-version ${HOME}/
+
+# Switch to non-root user before installing dependencies
+USER ipybox
 
 # Install dependencies only (not the project itself)
 RUN uv sync --no-install-project --no-dev
 
 # Copy source code and README (required for package metadata)
-COPY ipybox ${HOME}/ipybox/
-COPY README.md ${HOME}/
+COPY --chown=ipybox:ipybox ipybox ${HOME}/ipybox/
+COPY --chown=ipybox:ipybox README.md ${HOME}/
 
 # Install the project
 RUN uv sync --no-dev
 
-# Create workspace directory
-RUN mkdir -p /app/workspace
-
 WORKDIR /app/workspace
-
-# Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

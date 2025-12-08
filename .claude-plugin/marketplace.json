@@ -41,7 +41,7 @@
       "mcpServers": {
         "ipybox": {
           "command": "docker",
-          "args": ["run", "-i", "--rm", "-v", "${CWD}:/app/workspace", "ghcr.io/gradion-ai/ipybox"]
+          "args": ["run", "-i", "--rm", "-v", "${PWD}:/app/workspace", "ipybox"]
         }
       }
     }

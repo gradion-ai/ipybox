@@ -174,14 +174,6 @@ class IpyboxMCPServer:
             asyncio.TimeoutError: Execution exceeded timeout.
         """
         async with self._lock:
-            import aiofiles
-
-            async with aiofiles.open("codeact.md", "a") as f:
-                await f.write("---\n\n\n")
-                await f.write("```python\n")
-                await f.write(code)
-                await f.write("```\n\n\n")
-
             result = await self._client.execute(code, timeout=timeout)
             output = result.text or ""
             if result.images:
@@ -193,11 +185,6 @@ class IpyboxMCPServer:
                 output = (
                     output[:max_output_chars] + f"\n\n[Output truncated: exceeded {max_output_chars} character limit]"
                 )
-
-            async with aiofiles.open("codeact.md", "a") as f:
-                await f.write("```\n")
-                await f.write(output)
-                await f.write("```\n\n\n")
 
             return output
 
