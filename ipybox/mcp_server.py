@@ -174,6 +174,14 @@ class IpyboxMCPServer:
             asyncio.TimeoutError: Execution exceeded timeout.
         """
         async with self._lock:
+            import aiofiles
+
+            async with aiofiles.open("codeact.md", "a") as f:
+                await f.write("---\n\n\n")
+                await f.write("```python\n")
+                await f.write(code)
+                await f.write("```\n\n\n")
+
             result = await self._client.execute(code, timeout=timeout)
             output = result.text or ""
             if result.images:
@@ -185,6 +193,11 @@ class IpyboxMCPServer:
                 output = (
                     output[:max_output_chars] + f"\n\n[Output truncated: exceeded {max_output_chars} character limit]"
                 )
+
+            async with aiofiles.open("codeact.md", "a") as f:
+                await f.write("```\n")
+                await f.write(output)
+                await f.write("```\n\n\n")
 
             return output
 
@@ -283,13 +296,21 @@ async def main():
 
     load_dotenv(args.workspace / ".env")
 
+    sandbox_config = None
+
+    if args.sandbox_config:
+        if args.sandbox_config.exists():
+            sandbox_config = args.sandbox_config
+        else:
+            logger.warning(f"Sandbox config file {args.sandbox_config} does not exist, Using default config")
+
     server = IpyboxMCPServer(
         tool_server_host=args.tool_server_host,
         tool_server_port=args.tool_server_port,
         kernel_gateway_host=args.kernel_gateway_host,
         kernel_gateway_port=args.kernel_gateway_port,
         sandbox=args.sandbox,
-        sandbox_config=args.sandbox_config,
+        sandbox_config=sandbox_config,
         log_level=args.log_level,
         kernel_env=extract_kernel_env(),
     )
