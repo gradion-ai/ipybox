@@ -38,4 +38,4 @@ apt-get install bubblewrap socat ripgrep
 
 !!! info
 
-    [Sandboxing](sandbox.md) with `srt` currently doesn't work on Linux, but you can still use ipybox with `sandbox=False`.
+    [Sandboxing](sandbox.md) with `srt` currently doesn't work on Linux, but you can still use ipybox with `sandbox=False`, or run the ipybox [MCP server](mcpserver.md) as a Docker container.

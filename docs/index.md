@@ -23,3 +23,7 @@ ipybox is designed for agents that interact with their environment through [code
 - **Local code execution** — no cloud dependencies, everything runs on your machine
 - **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
 - **Claude Code plugin** — programmatic MCP tool use and code action development
+
+## LLM-friendly documentation
+
+For LLM-friendly versions of this documentation, see [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt).

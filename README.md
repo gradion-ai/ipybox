@@ -25,4 +25,4 @@ ipybox is designed for agents that interact with their environment through [code
 
 ## Documentation
 
-See the [documentation](https://gradion-ai.github.io/ipybox/) for installation instructions, quickstart guide, and detailed usage information.
+See the [documentation](https://gradion-ai.github.io/ipybox/) for installation instructions, quickstart guide, and detailed usage information. For LLM-friendly documentation, see [llms.txt](https://gradion-ai.github.io/ipybox/llms.txt) and [llms-full.txt](https://gradion-ai.github.io/ipybox/llms-full.txt).
