@@ -1,0 +1,31 @@
+# ipybox
+
+> ipybox
+
+ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use.
+It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and
+remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel,
+providing a stateful environment where variables and definitions persist across executions. The
+generated API delegates MCP tool execution to a separate environment that enforces tool call
+approval, requiring applications to explicitly accept or reject each tool call before it executes.
+ipybox is designed for agents that interact with their environment through code actions rather
+than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code.
+
+
+## User Guide
+
+- [Overview](https://gradion-ai.github.io/ipybox/index.md): Project overview and features
+- [Installation](https://gradion-ai.github.io/ipybox/installation/index.md): Installation and setup instructions
+- [Quickstart](https://gradion-ai.github.io/ipybox/quickstart/index.md): Getting started guide
+- [API generation](https://gradion-ai.github.io/ipybox/apigen/index.md): Generating typed Python API from MCP server schemas
+- [Code execution](https://gradion-ai.github.io/ipybox/codeexec/index.md): Stateful code execution in IPython kernels
+- [Sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md): Lightweight sandboxing with Anthropic's sandbox-runtime
+- [ipybox MCP Server](https://gradion-ai.github.io/ipybox/mcpserver/index.md): Using ipybox as an MCP server
+- [Claude Code plugin](https://gradion-ai.github.io/ipybox/ccplugin/index.md): Claude Code plugin for code action development
+
+## API Reference
+
+- [Code Executor](https://gradion-ai.github.io/ipybox/api/code_executor/index.md): CodeExecutor high-level API
+- [Tool Executor](https://gradion-ai.github.io/ipybox/api/tool_executor/index.md): ToolRunner and ToolServer low-level API
+- [Kernel Manager](https://gradion-ai.github.io/ipybox/api/kernel_manager/index.md): KernelGateway and KernelClient low-level API
+
