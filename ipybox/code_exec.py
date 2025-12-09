@@ -190,6 +190,7 @@ class CodeExecutor:
         self._client = KernelClient(
             host=self.kernel_gateway_host,
             port=self.kernel_gateway_port,
+            images_dir=self.images_dir,
         )
         await self._client.connect()
 

@@ -180,7 +180,7 @@ async def generate_mcp_sources(server_name: str, server_params: dict[str, Any], 
             # Generate function with appropriate return type
             function_definition = generate_function_definition(
                 original_name=original_name,
-                description=tool.description,
+                description=tool.description or "",
                 structured_output=output_schema is not None,
             )
 
