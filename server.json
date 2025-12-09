@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "name": "io.github.gradion-ai/ipybox",
-  "description": "An MCP server for sandboxed Python code execution with IPython and Docker, and file transfer.",
+  "description": "Python code execution sandbox with first-class support for programmatic MCP tool use.",
   "repository": {
     "url": "https://github.com/gradion-ai/ipybox",
     "source": "github"
@@ -19,50 +19,31 @@
       },
       "packageArguments": [
         {
-          "type": "positional",
-          "value": "mcp",
-          "isRequired": true,
-          "description": "Required MCP server subcommand"
+          "type": "named",
+          "name": "--workspace",
+          "description": "Code workspace directory",
+          "valueHint": "directory_path",
+          "isRequired": false
         },
         {
           "type": "named",
-          "name": "--allowed-dir",
-          "description": "Directory allowed for host filesystem operations",
-          "isRepeated": true,
-          "valueHint": "directory_path"
+          "name": "--sandbox",
+          "description": "Run kernel gateway in sandbox (macOS only)",
+          "isRequired": false
         },
         {
           "type": "named",
-          "name": "--allowed-domain",
-          "description": "Domain, IP address, or CIDR range allowed for outbound network access",
-          "isRepeated": true,
-          "valueHint": "domain_or_ip"
+          "name": "--sandbox-config",
+          "description": "Sandbox config file path",
+          "valueHint": "file_path",
+          "isRequired": false
         },
         {
           "type": "named",
-          "name": "--container-tag",
-          "description": "Docker image tag to use",
-          "valueHint": "docker_image_tag"
-        },
-        {
-          "type": "named",
-          "name": "--container-env-var",
-          "description": "Environment variable for container (KEY=VALUE format)",
-          "isRepeated": true,
-          "valueHint": "env_var"
-        },
-        {
-          "type": "named",
-          "name": "--container-env-file",
-          "description": "Path to file containing container environment variables",
-          "valueHint": "file_path"
-        },
-        {
-          "type": "named",
-          "name": "--container-bind",
-          "description": "Bind mount for container (host_path:container_path format)",
-          "isRepeated": true,
-          "valueHint": "bind_mount"
+          "name": "--log-level",
+          "description": "Logging level",
+          "valueHint": "DEBUG|INFO|WARNING|ERROR|CRITICAL",
+          "isRequired": false
         }
       ]
     }

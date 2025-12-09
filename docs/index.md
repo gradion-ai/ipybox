@@ -1,22 +1,33 @@
-# Introduction
+# ipybox
 
-## Overview
+!!! info "Next generation ipybox"
 
-`ipybox` is a lightweight and secure Python code execution sandbox based on [IPython](https://ipython.org/) and [Docker](https://www.docker.com/). It can run locally on your computer or remotely in an environment of your choice. `ipybox` is designed for AI agents that need to execute Python code securely e.g. for data analysis or executing code actions, like [`freeact`](https://gradion-ai.github.io/freeact/) agents.
+    This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x) and can be obtained with `pip install ipybox<0.7`.
+
+ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
 
 <figure markdown>
-  ![logo](img/logo.png){ width="300" style="display: block; margin: 0 auto" }
+  ![Architecture](images/architecture-light.png){ width="100%" }
+  <figcaption><code>CodeExecutor</code> coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
 </figure>
+
+## Agent integration
+
+ipybox is designed for agents that interact with their environment through [code actions](https://arxiv.org/abs/2402.01030) rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.
 
 ## Features
 
-- Secure code execution inside Docker containers
-- [Restrict network access](examples.md#restrict-network-access) with a configurable firewall
-- Stateful code execution with IPython kernels
-- Stream code execution output as it is generated
-- Install Python packages at build time or runtime
-- Return plots generated with visualization libraries
-- Exposes an [MCP server](mcp-server.md) interface for AI agent integration
-- [Invocation of MCP servers](mcp-client.md) via generated client code
-- Flexible deployment options, local or remote
-- `asyncio` API for managing the execution environment
+- **Stateful code execution** — state persists across executions in IPython kernels
+- **Lightweight sandboxing** — kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
+- **Generated Python tool API** — functions and models generated from MCP tool schemas
+- **Programmatic MCP tool use** — MCP tools called via Python code, not JSON directly
+- **MCP tool call approval** — every MCP tool call requires application-level approval
+- **Any MCP server** — supports stdio, Streamable HTTP, and SSE transports
+- **Any Python package** — install and use any Python package in IPython kernels
+- **Local code execution** — no cloud dependencies, everything runs on your machine
+- **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
+- **Claude Code plugin** — programmatic MCP tool use and code action development
+
+## LLM-friendly documentation
+
+For LLM-friendly versions of this documentation, see [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt).

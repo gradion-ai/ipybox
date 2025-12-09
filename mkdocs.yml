@@ -1,5 +1,6 @@
 site_name: ipybox
-site_description: Python code execution sandbox based on IPython and Docker
+site_description: ipybox
+site_url: https://gradion-ai.github.io/ipybox/
 
 repo_name: gradion-ai/ipybox
 repo_url: https://github.com/gradion-ai/ipybox
@@ -50,21 +51,51 @@ theme:
 
 plugins:
   - search
+  - llmstxt:
+      markdown_description: |
+        ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use.
+        It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and
+        remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel,
+        providing a stateful environment where variables and definitions persist across executions. The
+        generated API delegates MCP tool execution to a separate environment that enforces tool call
+        approval, requiring applications to explicitly accept or reject each tool call before it executes.
+        ipybox is designed for agents that interact with their environment through code actions rather
+        than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code.
+      full_output: llms-full.txt
+      sections:
+        User Guide:
+          - index.md: Project overview and features
+          - installation.md: Installation and setup instructions
+          - quickstart.md: Getting started guide
+          - apigen.md: Generating typed Python API from MCP server schemas
+          - codeexec.md: Stateful code execution in IPython kernels
+          - sandbox.md: Lightweight sandboxing with Anthropic's sandbox-runtime
+          - mcpserver.md: Using ipybox as an MCP server
+          - ccplugin.md: Claude Code plugin for code action development
+        API Reference:
+          - api/code_executor.md: CodeExecutor high-level API
+          - api/tool_executor.md: ToolRunner and ToolServer low-level API
+          - api/kernel_manager.md: KernelGateway and KernelClient low-level API
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
           paths: [ipybox]
           options:
+            show_root_heading: true
+            show_source: false
             show_signature_annotations: true
             signature_crossrefs: true
             separate_signature: true
             merge_init_into_class: true
-          import:
+            extensions:
+              - griffe_pydantic
+          inventories:
             - url: https://docs.python.org/3/objects.inv
               domains: [py, std]
 
 markdown_extensions:
+  - footnotes
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -77,16 +108,27 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - admonition
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - User Guide:
-    - Introduction: index.md
+    - Overview: index.md
     - Installation: installation.md
-    - Docker images: docker.md
-    - Usage examples: examples.md
-    - MCP Client: mcp-client.md
-    - MCP Server: mcp-server.md
-  - API Documentation:
-    - ExecutionContainer: api/execution_container.md
-    - ExecutionClient: api/execution_client.md
-    - ResourceClient: api/resource_client.md
+    - Quickstart: quickstart.md
+    - API generation: apigen.md
+    - Code execution: codeexec.md
+    - Sandboxing: sandbox.md
+    - Agent Integration:
+      - ipybox MCP Server: mcpserver.md
+      - Claude Code plugin: ccplugin.md
+  - API Reference:
+    - High-level API:
+      - Code Executor: api/code_executor.md
+    - Low-level API:
+      - Tool Executor: api/tool_executor.md
+      - Kernel Manager: api/kernel_manager.md

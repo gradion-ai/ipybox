@@ -1,0 +1,9 @@
+.md-typeset figure {
+    width: 100%;
+    display: block;
+}
+
+.md-typeset figcaption {
+    width: 100%;
+    max-width: none;
+}

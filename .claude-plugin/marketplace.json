@@ -1,0 +1,49 @@
+{
+  "name": "ipybox",
+  "version": "0.0.1",
+  "description": "Code action plugins for Claude Code using ipybox",
+  "owner": {
+    "name": "gradion-ai"
+  },
+  "plugins": [
+    {
+      "name": "codeact-default",
+      "source": "./plugin",
+      "description": "Runs ipybox without sandbox-runtime ",
+      "version": "0.0.1",
+      "keywords": ["codeact", "python", "mcp", "ipybox"],
+      "mcpServers": {
+        "ipybox": {
+          "command": "python",
+          "args": ["-m", "ipybox.mcp_server"]
+        }
+      }
+    },
+    {
+      "name": "codeact-sandbox",
+      "source": "./plugin",
+      "description": "Runs ipybox with sandbox-runtime",
+      "version": "0.0.1",
+      "keywords": ["codeact", "python", "mcp", "ipybox", "sandbox"],
+      "mcpServers": {
+        "ipybox": {
+          "command": "python",
+          "args": ["-m", "ipybox.mcp_server", "--sandbox", "--sandbox-config", "sandbox-config.json"]
+        }
+      }
+    },
+    {
+      "name": "codeact-docker",
+      "source": "./plugin",
+      "description": "Runs ipybox as a Docker container",
+      "version": "0.0.1",
+      "keywords": ["codeact", "python", "mcp", "ipybox", "docker"],
+      "mcpServers": {
+        "ipybox": {
+          "command": "docker",
+          "args": ["run", "-i", "--rm", "-v", "${PWD}:/app/workspace", "ipybox"]
+        }
+      }
+    }
+  ]
+}

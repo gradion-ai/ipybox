@@ -1,6 +1,4 @@
-# Development Guide
-
-This guide provides instructions for setting up a development environment for `ipybox`. Follow these steps to get started with development, testing, and contributing to the project.
+# Development Environment
 
 Clone the repository:
 
@@ -9,7 +7,7 @@ git clone https://github.com/gradion-ai/ipybox.git
 cd ipybox
 ```
 
-Install dependencies and create virtual environment:
+Create a virtual environment and install dependencies:
 
 ```bash
 uv sync
