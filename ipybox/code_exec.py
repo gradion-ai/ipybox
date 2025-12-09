@@ -150,7 +150,8 @@ class CodeExecutor:
         self.sandbox_config = sandbox_config
         self.log_level = log_level
 
-        self._exit_stack = AsyncExitStack()
+        self._server_stack = AsyncExitStack()
+        self._client_stack = AsyncExitStack()
         self._client: KernelClient
 
     async def __aenter__(self):
@@ -165,7 +166,14 @@ class CodeExecutor:
 
         Starts the tool server, kernel gateway, and connects to the IPython kernel.
         """
-        self._client = await self._exit_stack.enter_async_context(self._executor())
+        await self._server_stack.enter_async_context(self._servers())
+        self._client = await self._client_stack.enter_async_context(
+            KernelClient(
+                host=self.kernel_gateway_host,
+                port=self.kernel_gateway_port,
+                images_dir=self.images_dir,
+            )
+        )
 
     async def stop(self):
         """Stop the executor.
@@ -173,7 +181,8 @@ class CodeExecutor:
         Stops the tool server, kernel gateway, and disconnects from the IPython
         kernel.
         """
-        await self._exit_stack.aclose()
+        await self._client_stack.aclose()
+        await self._server_stack.aclose()
 
     async def reset(self):
         """Reset execution state.
@@ -186,13 +195,15 @@ class CodeExecutor:
             host=self.tool_server_host,
             port=self.tool_server_port,
         )
-        await self._client.disconnect()
-        self._client = KernelClient(
-            host=self.kernel_gateway_host,
-            port=self.kernel_gateway_port,
-            images_dir=self.images_dir,
+        await self._client_stack.aclose()
+        self._client_stack = AsyncExitStack()
+        self._client = await self._client_stack.enter_async_context(
+            KernelClient(
+                host=self.kernel_gateway_host,
+                port=self.kernel_gateway_port,
+                images_dir=self.images_dir,
+            )
         )
-        await self._client.connect()
 
     async def stream(
         self, code: str, timeout: float = 120, chunks: bool = False
@@ -293,7 +304,8 @@ class CodeExecutor:
         raise RuntimeError("Code execution completed without result")
 
     @asynccontextmanager
-    async def _executor(self) -> AsyncIterator[KernelClient]:
+    async def _servers(self):
+        """Context manager for ToolServer and KernelGateway."""
         async with ToolServer(
             host=self.tool_server_host,
             port=self.tool_server_port,
@@ -314,9 +326,4 @@ class CodeExecutor:
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },
             ):
-                async with KernelClient(
-                    host=self.kernel_gateway_host,
-                    port=self.kernel_gateway_port,
-                    images_dir=self.images_dir,
-                ) as client:
-                    yield client
+                yield

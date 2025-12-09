@@ -3,7 +3,7 @@ import asyncio
 import logging
 import os
 import signal
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -52,11 +52,29 @@ class IpyboxMCPServer:
         self._mcp.tool(structured_output=False)(self.execute_ipython_cell)
         self._mcp.tool(structured_output=False)(self.reset)
 
+        self._server_stack = AsyncExitStack()
+        self._client_stack = AsyncExitStack()
         self._client: KernelClient
         self._lock = asyncio.Lock()
 
     @asynccontextmanager
     async def server_lifespan(self, server: FastMCP):
+        await self._server_stack.enter_async_context(self._servers())
+        self._client = await self._client_stack.enter_async_context(
+            KernelClient(
+                host=self.kernel_gateway_host,
+                port=self.kernel_gateway_port,
+            )
+        )
+        try:
+            yield
+        finally:
+            await self._client_stack.aclose()
+            await self._server_stack.aclose()
+
+    @asynccontextmanager
+    async def _servers(self):
+        """Context manager for ToolServer and KernelGateway."""
         async with ToolServer(
             host=self.tool_server_host,
             port=self.tool_server_port,
@@ -76,12 +94,7 @@ class IpyboxMCPServer:
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },
             ):
-                async with KernelClient(
-                    host=self.kernel_gateway_host,
-                    port=self.kernel_gateway_port,
-                ) as client:
-                    self._client = client
-                    yield
+                yield
 
     async def register_mcp_server(self, server_name: str, server_params: dict[str, Any]) -> list[str]:
         """Register an MCP server and generate importable Python tool functions.
@@ -201,12 +214,14 @@ class IpyboxMCPServer:
                 host=self.tool_server_host,
                 port=self.tool_server_port,
             )
-            await self._client.disconnect()
-            self._client = KernelClient(
-                host=self.kernel_gateway_host,
-                port=self.kernel_gateway_port,
+            await self._client_stack.aclose()
+            self._client_stack = AsyncExitStack()
+            self._client = await self._client_stack.enter_async_context(
+                KernelClient(
+                    host=self.kernel_gateway_host,
+                    port=self.kernel_gateway_port,
+                )
             )
-            await self._client.connect()
 
     async def run(self):
         await self._mcp.run_stdio_async()
