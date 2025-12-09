@@ -95,8 +95,12 @@ class ToolServer:
 
     async def approval(self, websocket: WebSocket):
         if self._approval_channel.open:
-            await websocket.close(code=1008, reason="Approval channel already open")
-            return
+            try:
+                await self._approval_channel.join()
+            except asyncio.TimeoutError:
+                message = "Timed out waiting for previous connection to close"
+                await websocket.close(code=1008, reason=message)
+                return
 
         await self._approval_channel.connect(websocket)
 

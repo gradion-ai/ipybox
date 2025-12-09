@@ -33,10 +33,21 @@ class ApprovalChannel:
         self._websocket: WebSocket | None = None
         self._requests: dict[str, asyncio.Future[bool]] = {}
 
+        self._closed = asyncio.Event()
+        self._closed.set()  # Initially closed
+
     @property
     def open(self) -> bool:
         """Whether an `ApprovalClient` is currently connected."""
-        return self._websocket is not None
+        return not self._closed.is_set()
+
+    async def join(self, timeout: float = 5):
+        """Wait for the this approval channel to close.
+
+        Args:
+            timeout: Timeout in seconds to wait.
+        """
+        await asyncio.wait_for(self._closed.wait(), timeout=timeout)
 
     async def connect(self, websocket: WebSocket):
         """Accept a WebSocket connection and process approval responses.
@@ -48,6 +59,7 @@ class ApprovalChannel:
         """
         await websocket.accept()
         self._websocket = websocket
+        self._closed.clear()  # Mark as open
 
         try:
             while True:
@@ -64,6 +76,7 @@ class ApprovalChannel:
                 if not future.done():
                     future.set_exception(RuntimeError("Approval channel disconnected"))
             self._requests.clear()
+        self._closed.set()  # Signal closed
 
     async def request(self, server_name: str, tool_name: str, tool_args: dict[str, Any]) -> bool:
         """Request approval for a tool call.
