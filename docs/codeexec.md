@@ -18,13 +18,13 @@ For application-level approval control, use `stream()` instead.
 
 ## Tool call approval
 
-When code calls the generated Python tool API, ipybox yields an [`ApprovalRequest`][ipybox.ApprovalRequest]. You must call `accept()` before execution continues:
+When code calls the [generated Python tool API](apigen.md), ipybox suspends execution and yields an [`ApprovalRequest`][ipybox.ApprovalRequest]. You must call `accept()` to continue execution:
 
 ```python
 --8<-- "examples/codexec.py:basic_approval"
 ```
 
-The request includes `tool_name` and `tool_args` so you can inspect what's being called. Calling `reject()` raises a [`CodeExecutionError`][ipybox.CodeExecutionError].
+The approval request includes `tool_name` and `tool_args` so you can inspect what's being called. Calling `reject()` raises a [`CodeExecutionError`][ipybox.CodeExecutionError].
 
 ## Stream output chunks
 
@@ -59,7 +59,7 @@ Configure approval and execution timeouts:
 
 ## Kernel environment
 
-The IPython kernel does not inherit environment variables from the parent process. Pass them explicitly:
+The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with `kernel_env`:
 
 ```python
 --8<-- "examples/codexec.py:kernel_environment"

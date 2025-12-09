@@ -8,32 +8,58 @@ ipybox uses Anthropic's [sandbox-runtime](https://github.com/anthropic-experimen
 
 ## Default sandbox
 
-Enable sandboxing with `sandbox=True`. The [default configuration](https://github.com/gradion-ai/ipybox/blob/main/ipybox/kernel_mgr/sandbox.json) permits:
-
-- Reading all files except `.env`
-- Writing to the current directory and subdirectories (plus IPython directories)
-- Local access to the tool execution server but internet access is blocked
+Enable sandboxing with `sandbox=True`.
 
 ```python
 --8<-- "examples/sandbox.py:default_sandbox"
 ```
 
+The default sandbox configuration allows:
+
+- Reading all files except `.env`
+- Writing to the current directory and subdirectories (plus IPython directories)
+- Local network access to the tool execution server
+
+```json title="Default sandbox configuration"
+--8<-- "ipybox/kernel_mgr/sandbox.json"
+```
+
+Internet access is blocked as demonstrated in the example above. See the [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) documentation for all configuration options.
+
 ## Custom sandbox
 
-Provide a JSON configuration file to customize restrictions. The example below fetches content from `example.org`, which would fail with the default config:
+To allow access to `example.org`, provide a custom sandbox configuration file:
+
+```json title="examples/sandbox-kernel.json"
+--8<-- "examples/sandbox-kernel.json"
+```
+
+and pass it as `sandbox_config` argument:
 
 ```python
 --8<-- "examples/sandbox.py:custom_sandbox"
 ```
 
-The [custom config](https://github.com/gradion-ai/ipybox/blob/main/examples/sandbox-kernel.json) adds `example.org` to `allowedDomains`, permitting network access to that domain while keeping all other restrictions from the default. See the [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) documentation for all configuration options.
-
 ## Sandboxing MCP servers
 
-stdio MCP servers can also run in a sandbox using `srt` as command. MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed. The example below uses a [custom MCP server sandbox config](https://github.com/gradion-ai/ipybox/blob/main/examples/sandbox-mcp.json):
+stdio MCP servers like the [filesystem MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) can be configured to run in a sandbox using `srt` as command:
 
 ```python
---8<-- "examples/sandbox.py:sandboxed_mcp_server"
+--8<-- "examples/sandbox.py:sandboxed_mcp_server_params"
 ```
 
-The filesystem MCP server is configured with permissions to access all files in the current directory (`"."`), but the sandbox additionally blocks read access to `.env`. The sandbox also allows access to `registry.npmjs.org` for downloading the server package via `npx`, and `~/.npm` for the local npm cache.
+The sandbox configuration is:
+
+```json title="examples/sandbox-mcp.json"
+--8<-- "examples/sandbox-mcp.json"
+```
+
+The server itself is configured with permissions to access all files in the current directory (`"."`), but the sandbox additionally blocks read access to `.env`. The sandbox also allows access to `registry.npmjs.org` for downloading the server package via `npx`, and `~/.npm` for the local `npm` cache.
+
+```python
+--8<-- "examples/sandbox.py:sandboxed_mcp_server_usage"
+```
+
+!!! Info
+
+    MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed. 

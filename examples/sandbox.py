@@ -36,7 +36,6 @@ async def custom_sandbox():
     """
     async with CodeExecutor(
         sandbox=True,
-        # custom config allows access to domain example.org
         sandbox_config=Path("examples/sandbox-kernel.json"),
         log_level="WARNING",
     ) as executor:
@@ -46,7 +45,7 @@ async def custom_sandbox():
 
 
 async def sandboxed_mcp_server():
-    # --8<-- [start:sandboxed_mcp_server]
+    # --8<-- [start:sandboxed_mcp_server_params]
     server_params = {
         "command": "srt",
         "args": [
@@ -58,7 +57,9 @@ async def sandboxed_mcp_server():
             ".",
         ],
     }
+    # --8<-- [end:sandboxed_mcp_server_params]
 
+    # --8<-- [start:sandboxed_mcp_server_usage]
     await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
     list_dir_code = """
@@ -81,9 +82,10 @@ async def sandboxed_mcp_server():
         try:
             # allowed by MCP server but blocked by sandbox
             result = await executor.execute(read_env_code)
+            assert False, "Read access to .env not blocked"
         except CodeExecutionError as e:
             assert "operation not permitted" in str(e)
-    # --8<-- [end:sandboxed_mcp_server]
+    # --8<-- [end:sandboxed_mcp_server_usage]
 
 
 async def main():

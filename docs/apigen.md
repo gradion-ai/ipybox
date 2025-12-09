@@ -26,11 +26,11 @@ ipybox auto-detects the transport type from the URL. URLs containing `/mcp` use 
 
 ## Environment variable substitution
 
-Use `${VAR_NAME}` placeholders in `server_params` values. ipybox replaces them with the corresponding environment variable when connecting to the MCP server. This keeps secrets out of your code.
+You can use `${VAR_NAME}` placeholders in `server_params` values. ipybox replaces them with the corresponding environment variable when connecting to the MCP server. This keeps secrets out of your code.
 
 ## Generated package structure
 
-After generating the API for `brave_search` with `root_dir=Path("mcptools")`:
+The Brave Search MCP server [example above](#stdio-servers) generates a package structure like this:
 
 ```
 mcptools/
@@ -42,9 +42,11 @@ mcptools/
     └── ...
 ```
 
+For each MCP server tool, a separate Python module is generated, named after the tool.
+
 ## Using the generated API
 
-Each tool module provides typed interfaces:
+Each module provides a typed interface for programmatic MCP tool calls:
 
 ```python
 from mcptools.brave_search.brave_image_search import Params, Result, run
@@ -59,4 +61,4 @@ for image in result.items:
     print(image.title)
 ```
 
-The `Params` class is generated from the tool's input schema. Tools with an output schema get a typed `Result` class; others return `str`.
+The `Params` class is generated from the tool's input schema. Tools with an output schema get a typed `Result` class; others return `str`. The MCP tool itself is called via its `run()` function.

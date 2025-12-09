@@ -38,8 +38,8 @@ async def main():
 
     # Launch ipybox code executor
     async with CodeExecutor() as executor:
-        # Execute code in Ipython kernel
-        # that calls a generated function
+        # Execute code that calls an MCP tool
+        # programmatically in an IPython kernel
         async for item in executor.stream(CODE):
             match item:
                 # Handle approval requests
@@ -50,7 +50,7 @@ async def main():
                         await req.accept()
                     else:
                         await req.reject()
-                # Handle final execution results
+                # Handle final execution result
                 case CodeExecutionResult(text=text):
                     print(text)
 

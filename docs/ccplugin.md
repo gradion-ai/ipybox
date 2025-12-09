@@ -24,12 +24,12 @@ ipybox:
 
 - Generates typed Python tool APIs from MCP server tool schemas
 - Executes Python code that uses the generated MCP tool APIs
-- Executes code in a stateful and sandboxed IPython kernel
+- Uses a stateful and sandboxed IPython kernel for code execution
 
 Claude Code:
 
-- Discovers and selects MCP tools and code actions via agentic search on the filesystem
-- Generates and executes code in ipybox that calls MCP tools and saved code actions
+- Discovers and selects MCP tools and stored code actions via agentic search
+- Generates and executes code in ipybox that calls selected MCP tools and code actions
 - Adds output parsers and structured result types to MCP tools that lack output schemas
 - Saves successful code actions with a structure optimized for discovery and reuse
 
@@ -59,7 +59,7 @@ The plugin automatically loads environment variables from this file.
 
 ## Installation
 
-Add the ipybox repository to the Claude Code plugin marketplace:
+Add the ipybox repository as plugin marketplace to Claude Code:
 
 ```bash
 claude plugin marketplace add https://github.com/gradion-ai/ipybox
@@ -79,7 +79,7 @@ claude plugin install codeact-default@ipybox
 
 !!! warning
 
-    Only **one** plugin from this marketplace should be active at a time. Having multiple plugins active simultaneously will cause conflicts.
+    Only **one** plugin from this marketplace should be active at a time. Having multiple plugins active simultaneously may cause conflicts.
 
 ### Sandbox configuration
 
@@ -87,7 +87,18 @@ When using `codeact-sandbox`, you can optionally provide a `sandbox-config.json`
 
 ## Usage example
 
-This example demonstrates the complete workflow: registering an MCP server, using its tools programmatically, generating an output parser, chaining tools in a single code action, and saving the code action for reuse. It uses two tools from the GitHub MCP server.
+This example demonstrates a complete workflow: 
+
+- [Registering an MCP server](#register-the-github-mcp-server)
+- [Using its tools programmatically](#use-the-github-mcp-server-programmatically)
+- [Generating an output parser](#generate-an-output-parser)
+- [Chaining tools in a single code action](#chaining-tools-in-a-single-code-action)
+- [Saving the code action for reuse](#saving-code-actions-as-tools)
+
+It uses two tools from the GitHub MCP server: 
+
+- `search_repositories`
+- `list_commits`
 
 ### Register the GitHub MCP server
 
@@ -184,9 +195,9 @@ To compensate for the lack of output schemas, we generate an output parser for t
 Generate an output parser for search_repositories
 ```
 
-This adds a `run_parsed()` function to [search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/search_repositories.py), returning a structured `ParseResult`. Claude Code infers this type by interacting with the tool using example inputs. The codeact skill encourages Claude Code to prioritize `run_parsed()` over `run()` when generating code actions.
+This adds a `run_parsed()` function to [search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/search_repositories.py), returning a structured `ParseResult`. Claude Code infers this type by interacting with the tool using example inputs. The codeact skill encourages Claude Code to prioritize `run_parsed()` over `run()` when selecting tools.
 
-The implementation details of parsing are stored separately in [mcpparse/github/search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcpparse/github/search_repositories.py). Keeping implementation separate from interface prevents polluting the interfaces that Claude Code reads.
+The parsing implementation details are stored in [mcpparse/github/search_repositories.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcpparse/github/search_repositories.py). Keeping implementation separate from interface prevents polluting the interfaces that Claude Code inspects.
 
 ### Chaining tools in a single code action
 
@@ -251,11 +262,13 @@ Save this as code action under github category with name commits_of_top_repos.
 Make username, top_n_repos and last_n_commits parameters
 ```
 
-This creates a new package `gentools/github/commits_of_top_repos/` with an [api.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/api.py) module that defines the typed interface and an [impl.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/impl.py) module that contains the implementation. The interface in `api.py` exposes the tool's parameters and return types. The implementation in `impl.py` contains the code that Claude Code does not need to inspect when using the tool.
+This creates a new package `gentools/github/commits_of_top_repos/` with an [api.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/api.py) module that defines the typed interface and an [impl.py](https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/impl.py) module that contains the implementation. 
+
+The interface in `api.py` exposes the tool's parameters and return types and is relevant for understanding tool usage. The implementation in `impl.py` is not inspected by Claude Code during tool selection, saving token usage.
 
 ### Using saved code actions as tools
 
-After restarting Claude Code (to force re-discovery of tools), the same task now uses the saved code action:
+After restarting Claude Code or clearing its context window, to enforce re-discovery of tools, the same task now uses the saved code action:
 
 ``` title="User prompt"
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
@@ -276,4 +289,4 @@ for repo in results:
         print(f"  {commit.url}")
 ```
 
-This pattern supports building a library of code actions. Each saved code action becomes a tool available for use in future code actions, enabling composition and reuse.
+To conclude, the usage pattern in this example supports building a library of code actions. Each saved code action becomes a tool available for use in future code actions, enabling composition and reuse.

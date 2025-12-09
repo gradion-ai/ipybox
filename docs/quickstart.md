@@ -50,7 +50,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your e
 
 ### Generating a Python tool API
 
-[`generate_mcp_sources()`][ipybox.generate_mcp_sources] connects to the MCP server, discovers its tools, and generates typed Python modules from their schema:
+[`generate_mcp_sources()`][ipybox.generate_mcp_sources] connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:
 
 ```python
 await generate_mcp_sources(
@@ -60,7 +60,7 @@ await generate_mcp_sources(
 )
 ```
 
-This creates a package structure like:
+This creates an `mcptools/brave_search` package with a Python module for each MCP server tool:
 
 ```
 mcptools/brave_search/
@@ -83,14 +83,11 @@ async with CodeExecutor() as executor:
         ...
 ```
 
-The `stream()` method yields events as execution progresses. You'll receive
-[`ApprovalRequest`][ipybox.ApprovalRequest] events when the code calls an MCP tool, and a final
-[`CodeExecutionResult`][ipybox.CodeExecutionResult] with the output.
+The `stream()` method yields events as execution progresses. You'll receive [`ApprovalRequest`][ipybox.ApprovalRequest] events when the code calls an MCP tool, and a final [`CodeExecutionResult`][ipybox.CodeExecutionResult] with the output.
 
 ### Tool call approval
 
-When executed code calls the generated Python tool API, ipybox pauses execution and sends an
-[`ApprovalRequest`][ipybox.ApprovalRequest] to your application. You must explicitly approve or reject each tool call:
+When an MCP tool is called during code execution, ipybox pauses execution and sends an [`ApprovalRequest`][ipybox.ApprovalRequest] to your application. You must explicitly approve or reject each tool call:
 
 ```python
 case ApprovalRequest() as req:

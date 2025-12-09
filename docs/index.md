@@ -2,7 +2,7 @@
 
 !!! info "Next generation ipybox"
 
-    This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x). To use the older version, add the version constraint `<0.7` to your dependency.
+    This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x) and can be obtained with `pip install ipybox<0.7`.
 
 ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
 
@@ -19,9 +19,9 @@ ipybox is designed for agents that interact with their environment through [code
 
 - **Stateful code execution** — state persists across executions in IPython kernels
 - **Lightweight sandboxing** — kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
+- **Generated Python tool API** — functions and models generated from MCP tool schemas
 - **Programmatic MCP tool use** — MCP tools called via Python code, not JSON directly
-- **Generated Python tool API** — typed functions generated from MCP server schemas
-- **MCP tool call approval** — every tool call requires application-level approval
+- **MCP tool call approval** — every MCP tool call requires application-level approval
 - **Any MCP server** — supports stdio, Streamable HTTP, and SSE transports
 - **Any Python package** — install and use any Python package in IPython kernels
 - **Local code execution** — no cloud dependencies, everything runs on your machine

@@ -4,8 +4,8 @@
 
 When run as an MCP server, it exposes these capabilities to MCP clients like Claude Code or Claude Desktop. Agents can register MCP servers, then execute Python code that uses them programmatically:
 
-1. Agent calls [`register_mcp_server`](#register_mcp_server) to [generate typed Python APIs](apigen.md) for the tools of registered servers
-2. Agent calls [`execute_ipython_cell`](#execute_ipython_cell) to [execute Python code](codeexec.md) that imports and uses the generated APIs
+1. Agent calls [`register_mcp_server`](#register_mcp_server) to [generate a typed Python API](apigen.md) for the tools of an MCP server
+2. Agent calls [`execute_ipython_cell`](#execute_ipython_cell) to [execute Python code](codeexec.md) that imports and uses the generated API
 
 ## Configuration
 
@@ -26,7 +26,7 @@ When run as an MCP server, it exposes these capabilities to MCP clients like Cla
 
 ## Workspace
 
-The `--workspace` option specifies the ipybox working directory (default is the current working directory). Generated [Python tool APIs](apigen.md) are written to `mcptools/` in this directory, and [code execution](#execute_ipython_cell) runs with this as the current working directory.
+The `--workspace` option specifies the ipybox working directory, default is `"."`. Generated [Python tool APIs](apigen.md) are written to `mcptools/` in the workspace, and [code execution](#execute_ipython_cell) use the workspace as working directory.
 
 ## Environment variables
 
@@ -41,9 +41,9 @@ KERNEL_ENV_SECRET_2=...
 
 These variables are available to MCP servers registered with ipybox but are not passed to the IPython kernel by default. To make them available to the kernel, use the `KERNEL_ENV_` prefix. For example, `KERNEL_ENV_SECRET_1` is available as `SECRET_1` in the kernel. 
 
-## Example
+## Usage example
 
-This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a Brave API key:
+This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a [BRAVE_API_KEY](quickstart.md#get-a-brave-api-key):
 
 ```json
 {
@@ -78,7 +78,9 @@ An agent then registers the Brave Search MCP server by calling `register_mcp_ser
 }
 ```
 
-The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from the MCP configuration or the `.env` file. ipybox connects to the Brave Search MCP server and generates a Python tool API for its tools under `mcptools/brave_search/`. After registration, the agent calls `execute_ipython_cell` with Python code that uses the generated API:
+The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from the MCP configuration or the `.env` file. ipybox connects to the Brave Search MCP server and generates a Python tool API under `mcptools/brave_search/`. 
+
+After registration, the agent calls `execute_ipython_cell` with Python code that uses the generated API:
 
 ```python
 from mcptools.brave_search.brave_web_search import Params, run
@@ -95,7 +97,7 @@ The ipybox MCP server exposes four tools.
 
 ### `register_mcp_server`
 
-Connects to an MCP server and generates a Python API for its tools under `mcptools/{server_name}/`.
+Connects to an MCP server and [generates a Python API](apigen.md) for its tools under `mcptools/{server_name}/`.
 
 Parameters:
 
@@ -104,7 +106,7 @@ Parameters:
 
 ### `execute_ipython_cell`
 
-Executes Python code in a stateful IPython kernel. Executed code can use the [generated Python tool API](apigen.md) of [registered MCP servers](#register_mcp_server). MCP tool calls from executed code are [auto-approved](codeexec.md#basic-execution).
+Executes Python code in a stateful IPython kernel. Executed code can use the generated Python tool API of [registered MCP servers](#register_mcp_server). MCP tool calls from executed code are [auto-approved](codeexec.md#basic-execution).
 
 Parameters:
 
@@ -116,7 +118,7 @@ Returns the execution output.
 
 ### `install_package`
 
-Installs a Python package via pip. Supports version specifiers and git URLs.
+Installs a Python package via `pip`. Supports version specifiers and git URLs.
 
 Parameters:
 
@@ -152,7 +154,7 @@ The default sandbox configuration permits reading all files except `.env` and wr
 
 !!! info
 
-    Sandboxing with [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) currently works only on Mac OS. On Linux and Windows, you can either run ipybox without sandboxing or as a [Docker container](#docker).
+    Sandboxing with [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) currently works on Mac OS only. On Linux and Windows, you can either run ipybox without sandboxing or as a [Docker container](#docker).
     
 ## Docker
 
@@ -164,7 +166,7 @@ cd ipybox
 ./docker-build.sh
 ```
 
-The build script creates the container user with your UID/GID, ensuring files generated by ipybox (such as `mcptools/`) are owned by you and can be edited on the host.
+The build script creates a container user with your UID/GID, ensuring files generated by ipybox in the mounted workspace are owned by you and can be edited on the host.
 
 Then configure the MCP server:
 
