@@ -1,11 +1,21 @@
 # ipybox
 
+mcp-name: io.github.gradion-ai/ipybox
+
+<p align="left">
+    <a href="https://gradion-ai.github.io/ipybox/"><img alt="Website" src="https://img.shields.io/website?url=https%3A%2F%2Fgradion-ai.github.io%2Fipybox%2F&up_message=online&down_message=offline&label=docs"></a>
+    <a href="https://pypi.org/project/ipybox/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/ipybox?color=blue"></a>
+    <a href="https://github.com/gradion-ai/ipybox/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/gradion-ai/ipybox"></a>
+    <a href="https://github.com/gradion-ai/ipybox/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/gradion-ai/ipybox/test.yml"></a>
+    <a href="https://github.com/gradion-ai/ipybox/blob/main/LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/gradion-ai/ipybox?color=blueviolet"></a>
+</p>
+
 > [!NOTE]
 > **Next generation ipybox**
 >
 > This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x) and can be obtained with `pip install ipybox<0.7`.
 
-ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
+[ipybox](https://gradion-ai.github.io/ipybox/) is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
 
 ![Architecture](docs/images/architecture-light.png)
 
