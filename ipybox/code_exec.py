@@ -167,13 +167,17 @@ class CodeExecutor:
         Starts the tool server, kernel gateway, and connects to the IPython kernel.
         """
         await self._server_stack.enter_async_context(self._servers())
-        self._client = await self._client_stack.enter_async_context(
-            KernelClient(
-                host=self.kernel_gateway_host,
-                port=self.kernel_gateway_port,
-                images_dir=self.images_dir,
+        try:
+            self._client = await self._client_stack.enter_async_context(
+                KernelClient(
+                    host=self.kernel_gateway_host,
+                    port=self.kernel_gateway_port,
+                    images_dir=self.images_dir,
+                )
             )
-        )
+        except BaseException:
+            await self._server_stack.aclose()
+            raise
 
     async def stop(self):
         """Stop the executor.

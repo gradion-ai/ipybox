@@ -60,12 +60,16 @@ class IpyboxMCPServer:
     @asynccontextmanager
     async def server_lifespan(self, server: FastMCP):
         await self._server_stack.enter_async_context(self._servers())
-        self._client = await self._client_stack.enter_async_context(
-            KernelClient(
-                host=self.kernel_gateway_host,
-                port=self.kernel_gateway_port,
+        try:
+            self._client = await self._client_stack.enter_async_context(
+                KernelClient(
+                    host=self.kernel_gateway_host,
+                    port=self.kernel_gateway_port,
+                )
             )
-        )
+        except BaseException:
+            await self._server_stack.aclose()
+            raise
         try:
             yield
         finally:
