@@ -86,11 +86,11 @@ jobs:
     - name: Login to MCP Registry
       run: |
         # Use GitHub OIDC for authentication
-        ./mcp-publisher login github-oidc
+        mcp-publisher login github-oidc
 
     - name: Publish to MCP Registry
       run: |
-        ./mcp-publisher publish
+        mcp-publisher publish
 
     - name: Verify publication
       run: |
