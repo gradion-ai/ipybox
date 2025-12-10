@@ -190,6 +190,16 @@ Raises:
 | `ExecutionError` | If code execution raises an error.              |
 | `TimeoutError`   | If code execution duration exceeds the timeout. |
 
+### reset
+
+```python
+reset()
+```
+
+Resets the IPython kernel to a clean state.
+
+Deletes the running kernel and creates a new one.
+
 ### stream
 
 ```python
