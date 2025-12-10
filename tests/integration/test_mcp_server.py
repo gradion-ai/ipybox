@@ -13,6 +13,10 @@ MCP_SERVER_NAME = "test_mcp"
 @pytest_asyncio.fixture
 async def mcp_client(tmp_path: Path):
     """Create an MCPClient connected to the ipybox MCP server."""
+    # Create .env file with KERNEL_ENV_ prefixed variable for testing
+    dotenv_file = tmp_path / ".env"
+    dotenv_file.write_text("KERNEL_ENV_TEST_VAR=test_value_from_dotenv\n")
+
     server_params = {
         "command": sys.executable,
         "args": ["-m", "ipybox.mcp_server", "--workspace", str(tmp_path), "--log-level", "ERROR"],
@@ -87,6 +91,14 @@ class TestBasicExecution:
         assert isinstance(result, str)
         assert "[Output truncated: exceeded 5000 character limit]" in result
         assert result.startswith("x" * 5000)
+
+    @pytest.mark.asyncio
+    async def test_dotenv_kernel_env_var_available(self, mcp_client: MCPClient):
+        """Test that KERNEL_ENV_ variables from .env are available in kernel."""
+        code = "import os; print(os.environ.get('TEST_VAR', 'NOT_FOUND'))"
+        result = await mcp_client.run("execute_ipython_cell", {"code": code})
+
+        assert result == "test_value_from_dotenv"
 
 
 class TestMcpServerRegistration:
