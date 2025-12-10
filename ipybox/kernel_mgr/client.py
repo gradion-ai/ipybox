@@ -81,8 +81,8 @@ class KernelClient:
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
 
-        self._kernel_id = None
-        self._session_id = uuid4().hex
+        self._kernel_id: str | None = None
+        self._session_id: str | None = None
         self._ws: WebSocketClientConnection | None = None
 
     async def __aenter__(self):
@@ -128,6 +128,7 @@ class KernelClient:
         for _ in range(retries):
             try:
                 self._kernel_id = await self._create_kernel()
+                self._session_id = uuid4().hex
                 break
             except Exception:
                 await asyncio.sleep(retry_interval)
@@ -147,10 +148,22 @@ class KernelClient:
         """Disconnects from and deletes the running IPython kernel."""
         if self._ws:
             self._ws.close()
+            self._ws = None
 
         async with aiohttp.ClientSession() as session:
             async with session.delete(self.kernel_http_url):
                 pass
+
+        self._kernel_id = None
+        self._session_id = None
+
+    async def reset(self):
+        """Resets the IPython kernel to a clean state.
+
+        Deletes the running kernel and creates a new one.
+        """
+        await self.disconnect()
+        await self.connect()
 
     async def execute(self, code: str, timeout: float = 120) -> ExecutionResult:  # type: ignore
         """Executes code in this client's IPython kernel and returns the result.

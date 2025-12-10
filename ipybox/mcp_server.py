@@ -3,7 +3,7 @@ import asyncio
 import logging
 import os
 import signal
-from contextlib import AsyncExitStack, asynccontextmanager
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 KERNEL_ENV_PREFIX = "KERNEL_ENV_"
 
 
-class IpyboxMCPServer:
+class MCPServer:
     def __init__(
         self,
         tool_server_host: str = "localhost",
@@ -52,33 +52,11 @@ class IpyboxMCPServer:
         self._mcp.tool(structured_output=False)(self.execute_ipython_cell)
         self._mcp.tool(structured_output=False)(self.reset)
 
-        self._server_stack = AsyncExitStack()
-        self._client_stack = AsyncExitStack()
         self._client: KernelClient
         self._lock = asyncio.Lock()
 
     @asynccontextmanager
     async def server_lifespan(self, server: FastMCP):
-        await self._server_stack.enter_async_context(self._servers())
-        try:
-            self._client = await self._client_stack.enter_async_context(
-                KernelClient(
-                    host=self.kernel_gateway_host,
-                    port=self.kernel_gateway_port,
-                )
-            )
-        except BaseException:
-            await self._server_stack.aclose()
-            raise
-        try:
-            yield
-        finally:
-            await self._client_stack.aclose()
-            await self._server_stack.aclose()
-
-    @asynccontextmanager
-    async def _servers(self):
-        """Context manager for ToolServer and KernelGateway."""
         async with ToolServer(
             host=self.tool_server_host,
             port=self.tool_server_port,
@@ -98,7 +76,12 @@ class IpyboxMCPServer:
                     "TOOL_SERVER_PORT": str(self.tool_server_port),
                 },
             ):
-                yield
+                async with KernelClient(
+                    host=self.kernel_gateway_host,
+                    port=self.kernel_gateway_port,
+                ) as client:
+                    self._client = client
+                    yield
 
     async def register_mcp_server(self, server_name: str, server_params: dict[str, Any]) -> list[str]:
         """Register an MCP server and generate importable Python tool functions.
@@ -218,14 +201,7 @@ class IpyboxMCPServer:
                 host=self.tool_server_host,
                 port=self.tool_server_port,
             )
-            await self._client_stack.aclose()
-            self._client_stack = AsyncExitStack()
-            self._client = await self._client_stack.enter_async_context(
-                KernelClient(
-                    host=self.kernel_gateway_host,
-                    port=self.kernel_gateway_port,
-                )
-            )
+            await self._client.reset()
 
     async def run(self):
         await self._mcp.run_stdio_async()
@@ -310,7 +286,7 @@ async def main():
         else:
             logger.warning(f"Sandbox config file {args.sandbox_config} does not exist, Using default config")
 
-    server = IpyboxMCPServer(
+    server = MCPServer(
         tool_server_host=args.tool_server_host,
         tool_server_port=args.tool_server_port,
         kernel_gateway_host=args.kernel_gateway_host,

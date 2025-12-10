@@ -254,6 +254,19 @@ class TestStatePersistence:
                 await client2.execute("print(isolated_var)")
             assert "NameError" in str(exc_info.value)
 
+    @pytest.mark.asyncio
+    async def test_reset_clears_state(self, kernel_client: KernelClient):
+        """Test reset clears all kernel state."""
+        await kernel_client.execute("reset_test_var = 'before_reset'")
+        result = await kernel_client.execute("print(reset_test_var)")
+        assert result.text == "before_reset"
+
+        await kernel_client.reset()
+
+        with pytest.raises(ExecutionError) as exc_info:
+            await kernel_client.execute("print(reset_test_var)")
+        assert "NameError" in str(exc_info.value)
+
 
 class TestImageGeneration:
     """Tests for matplotlib image generation."""
