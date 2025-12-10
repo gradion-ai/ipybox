@@ -276,7 +276,7 @@ async def main():
     os.makedirs(args.workspace, exist_ok=True)
     os.chdir(args.workspace)
 
-    load_dotenv(args.workspace / ".env")
+    load_dotenv(args.workspace.absolute() / ".env")
 
     sandbox_config = None
 
