@@ -81,8 +81,8 @@ class KernelClient:
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
 
-        self._kernel_id = None
-        self._session_id = uuid4().hex
+        self._kernel_id: str | None = None
+        self._session_id: str | None = None
         self._ws: WebSocketClientConnection | None = None
 
     async def __aenter__(self):
@@ -128,6 +128,7 @@ class KernelClient:
         for _ in range(retries):
             try:
                 self._kernel_id = await self._create_kernel()
+                self._session_id = uuid4().hex
                 break
             except Exception:
                 await asyncio.sleep(retry_interval)
@@ -141,16 +142,33 @@ class KernelClient:
         )
         logger.info(f"Connected to kernel (ping_interval={self.ping_interval}s)")
 
+        # TODO: further investigate why this is needed on linux
+        # If not present, non-deterministically causes a read
+        # timeout during _init_kernel
+        await asyncio.sleep(0.2)
+
         await self._init_kernel()
 
     async def disconnect(self):
         """Disconnects from and deletes the running IPython kernel."""
         if self._ws:
             self._ws.close()
+            self._ws = None
 
-        async with aiohttp.ClientSession() as session:
-            async with session.delete(self.kernel_http_url):
-                pass
+        if self._kernel_id:
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(self.kernel_http_url):
+                    pass
+            self._kernel_id = None
+            self._session_id = None
+
+    async def reset(self):
+        """Resets the IPython kernel to a clean state.
+
+        Deletes the running kernel and creates a new one.
+        """
+        await self.disconnect()
+        await self.connect()
 
     async def execute(self, code: str, timeout: float = 120) -> ExecutionResult:  # type: ignore
         """Executes code in this client's IPython kernel and returns the result.
@@ -294,8 +312,7 @@ class KernelClient:
                 logger.info(f"Kernel interrupted: {response.status}")
 
     async def _init_kernel(self):
-        async for _ in self.stream("%colors nocolor"):
-            pass
+        await self.execute("%colors nocolor", timeout=10)
 
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 KERNEL_ENV_PREFIX = "KERNEL_ENV_"
 
 
-class IpyboxMCPServer:
+class MCPServer:
     def __init__(
         self,
         tool_server_host: str = "localhost",
@@ -201,12 +201,7 @@ class IpyboxMCPServer:
                 host=self.tool_server_host,
                 port=self.tool_server_port,
             )
-            await self._client.disconnect()
-            self._client = KernelClient(
-                host=self.kernel_gateway_host,
-                port=self.kernel_gateway_port,
-            )
-            await self._client.connect()
+            await self._client.reset()
 
     async def run(self):
         await self._mcp.run_stdio_async()
@@ -291,7 +286,7 @@ async def main():
         else:
             logger.warning(f"Sandbox config file {args.sandbox_config} does not exist, Using default config")
 
-    server = IpyboxMCPServer(
+    server = MCPServer(
         tool_server_host=args.tool_server_host,
         tool_server_port=args.tool_server_port,
         kernel_gateway_host=args.kernel_gateway_host,

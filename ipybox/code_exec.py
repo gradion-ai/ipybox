@@ -186,13 +186,7 @@ class CodeExecutor:
             host=self.tool_server_host,
             port=self.tool_server_port,
         )
-        await self._client.disconnect()
-        self._client = KernelClient(
-            host=self.kernel_gateway_host,
-            port=self.kernel_gateway_port,
-            images_dir=self.images_dir,
-        )
-        await self._client.connect()
+        await self._client.reset()
 
     async def stream(
         self, code: str, timeout: float = 120, chunks: bool = False
