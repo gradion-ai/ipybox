@@ -142,6 +142,11 @@ class KernelClient:
         )
         logger.info(f"Connected to kernel (ping_interval={self.ping_interval}s)")
 
+        # TODO: further investigate why this is needed on linux
+        # If not present, non-deterministically causes a read
+        # timeout during _init_kernel
+        await asyncio.sleep(0.2)
+
         await self._init_kernel()
 
     async def disconnect(self):
