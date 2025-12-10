@@ -150,12 +150,12 @@ class KernelClient:
             self._ws.close()
             self._ws = None
 
-        async with aiohttp.ClientSession() as session:
-            async with session.delete(self.kernel_http_url):
-                pass
-
-        self._kernel_id = None
-        self._session_id = None
+        if self._kernel_id:
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(self.kernel_http_url):
+                    pass
+            self._kernel_id = None
+            self._session_id = None
 
     async def reset(self):
         """Resets the IPython kernel to a clean state.
