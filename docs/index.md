@@ -26,7 +26,7 @@ ipybox is designed for agents that interact with their environment through [code
 - **Any Python package** — install and use any Python package in IPython kernels
 - **Local code execution** — no cloud dependencies, everything runs on your machine
 - **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
-- **Claude Code plugin** — programmatic MCP tool use and code action development
+- **Claude Code plugin** — a plugin for [programmatic tool use in Claude Code](ccplugin.md)
 
 ## LLM-friendly documentation
 

@@ -71,7 +71,7 @@ plugins:
           - codeexec.md: Stateful code execution in IPython kernels
           - sandbox.md: Lightweight sandboxing with Anthropic's sandbox-runtime
           - mcpserver.md: Using ipybox as an MCP server
-          - ccplugin.md: Claude Code plugin for code action development
+          - ccplugin.md: a plugin for programmatic tool use in Claude Code
         API Reference:
           - api/code_executor.md: CodeExecutor high-level API
           - api/tool_executor.md: ToolRunner and ToolServer low-level API
