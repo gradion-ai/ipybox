@@ -307,8 +307,7 @@ class KernelClient:
                 logger.info(f"Kernel interrupted: {response.status}")
 
     async def _init_kernel(self):
-        async for _ in self.stream("%colors nocolor"):
-            pass
+        await self.execute("%colors nocolor", timeout=10)
 
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
