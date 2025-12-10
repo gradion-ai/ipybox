@@ -21,7 +21,7 @@ than JSON tool calls, a more reliable approach since LLMs are heavily pretrained
 - [Code execution](https://gradion-ai.github.io/ipybox/codeexec/index.md): Stateful code execution in IPython kernels
 - [Sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md): Lightweight sandboxing with Anthropic's sandbox-runtime
 - [ipybox MCP Server](https://gradion-ai.github.io/ipybox/mcpserver/index.md): Using ipybox as an MCP server
-- [Claude Code plugin](https://gradion-ai.github.io/ipybox/ccplugin/index.md): Claude Code plugin for code action development
+- [Claude Code plugin](https://gradion-ai.github.io/ipybox/ccplugin/index.md): a plugin for programmatic tool use in Claude Code
 
 ## API Reference
 
