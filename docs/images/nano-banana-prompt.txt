@@ -1,0 +1,15 @@
+Edit this architecture diagram to add callout info boxes with descriptions pointing to each component. Create small rounded rectangles with a light blue background color for each callout.
+
+Add these callout boxes:
+
+- Point to "Application": "AI agent or user interface that sends code and approves tool calls"
+- Point to "Code Executor": "Orchestrates code execution and tool approval workflow"
+- Point to "IPython Kernel": "Stateful Jupyter kernel that executes Python code in a sandbox"
+- Point to "Python tool API": "Auto-generated Python API for MCP tools"
+- Point to "Tool Executor": "Server managing MCP connections and tool execution". Make sure the pointer ends in the yello box, not on an MCP server box.
+- Point to "MCP server" (inside sandbox): "Stdio-based MCP server running in a sandbox"
+- Point to "MCP server" (external, bottom): "Remote MCP server accessed via HTTP"
+
+Position callouts around the edges of the diagram where there's empty space. Use connector lines with small arrows or dots at the endpoint touching each target box. Keep the callout text in a clean sans-serif font, smaller than the main labels.
+
+Change the bright white background to a softer light gray to reduce contrast and eye strain.

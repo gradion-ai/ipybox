@@ -7,7 +7,7 @@
 ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
 
 <figure markdown>
-  ![Architecture](images/architecture-light.png){ width="100%" }
+  ![Architecture](images/architecture-light-annotated.jpg){ width="100%" }
   <figcaption><code>CodeExecutor</code> coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
 </figure>
 
