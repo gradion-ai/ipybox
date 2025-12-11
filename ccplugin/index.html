@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#programmatic-tool-use-plugin-for-claude-code" class="md-skip">
+        <a href="#programmatic-tool-calling-plugin-for-claude-code" class="md-skip">
           Skip to content
         </a>
       
@@ -1283,7 +1283,7 @@
   
 
 
-<h1 id="programmatic-tool-use-plugin-for-claude-code">Programmatic tool use plugin for Claude Code</h1>
+<h1 id="programmatic-tool-calling-plugin-for-claude-code">Programmatic tool calling plugin for Claude Code</h1>
 <p>This plugin installs the <a href="../mcpserver/">ipybox MCP server</a> in Claude Code along with a <code>codeact</code><sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> skill. It enables Claude Code to act by generating and executing code rather than JSON tool calls. The generated code calls MCP tools and previously saved code actions programmatically. </p>
 <p>With this "code as tool" approach, saved code actions become tools themselves, available for use in future code actions. Over time, a library of code actions can be built, each composing other code actions and MCP tools.</p>
 <p>The <code>codeact</code> skill provides guidance for Claude Code to discover MCP tools and code actions via agentic filesystem search, inspect the interfaces of relevant tools, generate code actions that use them, and save successful code actions for later reuse. </p>

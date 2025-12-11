@@ -1294,7 +1294,7 @@
 
 
 <h1 id="mcp-server">MCP server</h1>
-<p><a href="../">ipybox</a> is a Python code execution sandbox with first-class support for programmatic MCP tool use. Code executes in a sandboxed IPython Kernel, providing a stateful environment where variables and definitions persist across executions. </p>
+<p><a href="../">ipybox</a> is a Python code execution sandbox with first-class support for programmatic MCP tool calling. Code executes in a sandboxed IPython Kernel, providing a stateful environment where variables and definitions persist across executions. </p>
 <p>When run as an MCP server, it exposes these capabilities to MCP clients like Claude Code or Claude Desktop. Agents can register MCP servers, then execute Python code that uses them programmatically:</p>
 <ol>
 <li>Agent calls <a href="#register_mcp_server"><code>register_mcp_server</code></a> to <a href="../apigen/">generate a typed Python API</a> for the tools of an MCP server</li>
@@ -1302,7 +1302,7 @@
 </ol>
 <div class="admonition tip">
 <p class="admonition-title">Application example</p>
-<p>An application example of this MCP server is the <a href="../ccplugin/">programmatic tool use plugin</a> for Claude Code.</p>
+<p>An application example of this MCP server is the <a href="../ccplugin/">programmatic tool calling plugin</a> for Claude Code.</p>
 </div>
 <h2 id="configuration">Configuration</h2>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>

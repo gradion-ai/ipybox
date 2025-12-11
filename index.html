@@ -1106,7 +1106,7 @@
 <p class="admonition-title">Next generation ipybox</p>
 <p>This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the <a href="https://github.com/gradion-ai/ipybox/tree/0.6.x">0.6.x branch</a> and can be obtained with <code>pip install ipybox&lt;0.7</code>.</p>
 </div>
-<p>ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.</p>
+<p>ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.</p>
 <figure>
 <p><img alt="Architecture" src="images/architecture-light-annotated.jpg" width="100%" />
   </p>
@@ -1119,13 +1119,13 @@
 <li><strong>Stateful code execution</strong> — state persists across executions in IPython kernels</li>
 <li><strong>Lightweight sandboxing</strong> — kernel isolation via Anthropic's <a href="https://github.com/anthropic-experimental/sandbox-runtime">sandbox-runtime</a></li>
 <li><strong>Generated Python tool API</strong> — functions and models generated from MCP tool schemas</li>
-<li><strong>Programmatic MCP tool use</strong> — MCP tools called via Python code, not JSON directly</li>
+<li><strong>Programmatic MCP tool calling</strong> — MCP tools called via Python code, not JSON directly</li>
 <li><strong>MCP tool call approval</strong> — every MCP tool call requires application-level approval</li>
 <li><strong>Any MCP server</strong> — supports stdio, Streamable HTTP, and SSE transports</li>
 <li><strong>Any Python package</strong> — install and use any Python package in IPython kernels</li>
 <li><strong>Local code execution</strong> — no cloud dependencies, everything runs on your machine</li>
 <li><strong>Python SDK and MCP server</strong> — use ipybox programmatically or as an MCP server</li>
-<li><strong>Claude Code plugin</strong> — a plugin for <a href="ccplugin/">programmatic tool use in Claude Code</a></li>
+<li><strong>Claude Code plugin</strong> — a plugin for <a href="ccplugin/">programmatic tool calling in Claude Code</a></li>
 </ul>
 <h2 id="llm-friendly-documentation">LLM-friendly documentation</h2>
 <p>For LLM-friendly versions of this documentation, see <a href="llms.txt">llms.txt</a> and <a href="llms-full.txt">llms-full.txt</a>.</p>
