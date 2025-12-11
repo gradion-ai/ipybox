@@ -53,7 +53,7 @@ plugins:
   - search
   - llmstxt:
       markdown_description: |
-        ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool use.
+        ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling.
         It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and
         remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel,
         providing a stateful environment where variables and definitions persist across executions. The
@@ -71,7 +71,7 @@ plugins:
           - codeexec.md: Stateful code execution in IPython kernels
           - sandbox.md: Lightweight sandboxing with Anthropic's sandbox-runtime
           - mcpserver.md: Using ipybox as an MCP server
-          - ccplugin.md: a plugin for programmatic tool use in Claude Code
+          - ccplugin.md: a plugin for programmatic tool calling in Claude Code
         API Reference:
           - api/code_executor.md: CodeExecutor high-level API
           - api/tool_executor.md: ToolRunner and ToolServer low-level API

@@ -1,4 +1,4 @@
-# Programmatic tool use plugin for Claude Code
+# Programmatic tool calling plugin for Claude Code
 
 This plugin installs the [ipybox MCP server](mcpserver.md) in Claude Code along with a `codeact`[^1] skill. It enables Claude Code to act by generating and executing code rather than JSON tool calls. The generated code calls MCP tools and previously saved code actions programmatically. 
 

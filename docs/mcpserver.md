@@ -1,6 +1,6 @@
 # MCP server
 
-[ipybox](index.md) is a Python code execution sandbox with first-class support for programmatic MCP tool use. Code executes in a sandboxed IPython Kernel, providing a stateful environment where variables and definitions persist across executions. 
+[ipybox](index.md) is a Python code execution sandbox with first-class support for programmatic MCP tool calling. Code executes in a sandboxed IPython Kernel, providing a stateful environment where variables and definitions persist across executions. 
 
 When run as an MCP server, it exposes these capabilities to MCP clients like Claude Code or Claude Desktop. Agents can register MCP servers, then execute Python code that uses them programmatically:
 
@@ -9,7 +9,7 @@ When run as an MCP server, it exposes these capabilities to MCP clients like Cla
 
 !!! tip "Application example"
 
-    An application example of this MCP server is the [programmatic tool use plugin](ccplugin.md) for Claude Code.
+    An application example of this MCP server is the [programmatic tool calling plugin](ccplugin.md) for Claude Code.
 
 ## Configuration
 
