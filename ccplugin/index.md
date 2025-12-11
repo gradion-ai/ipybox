@@ -31,7 +31,7 @@ Claude Code:
 
 ## Environment setup
 
-The [example below](#usage-example) uses the [GitHub MCP server](https://github.com/github/github-mcp-server). Create a `.env` file with your GitHub personal access token (PAT) in the current workspace directory:
+The [example below](#usage-example) uses the [GitHub MCP server](https://github.com/github/github-mcp-server). Create a `.env` file with your GitHub personal access token (PAT) in the current working directory:
 
 .env
 
