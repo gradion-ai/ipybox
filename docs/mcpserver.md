@@ -7,6 +7,10 @@ When run as an MCP server, it exposes these capabilities to MCP clients like Cla
 1. Agent calls [`register_mcp_server`](#register_mcp_server) to [generate a typed Python API](apigen.md) for the tools of an MCP server
 2. Agent calls [`execute_ipython_cell`](#execute_ipython_cell) to [execute Python code](codeexec.md) that imports and uses the generated API
 
+!!! tip "Application example"
+
+    An application example of this MCP server is the [programmatic tool use plugin](ccplugin.md) for Claude Code.
+
 ## Configuration
 
 ```json
