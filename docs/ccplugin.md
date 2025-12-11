@@ -16,8 +16,6 @@ Code actions are stored with interface separated from implementation. This separ
 
     This plugin is a demonstration of the "code as tool" approach. It is a prototype that requires further optimization and refinement.
 
-## Separation of responsibilities
-
 The `codeact` skill distributes responsibilities between ipybox and Claude Code:
 
 ipybox:
@@ -35,21 +33,7 @@ Claude Code:
 
 ## Environment setup
 
-Create a workspace with [uv](https://docs.astral.sh/uv/) and install ipybox:
-
-```bash
-uv init --bare --python 3.13 workspace
-cd workspace
-uv add ipybox
-```
-
-Activate the virtual environment. The plugin requires an activated environment with ipybox installed:
-
-```bash
-source .venv/bin/activate
-```
-
-The [example below](#usage-example) uses the [GitHub MCP server](https://github.com/github/github-mcp-server). Create a `.env` file with your GitHub personal access token (PAT):
+The [example below](#usage-example) uses the [GitHub MCP server](https://github.com/github/github-mcp-server). Create a `.env` file with your GitHub personal access token (PAT) in the current workspace directory:
 
 ```env title=".env"
 GITHUB_API_KEY=your-github-personal-access-token
@@ -57,7 +41,7 @@ GITHUB_API_KEY=your-github-personal-access-token
 
 The plugin automatically loads environment variables from this file.
 
-## Installation
+## Plugin installation
 
 Add the ipybox repository as plugin marketplace to Claude Code:
 
