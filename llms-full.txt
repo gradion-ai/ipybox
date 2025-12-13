@@ -47,7 +47,7 @@ For LLM-friendly versions of this documentation, see [llms.txt](https://gradion-
 
 # Installation
 
-## ipybox
+## Python package
 
 Install ipybox using `pip`:
 
@@ -60,6 +60,16 @@ or `uv`:
 ```bash
 uv add ipybox
 ```
+
+## MCP server
+
+ipybox can also be run as an [MCP server](https://gradion-ai.github.io/ipybox/mcpserver/index.md) using `uvx`:
+
+```bash
+uvx ipybox --workspace /path/to/workspace
+```
+
+See the [MCP server documentation](https://gradion-ai.github.io/ipybox/mcpserver/index.md) for configuration details.
 
 ## sandbox-runtime
 
