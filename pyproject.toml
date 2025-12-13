@@ -36,6 +36,7 @@ docs = [
     "griffe-pydantic>=1.1.8",
     "mkdocs>=1.6.1,<2",
     "mkdocs-material>=9.5.48,<10",
+    "mkdocs-redirects>=1.2.2",
     "mkdocstrings-python>=1.12.2,<2",
     "mkdocs-llmstxt>=0.4.0",
     "click<=8.2.1",

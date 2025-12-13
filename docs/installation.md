@@ -1,6 +1,6 @@
 # Installation
 
-## ipybox
+## Python package
 
 Install ipybox using `pip`:
 
@@ -13,6 +13,16 @@ or `uv`:
 ```bash
 uv add ipybox
 ```
+
+## MCP server
+
+ipybox can also be run as an [MCP server](mcpserver.md) using `uvx`:
+
+```bash
+uvx ipybox --workspace /path/to/workspace
+```
+
+See the [MCP server documentation](mcpserver.md) for configuration details.
 
 ## sandbox-runtime
 

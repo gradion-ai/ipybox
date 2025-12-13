@@ -93,6 +93,12 @@ plugins:
           inventories:
             - url: https://docs.python.org/3/objects.inv
               domains: [py, std]
+  - redirects:
+      redirect_maps:
+        'mcp-client.md': 'apigen.md'
+        'mcp-server.md': 'mcpserver.md'
+        'docker.md': 'mcpserver.md#docker'
+
 
 markdown_extensions:
   - footnotes
