@@ -31,7 +31,7 @@ To use ipybox's [sandboxing](sandbox.md) features, you need to install Anthropic
 Install via npm:
 
 ```bash
-npm install -g @anthropic-ai/sandbox-runtime@0.0.19
+npm install -g @anthropic-ai/sandbox-runtime@0.0.21
 ```
 
 ### Mac OS
