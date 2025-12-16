@@ -31,7 +31,7 @@ To use ipybox's [sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.m
 Install via npm:
 
 ```bash
-npm install -g @anthropic-ai/sandbox-runtime@0.0.19
+npm install -g @anthropic-ai/sandbox-runtime@0.0.21
 ```
 
 ### Mac OS
