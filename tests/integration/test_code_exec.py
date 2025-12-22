@@ -305,7 +305,11 @@ class TestSandbox:
 
     HTTP_CODE = """
 import urllib.request
-response = urllib.request.urlopen('https://example.org')
+req = urllib.request.Request(
+    url="https://example.org",
+    headers={"User-Agent": "Mozilla/5.0"},
+)
+response = urllib.request.urlopen(req)
 content = response.read().decode('utf-8')
 print(content)
 """

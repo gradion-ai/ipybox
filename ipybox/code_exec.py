@@ -99,7 +99,7 @@ class CodeExecutor:
         kernel_gateway_port: int | None = None,
         kernel_env: dict[str, str] | None = None,
         images_dir: Path | None = None,
-        approval_timeout: float = 60,
+        approval_timeout: float | None = None,
         connect_timeout: float = 30,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
@@ -123,7 +123,7 @@ class CodeExecutor:
                 execution. Defaults to `images` in the current directory.
             approval_timeout: Timeout in seconds for approval requests. If an
                 approval request is not accepted or rejected within this time,
-                the tool call fails.
+                the tool call fails. If `None`, no timeout is applied.
             connect_timeout: Timeout in seconds for starting MCP servers.
             sandbox: Whether to run the kernel gateway inside Anthropic's
                 [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime).
@@ -189,7 +189,7 @@ class CodeExecutor:
         await self._client.reset()
 
     async def stream(
-        self, code: str, timeout: float = 120, chunks: bool = False
+        self, code: str, timeout: float | None = None, chunks: bool = False
     ) -> AsyncIterator[ApprovalRequest | CodeExecutionChunk | CodeExecutionResult]:
         """Execute Python code in the IPython kernel with MCP tool call approval.
 
@@ -204,6 +204,7 @@ class CodeExecutor:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for execution to complete.
+                If `None`, no timeout is applied.
             chunks: Whether to yield
                 [`CodeExecutionChunk`][ipybox.code_exec.CodeExecutionChunk] objects
                 during execution. When `False`, only
@@ -259,7 +260,7 @@ class CodeExecutor:
             finally:
                 await task
 
-    async def execute(self, code: str, timeout: float = 120) -> CodeExecutionResult:
+    async def execute(self, code: str, timeout: float | None = None) -> CodeExecutionResult:
         """Execute Python code with automatic approval of all MCP tool calls.
 
         Convenience method that [executes][ipybox.code_exec.CodeExecutor.stream]
@@ -269,6 +270,7 @@ class CodeExecutor:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for execution to complete.
+                If `None`, no timeout is applied.
 
         Returns:
             The execution result containing output text and generated images.

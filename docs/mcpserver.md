@@ -115,7 +115,7 @@ Executes Python code in a stateful IPython kernel. Executed code can use the gen
 Parameters:
 
 - `code` — Python code to execute
-- `timeout` — Maximum execution time in seconds (default: 120)
+- `timeout` — Maximum execution time in seconds (default: no timeout)
 - `max_output_chars` — Output character limit (default: 5000)
 
 Returns the execution output.

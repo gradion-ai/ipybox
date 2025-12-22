@@ -49,7 +49,7 @@ class ToolServer:
         host="localhost",
         port: int = 8900,
         approval_required: bool = False,
-        approval_timeout: float = 60,
+        approval_timeout: float | None = None,
         connect_timeout: float = 30,
         log_to_stderr: bool = False,
         log_level: str = "INFO",
@@ -59,7 +59,8 @@ class ToolServer:
             host: Hostname the server binds to.
             port: Port number the server listens on.
             approval_required: Whether tool calls require approval.
-            approval_timeout: Timeout in seconds for approval requests.
+            approval_timeout: Timeout in seconds for approval requests. If `None`,
+                no timeout is applied.
             connect_timeout: Timeout in seconds for starting MCP servers.
             log_to_stderr: Whether to log to stderr instead of stdout.
             log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).

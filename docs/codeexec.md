@@ -54,8 +54,8 @@ Configure approval and execution timeouts:
 --8<-- "examples/codexec.py:custom_timeouts"
 ```
 
-- `approval_timeout`: How long to wait for `accept()`/`reject()` (default: 60s)
-- `timeout` in `stream()`: Maximum total execution time including approval waits (default: 120s)
+- `approval_timeout`: How long to wait for `accept()`/`reject()` (default: no timeout)
+- `timeout` in `stream()`: Maximum total execution time including approval waits (default: no timeout)
 
 ## Kernel environment
 

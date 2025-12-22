@@ -170,7 +170,7 @@ class KernelClient:
         await self.disconnect()
         await self.connect()
 
-    async def execute(self, code: str, timeout: float = 120) -> ExecutionResult:  # type: ignore
+    async def execute(self, code: str, timeout: float | None = None) -> ExecutionResult:  # type: ignore
         """Executes code in this client's IPython kernel and returns the result.
 
         Waits for execution to complete and returns the final result.
@@ -180,6 +180,7 @@ class KernelClient:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for the execution result.
+                If `None`, no timeout is applied.
 
         Returns:
             The execution result containing output text and generated images.
@@ -195,7 +196,7 @@ class KernelClient:
                 case ExecutionResult():
                     return item
 
-    async def stream(self, code: str, timeout: float = 120) -> AsyncIterator[str | ExecutionResult]:
+    async def stream(self, code: str, timeout: float | None = None) -> AsyncIterator[str | ExecutionResult]:
         """Executes code in this client's IPython kernel.
 
         Yields output chunks as strings during execution, and yields the
@@ -204,6 +205,7 @@ class KernelClient:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for the execution result.
+                If `None`, no timeout is applied.
 
         Yields:
             str: Output text chunks generated during execution.

@@ -78,9 +78,9 @@ async def basic_plotting():
 
 async def custom_timeouts():
     # --8<-- [start:custom_timeouts]
-    # set custom approval timeout, default is 60 seconds
+    # set custom approval timeout, default is no timeout
     async with CodeExecutor(approval_timeout=10) as executor:
-        # set custom execution timeout, default is 120 seconds
+        # set custom execution timeout, default is no timeout
         async for item in executor.stream("...", timeout=10):
             ...
     # --8<-- [end:custom_timeouts]
