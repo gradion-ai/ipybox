@@ -4,13 +4,13 @@
 
 Install ipybox using `pip`:
 
-```bash
+```
 pip install ipybox
 ```
 
 or `uv`:
 
-```bash
+```
 uv add ipybox
 ```
 
@@ -18,7 +18,7 @@ uv add ipybox
 
 ipybox can also be run as an [MCP server](https://gradion-ai.github.io/ipybox/mcpserver/index.md) using `uvx`:
 
-```bash
+```
 uvx ipybox --workspace /path/to/workspace
 ```
 
@@ -30,7 +30,7 @@ To use ipybox's [sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.m
 
 Install via npm:
 
-```bash
+```
 npm install -g @anthropic-ai/sandbox-runtime@0.0.21
 ```
 
@@ -38,7 +38,7 @@ npm install -g @anthropic-ai/sandbox-runtime@0.0.21
 
 On Mac OS, `sandbox-runtime` requires `ripgrep`. Install it using Homebrew:
 
-```bash
+```
 brew install ripgrep
 ```
 
@@ -48,7 +48,7 @@ No other dependencies are needed on Mac OS, as `sandbox-runtime` uses the native
 
 On Linux, install the required system packages:
 
-```bash
+```
 apt-get install bubblewrap socat ripgrep
 ```
 

@@ -1,11 +1,11 @@
 ## ipybox.tool_exec.server.ToolServer
 
-```python
+```
 ToolServer(
     host="localhost",
     port: int = 8900,
     approval_required: bool = False,
-    approval_timeout: float = 60,
+    approval_timeout: float | None = None,
     connect_timeout: float = 30,
     log_to_stderr: bool = False,
     log_level: str = "INFO",
@@ -24,7 +24,7 @@ Endpoints:
 
 Example
 
-```python
+```
 async with ToolServer(approval_required=True) as server:
     async with ApprovalClient(callback=on_approval_request):
         # Execute code that calls MCP tools
@@ -33,19 +33,19 @@ async with ToolServer(approval_required=True) as server:
 
 Parameters:
 
-| Name                | Type    | Description                                            | Default       |
-| ------------------- | ------- | ------------------------------------------------------ | ------------- |
-| `host`              |         | Hostname the server binds to.                          | `'localhost'` |
-| `port`              | `int`   | Port number the server listens on.                     | `8900`        |
-| `approval_required` | `bool`  | Whether tool calls require approval.                   | `False`       |
-| `approval_timeout`  | `float` | Timeout in seconds for approval requests.              | `60`          |
-| `connect_timeout`   | `float` | Timeout in seconds for starting MCP servers.           | `30`          |
-| `log_to_stderr`     | `bool`  | Whether to log to stderr instead of stdout.            | `False`       |
-| `log_level`         | `str`   | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL). | `'INFO'`      |
+| Name                | Type    | Description                                            | Default                                                                   |
+| ------------------- | ------- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `host`              |         | Hostname the server binds to.                          | `'localhost'`                                                             |
+| `port`              | `int`   | Port number the server listens on.                     | `8900`                                                                    |
+| `approval_required` | `bool`  | Whether tool calls require approval.                   | `False`                                                                   |
+| `approval_timeout`  | \`float | None\`                                                 | Timeout in seconds for approval requests. If None, no timeout is applied. |
+| `connect_timeout`   | `float` | Timeout in seconds for starting MCP servers.           | `30`                                                                      |
+| `log_to_stderr`     | `bool`  | Whether to log to stderr instead of stdout.            | `False`                                                                   |
+| `log_level`         | `str`   | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL). | `'INFO'`                                                                  |
 
 ### join
 
-```python
+```
 join()
 ```
 
@@ -53,7 +53,7 @@ Wait for the HTTP server task to stop.
 
 ### start
 
-```python
+```
 start()
 ```
 
@@ -67,7 +67,7 @@ Raises:
 
 ### stop
 
-```python
+```
 stop()
 ```
 
@@ -75,7 +75,7 @@ Stop the HTTP server and close all managed MCP servers.
 
 ## ipybox.tool_exec.client.ToolRunner
 
-```python
+```
 ToolRunner(
     server_name: str,
     server_params: dict[str, Any],
@@ -88,7 +88,7 @@ Client for executing MCP tools on a ToolServer.
 
 Example
 
-```python
+```
 runner = ToolRunner(
     server_name="fetch",
     server_params={"command": "uvx", "args": ["mcp-server-fetch"]},
@@ -107,7 +107,7 @@ Parameters:
 
 ### reset
 
-```python
+```
 reset()
 ```
 
@@ -115,7 +115,7 @@ Reset the `ToolServer`, stopping all started MCP servers.
 
 ### run
 
-```python
+```
 run(
     tool_name: str, tool_args: dict[str, Any]
 ) -> dict[str, Any] | str | None
@@ -144,7 +144,7 @@ Raises:
 
 ### run_sync
 
-```python
+```
 run_sync(
     tool_name: str, tool_args: dict[str, Any]
 ) -> dict[str, Any] | str | None
@@ -179,7 +179,7 @@ Raised when tool execution fails on the server or when approval is rejected.
 
 ## ipybox.tool_exec.approval.client.ApprovalClient
 
-```python
+```
 ApprovalClient(
     callback: ApprovalCallback,
     host: str = "localhost",
@@ -193,7 +193,7 @@ Client for handling tool call approval requests.
 
 Example
 
-```python
+```
 async def on_approval_request(request: ApprovalRequest):
     print(f"Approval request: {request}")
     await request.accept()
@@ -213,7 +213,7 @@ Parameters:
 
 ### connect
 
-```python
+```
 connect()
 ```
 
@@ -221,7 +221,7 @@ Connect to a `ToolServer`'s `ApprovalChannel`.
 
 ### disconnect
 
-```python
+```
 disconnect()
 ```
 
@@ -229,7 +229,7 @@ Disconnect from the `ToolServer`'s `ApprovalChannel`.
 
 ## ipybox.tool_exec.approval.client.ApprovalRequest
 
-```python
+```
 ApprovalRequest(
     server_name: str,
     tool_name: str,
@@ -244,7 +244,7 @@ An MCP tool call approval request.
 
 Example
 
-```python
+```
 async def on_approval_request(request: ApprovalRequest):
     print(f"Approval request: {request}")
     if request.tool_name == "dangerous_tool":
@@ -264,7 +264,7 @@ Parameters:
 
 ### accept
 
-```python
+```
 accept()
 ```
 
@@ -272,7 +272,7 @@ Accept the approval request.
 
 ### reject
 
-```python
+```
 reject()
 ```
 
@@ -280,10 +280,10 @@ Reject the approval request.
 
 ## ipybox.tool_exec.approval.server.ApprovalChannel
 
-```python
+```
 ApprovalChannel(
     approval_required: bool = False,
-    approval_timeout: float = 60,
+    approval_timeout: float | None = None,
 )
 ```
 
@@ -295,14 +295,14 @@ When `approval_required` is `False`, all approval requests are automatically gra
 
 Parameters:
 
-| Name                | Type    | Description                                      | Default |
-| ------------------- | ------- | ------------------------------------------------ | ------- |
-| `approval_required` | `bool`  | Whether approval is required for tool execution. | `False` |
-| `approval_timeout`  | `float` | Timeout in seconds for approval requests.        | `60`    |
+| Name                | Type    | Description                                      | Default                                                                   |
+| ------------------- | ------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
+| `approval_required` | `bool`  | Whether approval is required for tool execution. | `False`                                                                   |
+| `approval_timeout`  | \`float | None\`                                           | Timeout in seconds for approval requests. If None, no timeout is applied. |
 
 ### open
 
-```python
+```
 open: bool
 ```
 
@@ -310,7 +310,7 @@ Whether an `ApprovalClient` is currently connected.
 
 ### connect
 
-```python
+```
 connect(websocket: WebSocket)
 ```
 
@@ -326,7 +326,7 @@ Parameters:
 
 ### disconnect
 
-```python
+```
 disconnect()
 ```
 
@@ -334,7 +334,7 @@ Disconnect the WebSocket and error all pending approval requests.
 
 ### join
 
-```python
+```
 join(timeout: float = 5)
 ```
 
@@ -348,7 +348,7 @@ Parameters:
 
 ### request
 
-```python
+```
 request(
     server_name: str,
     tool_name: str,

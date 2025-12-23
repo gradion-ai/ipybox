@@ -1,6 +1,6 @@
 # Python tool API generation
 
-```python
+```
 from ipybox import generate_mcp_sources
 ```
 
@@ -10,7 +10,7 @@ generate_mcp_sources() generates a typed Python tool API from MCP server tool sc
 
 For MCP servers that run as local processes, specify `command`, `args`, and optional `env`:
 
-```python
+```
 brave_mcp_params = {
     "command": "npx",
     "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
@@ -28,7 +28,7 @@ await generate_mcp_sources(
 
 For remote MCP servers over HTTP, specify `url` and optional `headers`:
 
-```python
+```
 github_mcp_params = {
     "url": "https://api.githubcopilot.com/mcp/",
     "headers": {"Authorization": "Bearer ${GITHUB_API_KEY}"},
@@ -51,7 +51,7 @@ You can use `${VAR_NAME}` placeholders in `server_params` values. ipybox replace
 
 The Brave Search MCP server [example above](#stdio-servers) generates a package structure like this:
 
-```text
+```
 mcptools/
 └── brave_search/
     ├── __init__.py
@@ -67,7 +67,7 @@ For each MCP server tool, a separate Python module is generated, named after the
 
 Each module provides a typed interface for programmatic MCP tool calls:
 
-```python
+```
 from mcptools.brave_search.brave_image_search import Params, Result, run
 
 # Params validates input

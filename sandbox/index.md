@@ -2,7 +2,7 @@
 
 ipybox uses Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) to isolate code execution. When enabled, the IPython kernel runs with restricted filesystem and network access.
 
-```python
+```
 from ipybox import CodeExecutionError, CodeExecutor, generate_mcp_sources
 ```
 
@@ -10,7 +10,7 @@ from ipybox import CodeExecutionError, CodeExecutor, generate_mcp_sources
 
 Enable sandboxing with `sandbox=True`.
 
-```python
+```
 async with CodeExecutor(sandbox=True) as executor:
     result = await executor.execute("print('hello world')")
     assert result.text == "hello world"
@@ -36,7 +36,7 @@ The default sandbox configuration allows:
 
 Default sandbox configuration
 
-```json
+```
 {
   "enableWeakerNestedSandbox": false,
   "filesystem": {
@@ -60,7 +60,7 @@ To allow access to `example.org`, provide a custom sandbox configuration file:
 
 examples/sandbox-kernel.json
 
-```json
+```
 {
     "enableWeakerNestedSandbox": false,
     "filesystem": {
@@ -78,7 +78,7 @@ examples/sandbox-kernel.json
 
 and pass it as `sandbox_config` argument:
 
-```python
+```
 code = """
 import requests
 result = requests.get('https://example.org')
@@ -97,7 +97,7 @@ async with CodeExecutor(
 
 stdio MCP servers like the [filesystem MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) can be configured to run in a sandbox using `srt` as command:
 
-```python
+```
 server_params = {
     "command": "srt",
     "args": [
@@ -115,7 +115,7 @@ The sandbox configuration is:
 
 examples/sandbox-mcp.json
 
-```json
+```
 {
     "enableWeakerNestedSandbox": false,
     "filesystem": {
@@ -133,7 +133,7 @@ examples/sandbox-mcp.json
 
 The server itself is configured with permissions to access all files in the current directory (`"."`), but the sandbox additionally blocks read access to `.env`. The sandbox also allows access to `registry.npmjs.org` for downloading the server package via `npx`, and `~/.npm` for the local `npm` cache.
 
-```python
+```
 await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
 list_dir_code = """

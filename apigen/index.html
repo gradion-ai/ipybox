@@ -1148,63 +1148,63 @@
 
 
 <h1 id="python-tool-api-generation">Python tool API generation</h1>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_mcp_sources</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_mcp_sources</span>
+</code></pre></div>
 <p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.generate_mcp_sources"><code>generate_mcp_sources()</code></a> generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic <code>Params</code> class, a <code>Result</code> class or <code>str</code> return type, and a <code>run()</code> function.</p>
 <h2 id="stdio-servers">Stdio servers</h2>
 <p>For MCP servers that run as local processes, specify <code>command</code>, <code>args</code>, and optional <code>env</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">brave_mcp_params</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;npx&quot;</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-y&quot;</span><span class="p">,</span> <span class="s2">&quot;@brave/brave-search-mcp-server&quot;</span><span class="p">,</span> <span class="s2">&quot;--transport&quot;</span><span class="p">,</span> <span class="s2">&quot;stdio&quot;</span><span class="p">],</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BRAVE_API_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{BRAVE_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">server_params</span><span class="o">=</span><span class="n">brave_mcp_params</span><span class="p">,</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">brave_mcp_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;npx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-y&quot;</span><span class="p">,</span> <span class="s2">&quot;@brave/brave-search-mcp-server&quot;</span><span class="p">,</span> <span class="s2">&quot;--transport&quot;</span><span class="p">,</span> <span class="s2">&quot;stdio&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BRAVE_API_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{BRAVE_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
+    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
+    <span class="n">server_params</span><span class="o">=</span><span class="n">brave_mcp_params</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
 <h2 id="http-servers">HTTP servers</h2>
 <p>For remote MCP servers over HTTP, specify <code>url</code> and optional <code>headers</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">github_mcp_params</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.githubcopilot.com/mcp/&quot;</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="s2">&quot;headers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer $</span><span class="si">{GITHUB_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">server_params</span><span class="o">=</span><span class="n">github_mcp_params</span><span class="p">,</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">github_mcp_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.githubcopilot.com/mcp/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;headers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer $</span><span class="si">{GITHUB_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
+    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">,</span>
+    <span class="n">server_params</span><span class="o">=</span><span class="n">github_mcp_params</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
 <p>ipybox auto-detects the transport type from the URL. URLs containing <code>/mcp</code> use streamable HTTP, URLs containing <code>/sse</code> use SSE. You can also set <code>type</code> explicitly to <code>"streamable_http"</code> or <code>"sse"</code>.</p>
 <h2 id="environment-variable-substitution">Environment variable substitution</h2>
 <p>You can use <code>${VAR_NAME}</code> placeholders in <code>server_params</code> values. ipybox replaces them with the corresponding environment variable when connecting to the MCP server. This keeps secrets out of your code.</p>
 <h2 id="generated-package-structure">Generated package structure</h2>
 <p>The Brave Search MCP server <a href="#stdio-servers">example above</a> generates a package structure like this:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mcptools/
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>└── brave_search/
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    ├── __init__.py
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    ├── brave_web_search.py
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    ├── brave_local_search.py
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    ├── brave_image_search.py
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    └── ...
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>mcptools/
+└── brave_search/
+    ├── __init__.py
+    ├── brave_web_search.py
+    ├── brave_local_search.py
+    ├── brave_image_search.py
+    └── ...
+</code></pre></div>
 <p>For each MCP server tool, a separate Python module is generated, named after the tool.</p>
 <h2 id="using-the-generated-api">Using the generated API</h2>
 <p>Each module provides a typed interface for programmatic MCP tool calls:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.brave_search.brave_image_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">Params</span><span class="p">,</span> <span class="n">Result</span><span class="p">,</span> <span class="n">run</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Params validates input</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;neural topic models&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># run() calls the MCP tool and returns a Result (or str for untyped tools)</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">result</span><span class="p">:</span> <span class="n">Result</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.brave_search.brave_image_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">Params</span><span class="p">,</span> <span class="n">Result</span><span class="p">,</span> <span class="n">run</span>
+
+<span class="c1"># Params validates input</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;neural topic models&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># run() calls the MCP tool and returns a Result (or str for untyped tools)</span>
+<span class="n">result</span><span class="p">:</span> <span class="n">Result</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</code></pre></div>
 <p>The <code>Params</code> class is generated from the tool's input schema. Tools with an output schema get a typed <code>Result</code> class; others return <code>str</code>. The MCP tool itself is called via its <code>run()</code> function.</p>
 
 

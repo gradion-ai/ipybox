@@ -1,6 +1,6 @@
 ## ipybox.kernel_mgr.server.KernelGateway
 
-```python
+```
 KernelGateway(
     host: str = "localhost",
     port: int = 8888,
@@ -20,7 +20,7 @@ When sandboxing is enabled, the gateway runs inside Anthropic's [sandbox-runtime
 
 Example
 
-```python
+```
 async with KernelGateway(host="localhost", port=8888) as gateway:
     # Gateway is running, connect with KernelClient
     await gateway.join()  # Wait until gateway stops
@@ -40,7 +40,7 @@ Parameters:
 
 ### join
 
-```python
+```
 join()
 ```
 
@@ -48,7 +48,7 @@ Waits for the kernel gateway process to exit.
 
 ### start
 
-```python
+```
 start()
 ```
 
@@ -62,7 +62,7 @@ Raises:
 
 ### stop
 
-```python
+```
 stop(timeout: float = 10)
 ```
 
@@ -78,7 +78,7 @@ Parameters:
 
 ## ipybox.kernel_mgr.client.KernelClient
 
-```python
+```
 KernelClient(
     host: str = "localhost",
     port: int = 8888,
@@ -93,7 +93,7 @@ Connects to a KernelGateway to create and communicate with an IPython kernel. Co
 
 Example
 
-```python
+```
 async with KernelClient(host="localhost", port=8888) as client:
     # Simple execution
     result = await client.execute("print('hello')")
@@ -119,7 +119,7 @@ Parameters:
 
 ### kernel_id
 
-```python
+```
 kernel_id
 ```
 
@@ -133,7 +133,7 @@ Raises:
 
 ### connect
 
-```python
+```
 connect(retries: int = 10, retry_interval: float = 1.0)
 ```
 
@@ -154,7 +154,7 @@ Raises:
 
 ### disconnect
 
-```python
+```
 disconnect()
 ```
 
@@ -162,8 +162,10 @@ Disconnects from and deletes the running IPython kernel.
 
 ### execute
 
-```python
-execute(code: str, timeout: float = 120) -> ExecutionResult
+```
+execute(
+    code: str, timeout: float | None = None
+) -> ExecutionResult
 ```
 
 Executes code in this client's IPython kernel and returns the result.
@@ -172,10 +174,10 @@ Waits for execution to complete and returns the final result. Use stream for inc
 
 Parameters:
 
-| Name      | Type    | Description                                               | Default    |
-| --------- | ------- | --------------------------------------------------------- | ---------- |
-| `code`    | `str`   | Python code to execute.                                   | *required* |
-| `timeout` | `float` | Maximum time in seconds to wait for the execution result. | `120`      |
+| Name      | Type    | Description             | Default                                                                                   |
+| --------- | ------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+| `code`    | `str`   | Python code to execute. | *required*                                                                                |
+| `timeout` | \`float | None\`                  | Maximum time in seconds to wait for the execution result. If None, no timeout is applied. |
 
 Returns:
 
@@ -192,7 +194,7 @@ Raises:
 
 ### reset
 
-```python
+```
 reset()
 ```
 
@@ -202,9 +204,9 @@ Deletes the running kernel and creates a new one.
 
 ### stream
 
-```python
+```
 stream(
-    code: str, timeout: float = 120
+    code: str, timeout: float | None = None
 ) -> AsyncIterator[str | ExecutionResult]
 ```
 
@@ -214,10 +216,10 @@ Yields output chunks as strings during execution, and yields the final Execution
 
 Parameters:
 
-| Name      | Type    | Description                                               | Default    |
-| --------- | ------- | --------------------------------------------------------- | ---------- |
-| `code`    | `str`   | Python code to execute.                                   | *required* |
-| `timeout` | `float` | Maximum time in seconds to wait for the execution result. | `120`      |
+| Name      | Type    | Description             | Default                                                                                   |
+| --------- | ------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+| `code`    | `str`   | Python code to execute. | *required*                                                                                |
+| `timeout` | \`float | None\`                  | Maximum time in seconds to wait for the execution result. If None, no timeout is applied. |
 
 Yields:
 
@@ -235,7 +237,7 @@ Raises:
 
 ## ipybox.kernel_mgr.client.ExecutionResult
 
-```python
+```
 ExecutionResult(text: str | None, images: list[Path])
 ```
 

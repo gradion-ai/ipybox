@@ -51,13 +51,13 @@ For LLM-friendly versions of this documentation, see [llms.txt](https://gradion-
 
 Install ipybox using `pip`:
 
-```bash
+```
 pip install ipybox
 ```
 
 or `uv`:
 
-```bash
+```
 uv add ipybox
 ```
 
@@ -65,7 +65,7 @@ uv add ipybox
 
 ipybox can also be run as an [MCP server](https://gradion-ai.github.io/ipybox/mcpserver/index.md) using `uvx`:
 
-```bash
+```
 uvx ipybox --workspace /path/to/workspace
 ```
 
@@ -77,7 +77,7 @@ To use ipybox's [sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.m
 
 Install via npm:
 
-```bash
+```
 npm install -g @anthropic-ai/sandbox-runtime@0.0.21
 ```
 
@@ -85,7 +85,7 @@ npm install -g @anthropic-ai/sandbox-runtime@0.0.21
 
 On Mac OS, `sandbox-runtime` requires `ripgrep`. Install it using Homebrew:
 
-```bash
+```
 brew install ripgrep
 ```
 
@@ -95,7 +95,7 @@ No other dependencies are needed on Mac OS, as `sandbox-runtime` uses the native
 
 On Linux, install the required system packages:
 
-```bash
+```
 apt-get install bubblewrap socat ripgrep
 ```
 
@@ -109,7 +109,7 @@ This guide walks through a complete example: generating a Python tool API for th
 
 ## Installation
 
-```bash
+```
 pip install ipybox
 ```
 
@@ -117,19 +117,19 @@ pip install ipybox
 
 Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com). Once you have your key, set it as an environment variable:
 
-```bash
+```
 export BRAVE_API_KEY=your_api_key_here
 ```
 
 Or create a `.env` file in your project root (ipybox loads it automatically):
 
-```text
+```
 BRAVE_API_KEY=your_api_key_here
 ```
 
 ## Complete example
 
-```python
+```
 import asyncio
 from pathlib import Path
 
@@ -201,7 +201,7 @@ The `server_params` dict defines how to connect to an MCP server. For stdio serv
 - `args`: Command-line arguments
 - `env`: Environment variables to pass
 
-```python
+```
 SERVER_PARAMS = {
     "command": "npx",
     "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
@@ -215,7 +215,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your e
 
 generate_mcp_sources() connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:
 
-```python
+```
 await generate_mcp_sources(
     server_name="brave_search",
     server_params=SERVER_PARAMS,
@@ -225,7 +225,7 @@ await generate_mcp_sources(
 
 This creates an `mcptools/brave_search` package with a Python module for each MCP server tool:
 
-```text
+```
 mcptools/brave_search/
 ├── __init__.py
 ├── brave_web_search.py
@@ -240,7 +240,7 @@ Each module contains a Pydantic `Params` class for input validation, a `Result` 
 
 CodeExecutor runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.
 
-```python
+```
 async with CodeExecutor() as executor:
     async for item in executor.stream(CODE):
         ...
@@ -252,7 +252,7 @@ The `stream()` method yields events as execution progresses. You'll receive Appr
 
 When an MCP tool is called during code execution, ipybox pauses execution and sends an ApprovalRequest to your application. You must explicitly approve or reject each tool call:
 
-```python
+```
 case ApprovalRequest() as req:
     if user_approves:
         await req.accept()
@@ -270,7 +270,7 @@ The ApprovalRequest includes the server name, tool name, and arguments, so you c
 
 # Python tool API generation
 
-```python
+```
 from ipybox import generate_mcp_sources
 ```
 
@@ -280,7 +280,7 @@ generate_mcp_sources() generates a typed Python tool API from MCP server tool sc
 
 For MCP servers that run as local processes, specify `command`, `args`, and optional `env`:
 
-```python
+```
 brave_mcp_params = {
     "command": "npx",
     "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
@@ -298,7 +298,7 @@ await generate_mcp_sources(
 
 For remote MCP servers over HTTP, specify `url` and optional `headers`:
 
-```python
+```
 github_mcp_params = {
     "url": "https://api.githubcopilot.com/mcp/",
     "headers": {"Authorization": "Bearer ${GITHUB_API_KEY}"},
@@ -321,7 +321,7 @@ You can use `${VAR_NAME}` placeholders in `server_params` values. ipybox replace
 
 The Brave Search MCP server [example above](#stdio-servers) generates a package structure like this:
 
-```text
+```
 mcptools/
 └── brave_search/
     ├── __init__.py
@@ -337,7 +337,7 @@ For each MCP server tool, a separate Python module is generated, named after the
 
 Each module provides a typed interface for programmatic MCP tool calls:
 
-```python
+```
 from mcptools.brave_search.brave_image_search import Params, Result, run
 
 # Params validates input
@@ -354,7 +354,7 @@ The `Params` class is generated from the tool's input schema. Tools with an outp
 
 # Code execution
 
-```python
+```
 from ipybox import (
     ApprovalRequest,
     CodeExecutionChunk,
@@ -369,7 +369,7 @@ CodeExecutor runs Python code in an IPython kernel where variables and definitio
 
 Use `execute()` for non-interactive execution where MCP tool calls, if any, are auto-approved:
 
-```python
+```
 async with CodeExecutor() as executor:
     result = await executor.execute("print('hello world')")
     assert result.text == "hello world"
@@ -381,7 +381,7 @@ For application-level approval control, use `stream()` instead.
 
 When code calls the [generated Python tool API](https://gradion-ai.github.io/ipybox/apigen/index.md), ipybox suspends execution and yields an ApprovalRequest. You must call `accept()` to continue execution:
 
-```python
+```
 code = """
 from mcptools.brave_search.brave_image_search import Params, Result, run
 
@@ -406,7 +406,7 @@ The approval request includes `tool_name` and `tool_args` so you can inspect wha
 
 Enable `chunks=True` to receive output incrementally as it's produced:
 
-```python
+```
 code = """
 from time import sleep
 print("chunk 1")
@@ -428,7 +428,7 @@ CodeExecutionChunk events contain partial output. The final CodeExecutionResult 
 
 Plots are automatically captured as PNG files in the `images` directory. Use `images_dir` to customize the location:
 
-```python
+```
 code = """
 import matplotlib.pyplot as plt
 plt.plot([1, 2, 3], [1, 4, 9])
@@ -448,22 +448,22 @@ Generated images are available in `result.images` as a list of `Path` objects.
 
 Configure approval and execution timeouts:
 
-```python
-# set custom approval timeout, default is 60 seconds
+```
+# set custom approval timeout, default is no timeout
 async with CodeExecutor(approval_timeout=10) as executor:
-    # set custom execution timeout, default is 120 seconds
+    # set custom execution timeout, default is no timeout
     async for item in executor.stream("...", timeout=10):
         ...
 ```
 
-- `approval_timeout`: How long to wait for `accept()`/`reject()` (default: 60s)
-- `timeout` in `stream()`: Maximum total execution time including approval waits (default: 120s)
+- `approval_timeout`: How long to wait for `accept()`/`reject()` (default: no timeout)
+- `timeout` in `stream()`: Maximum total execution time including approval waits (default: no timeout)
 
 ## Kernel environment
 
 The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with `kernel_env`:
 
-```python
+```
 # IPython kernel does not inherit environment variables from parent process
 # Kernel environment must be explicitly set using the kernel_env parameter
 async with CodeExecutor(kernel_env={"TEST_VAR": "test_val"}) as executor:
@@ -479,7 +479,7 @@ Environment variables referenced in `server_params` via `${VAR_NAME}` are taken 
 
 Clear all variables and definitions by resetting the IPython kernel with `reset()`:
 
-```python
+```
 async with CodeExecutor() as executor:
     await executor.execute("x = 42")
     result = await executor.execute("print(x)")
@@ -503,7 +503,7 @@ This also stops any MCP servers started during execution. They restart lazily on
 
 The kernel shares the working directory with the parent process:
 
-```python
+```
 async with CodeExecutor() as executor:
     import os
 
@@ -515,7 +515,7 @@ async with CodeExecutor() as executor:
 
 ipybox uses Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) to isolate code execution. When enabled, the IPython kernel runs with restricted filesystem and network access.
 
-```python
+```
 from ipybox import CodeExecutionError, CodeExecutor, generate_mcp_sources
 ```
 
@@ -523,7 +523,7 @@ from ipybox import CodeExecutionError, CodeExecutor, generate_mcp_sources
 
 Enable sandboxing with `sandbox=True`.
 
-```python
+```
 async with CodeExecutor(sandbox=True) as executor:
     result = await executor.execute("print('hello world')")
     assert result.text == "hello world"
@@ -549,7 +549,7 @@ The default sandbox configuration allows:
 
 Default sandbox configuration
 
-```json
+```
 {
   "enableWeakerNestedSandbox": false,
   "filesystem": {
@@ -573,7 +573,7 @@ To allow access to `example.org`, provide a custom sandbox configuration file:
 
 examples/sandbox-kernel.json
 
-```json
+```
 {
     "enableWeakerNestedSandbox": false,
     "filesystem": {
@@ -591,7 +591,7 @@ examples/sandbox-kernel.json
 
 and pass it as `sandbox_config` argument:
 
-```python
+```
 code = """
 import requests
 result = requests.get('https://example.org')
@@ -610,7 +610,7 @@ async with CodeExecutor(
 
 stdio MCP servers like the [filesystem MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) can be configured to run in a sandbox using `srt` as command:
 
-```python
+```
 server_params = {
     "command": "srt",
     "args": [
@@ -628,7 +628,7 @@ The sandbox configuration is:
 
 examples/sandbox-mcp.json
 
-```json
+```
 {
     "enableWeakerNestedSandbox": false,
     "filesystem": {
@@ -646,7 +646,7 @@ examples/sandbox-mcp.json
 
 The server itself is configured with permissions to access all files in the current directory (`"."`), but the sandbox additionally blocks read access to `.env`. The sandbox also allows access to `registry.npmjs.org` for downloading the server package via `npx`, and `~/.npm` for the local `npm` cache.
 
-```python
+```
 await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
 list_dir_code = """
@@ -693,7 +693,7 @@ An application example of this MCP server is the [programmatic tool calling plug
 
 ## Configuration
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -718,7 +718,7 @@ Environment variables can be passed to ipybox either via an `"env"` key in the M
 
 /path/to/workspace/.env
 
-```text
+```
 API_KEY_1=...
 API_KEY_2=...
 KERNEL_ENV_SECRET_1=...
@@ -731,7 +731,7 @@ These variables are available to MCP servers registered with ipybox but are not 
 
 This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a [BRAVE_API_KEY](https://gradion-ai.github.io/ipybox/quickstart/#get-a-brave-api-key):
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -749,13 +749,13 @@ or add the API key to a `.env` file in the workspace directory:
 
 /path/to/workspace/.env
 
-```text
+```
 BRAVE_API_KEY=your-api-key
 ```
 
 An agent then registers the Brave Search MCP server by calling `register_mcp_server` with the following argument:
 
-```json
+```
 {
   "server_name": "brave_search",
   "server_params": {
@@ -770,7 +770,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from the MC
 
 After registration, the agent calls `execute_ipython_cell` with Python code that uses the generated API:
 
-```python
+```
 from mcptools.brave_search.brave_web_search import Params, run
 
 result = run(Params(query="Python asyncio tutorial", count=3))
@@ -799,7 +799,7 @@ Executes Python code in a stateful IPython kernel. Executed code can use the gen
 Parameters:
 
 - `code` — Python code to execute
-- `timeout` — Maximum execution time in seconds (default: 120)
+- `timeout` — Maximum execution time in seconds (default: no timeout)
 - `max_output_chars` — Output character limit (default: 5000)
 
 Returns the execution output.
@@ -820,7 +820,7 @@ Creates a new kernel, clearing all variables and imports. Installed packages and
 
 To isolate code execution via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime), enable [sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md) with the `--sandbox` option:
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -848,7 +848,7 @@ Sandboxing with [sandbox-runtime](https://github.com/anthropic-experimental/sand
 
 ipybox can be run as a Docker container. Clone the [project](https://github.com/gradion-ai/ipybox) and build the image:
 
-```bash
+```
 git clone https://github.com/gradion-ai/ipybox.git
 cd ipybox
 ./docker-build.sh
@@ -858,7 +858,7 @@ The build script creates a container user with your UID/GID, ensuring files gene
 
 Then configure the MCP server:
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -915,7 +915,7 @@ The [example below](#usage-example) uses the [GitHub MCP server](https://github.
 
 .env
 
-```text
+```
 GITHUB_API_KEY=your-github-personal-access-token
 ```
 
@@ -925,7 +925,7 @@ The plugin automatically loads environment variables from this file.
 
 Add the ipybox repository as plugin marketplace to Claude Code:
 
-```bash
+```
 claude plugin marketplace add https://github.com/gradion-ai/ipybox
 ```
 
@@ -937,7 +937,7 @@ Then install one of the available plugins:
 | `codeact-sandbox` | Runs ipybox with a [sandboxed](https://gradion-ai.github.io/ipybox/sandbox/index.md) IPython kernel |
 | `codeact-docker`  | Runs ipybox as a Docker container                                                                   |
 
-```bash
+```
 claude plugin install codeact-default@ipybox
 ```
 
@@ -968,7 +968,7 @@ It uses two tools from the GitHub MCP server:
 
 User prompt
 
-```text
+```
 Register this MCP server at ipybox under name github:
 {
   "url": "https://api.githubcopilot.com/mcp/",
@@ -988,7 +988,7 @@ The codeact skill can be activated in Claude Code with phrases like "use the cod
 
 User prompt
 
-```text
+```
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
 of torvalds with the most stars. For each repo, output name, stars and 
 the first line of commit messages, and the link to the commit
@@ -1000,7 +1000,7 @@ Claude Code generates two code actions. The first searches for the top 3 repos o
 
 Code action
 
-```python
+```
 import json
 from mcptools.github import search_repositories, list_commits
 
@@ -1028,7 +1028,7 @@ The second code action uses the repository information stored in `top_repos` to 
 
 Code action
 
-```python
+```
 # Get latest 5 commits for each of the top 3 repos
 for repo in top_repos:
     repo_name = repo['name']
@@ -1065,7 +1065,7 @@ To compensate for the lack of output schemas, we generate an output parser for t
 
 User prompt
 
-```text
+```
 Generate an output parser for search_repositories
 ```
 
@@ -1079,7 +1079,7 @@ Running the same task again (optionally after restarting Claude Code), Claude Co
 
 User prompt
 
-```text
+```
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
 of torvalds with the most stars. For each repo, output name, stars and 
 the first line of commit messages, and the link to the commit
@@ -1087,7 +1087,7 @@ the first line of commit messages, and the link to the commit
 
 Code action
 
-```python
+```
 import json
 from mcptools.github import search_repositories, list_commits
 
@@ -1137,7 +1137,7 @@ Code actions can be saved and reused as tools in later code actions. To save the
 
 User prompt
 
-```text
+```
 Save this as code action under github category with name commits_of_top_repos. 
 Make username, top_n_repos and last_n_commits parameters
 ```
@@ -1152,7 +1152,7 @@ After restarting Claude Code or clearing its context window, to enforce re-disco
 
 User prompt
 
-```text
+```
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
 of torvalds with the most stars. For each repo, output name, stars and 
 the first line of commit messages, and the link to the commit
@@ -1160,7 +1160,7 @@ the first line of commit messages, and the link to the commit
 
 Code action
 
-```python
+```
 from gentools.github.commits_of_top_repos import run
 
 results = run(username="torvalds", top_n_repos=3, last_n_commits=5)
@@ -1182,7 +1182,7 @@ ______________________________________________________________________
 
 ## ipybox.CodeExecutor
 
-```python
+```
 CodeExecutor(
     tool_server_host: str = "localhost",
     tool_server_port: int | None = None,
@@ -1190,7 +1190,7 @@ CodeExecutor(
     kernel_gateway_port: int | None = None,
     kernel_env: dict[str, str] | None = None,
     images_dir: Path | None = None,
-    approval_timeout: float = 60,
+    approval_timeout: float | None = None,
     connect_timeout: float = 30,
     sandbox: bool = False,
     sandbox_config: Path | None = None,
@@ -1208,7 +1208,7 @@ Example
 
 Generate a Python tool API and execute code that uses it:
 
-```python
+```
 from pathlib import Path
 
 from ipybox import ApprovalRequest, CodeExecutionResult, CodeExecutor
@@ -1240,25 +1240,25 @@ Configure a code executor with optional sandboxing.
 
 Parameters:
 
-| Name                  | Type             | Description                                                                                                                                                                         | Default                                                                                                                            |
-| --------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `tool_server_host`    | `str`            | Hostname for the ToolServer.                                                                                                                                                        | `'localhost'`                                                                                                                      |
-| `tool_server_port`    | \`int            | None\`                                                                                                                                                                              | Port for the tool server. If None, a free port is selected automatically.                                                          |
-| `kernel_gateway_host` | `str`            | Hostname for the KernelGateway.                                                                                                                                                     | `'localhost'`                                                                                                                      |
-| `kernel_gateway_port` | \`int            | None\`                                                                                                                                                                              | Port for the kernel gateway. If None, a free port is selected automatically.                                                       |
-| `kernel_env`          | \`dict[str, str] | None\`                                                                                                                                                                              | Environment variables to set for the IPython kernel. Kernels do not inherit environment variables from the parent process.         |
-| `images_dir`          | \`Path           | None\`                                                                                                                                                                              | Directory for saving images generated during code execution. Defaults to images in the current directory.                          |
-| `approval_timeout`    | `float`          | Timeout in seconds for approval requests. If an approval request is not accepted or rejected within this time, the tool call fails.                                                 | `60`                                                                                                                               |
-| `connect_timeout`     | `float`          | Timeout in seconds for starting MCP servers.                                                                                                                                        | `30`                                                                                                                               |
-| `sandbox`             | `bool`           | Whether to run the kernel gateway inside Anthropic's sandbox-runtime. When enabled, IPython kernels run in a secure sandbox with no network access except to the local tool server. | `False`                                                                                                                            |
-| `sandbox_config`      | \`Path           | None\`                                                                                                                                                                              | Path to a JSON file with sandbox configuration. See the Configuration section of the sandbox-runtime README for available options. |
-| `log_level`           | `str`            | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).                                                                                                                              | `'WARNING'`                                                                                                                        |
+| Name                  | Type             | Description                                                                                                                                                                         | Default                                                                                                                                                             |
+| --------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tool_server_host`    | `str`            | Hostname for the ToolServer.                                                                                                                                                        | `'localhost'`                                                                                                                                                       |
+| `tool_server_port`    | \`int            | None\`                                                                                                                                                                              | Port for the tool server. If None, a free port is selected automatically.                                                                                           |
+| `kernel_gateway_host` | `str`            | Hostname for the KernelGateway.                                                                                                                                                     | `'localhost'`                                                                                                                                                       |
+| `kernel_gateway_port` | \`int            | None\`                                                                                                                                                                              | Port for the kernel gateway. If None, a free port is selected automatically.                                                                                        |
+| `kernel_env`          | \`dict[str, str] | None\`                                                                                                                                                                              | Environment variables to set for the IPython kernel. Kernels do not inherit environment variables from the parent process.                                          |
+| `images_dir`          | \`Path           | None\`                                                                                                                                                                              | Directory for saving images generated during code execution. Defaults to images in the current directory.                                                           |
+| `approval_timeout`    | \`float          | None\`                                                                                                                                                                              | Timeout in seconds for approval requests. If an approval request is not accepted or rejected within this time, the tool call fails. If None, no timeout is applied. |
+| `connect_timeout`     | `float`          | Timeout in seconds for starting MCP servers.                                                                                                                                        | `30`                                                                                                                                                                |
+| `sandbox`             | `bool`           | Whether to run the kernel gateway inside Anthropic's sandbox-runtime. When enabled, IPython kernels run in a secure sandbox with no network access except to the local tool server. | `False`                                                                                                                                                             |
+| `sandbox_config`      | \`Path           | None\`                                                                                                                                                                              | Path to a JSON file with sandbox configuration. See the Configuration section of the sandbox-runtime README for available options.                                  |
+| `log_level`           | `str`            | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).                                                                                                                              | `'WARNING'`                                                                                                                                                         |
 
 ### execute
 
-```python
+```
 execute(
-    code: str, timeout: float = 120
+    code: str, timeout: float | None = None
 ) -> CodeExecutionResult
 ```
 
@@ -1268,10 +1268,10 @@ Convenience method that executes code, auto-approves any MCP tool calls, and ret
 
 Parameters:
 
-| Name      | Type    | Description                                                | Default    |
-| --------- | ------- | ---------------------------------------------------------- | ---------- |
-| `code`    | `str`   | Python code to execute.                                    | *required* |
-| `timeout` | `float` | Maximum time in seconds to wait for execution to complete. | `120`      |
+| Name      | Type    | Description             | Default                                                                                    |
+| --------- | ------- | ----------------------- | ------------------------------------------------------------------------------------------ |
+| `code`    | `str`   | Python code to execute. | *required*                                                                                 |
+| `timeout` | \`float | None\`                  | Maximum time in seconds to wait for execution to complete. If None, no timeout is applied. |
 
 Returns:
 
@@ -1288,7 +1288,7 @@ Raises:
 
 ### reset
 
-```python
+```
 reset()
 ```
 
@@ -1298,7 +1298,7 @@ Restarts the IPython kernel and stops all started MCP servers. Kernel state (var
 
 ### start
 
-```python
+```
 start()
 ```
 
@@ -1308,7 +1308,7 @@ Starts the tool server, kernel gateway, and connects to the IPython kernel.
 
 ### stop
 
-```python
+```
 stop()
 ```
 
@@ -1318,9 +1318,11 @@ Stops the tool server, kernel gateway, and disconnects from the IPython kernel.
 
 ### stream
 
-```python
+```
 stream(
-    code: str, timeout: float = 120, chunks: bool = False
+    code: str,
+    timeout: float | None = None,
+    chunks: bool = False,
 ) -> AsyncIterator[
     ApprovalRequest
     | CodeExecutionChunk
@@ -1334,11 +1336,11 @@ Code can call MCP tools using the API generated by generate_mcp_sources. Each to
 
 Parameters:
 
-| Name      | Type    | Description                                                                                                                         | Default    |
-| --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| `code`    | `str`   | Python code to execute.                                                                                                             | *required* |
-| `timeout` | `float` | Maximum time in seconds to wait for execution to complete.                                                                          | `120`      |
-| `chunks`  | `bool`  | Whether to yield CodeExecutionChunk objects during execution. When False, only ApprovalRequest and CodeExecutionResult are yielded. | `False`    |
+| Name      | Type    | Description                                                                                                                         | Default                                                                                    |
+| --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `code`    | `str`   | Python code to execute.                                                                                                             | *required*                                                                                 |
+| `timeout` | \`float | None\`                                                                                                                              | Maximum time in seconds to wait for execution to complete. If None, no timeout is applied. |
+| `chunks`  | `bool`  | Whether to yield CodeExecutionChunk objects during execution. When False, only ApprovalRequest and CodeExecutionResult are yielded. | `False`                                                                                    |
 
 Yields:
 
@@ -1357,7 +1359,7 @@ Raises:
 
 ## ipybox.CodeExecutionChunk
 
-```python
+```
 CodeExecutionChunk(text: str)
 ```
 
@@ -1373,7 +1375,7 @@ Attributes:
 
 ## ipybox.CodeExecutionResult
 
-```python
+```
 CodeExecutionResult(text: str | None, images: list[Path])
 ```
 
@@ -1394,7 +1396,7 @@ Raised when code execution in an IPython kernel fails.
 
 ## ipybox.generate_mcp_sources
 
-```python
+```
 generate_mcp_sources(
     server_name: str,
     server_params: dict[str, Any],
@@ -1428,7 +1430,7 @@ Example
 
 Generate a Python tool API for the fetch MCP server:
 
-```python
+```
 server_params = {
     "command": "uvx",
     "args": ["mcp-server-fetch"],
@@ -1438,7 +1440,7 @@ await generate_mcp_sources("fetch_mcp", server_params, Path("mcptools"))
 
 Execute code that uses the generated API:
 
-```python
+```
 from ipybox.code_exec import CodeExecutor
 
 code = """
@@ -1455,12 +1457,12 @@ async with CodeExecutor() as executor:
 
 ## ipybox.tool_exec.server.ToolServer
 
-```python
+```
 ToolServer(
     host="localhost",
     port: int = 8900,
     approval_required: bool = False,
-    approval_timeout: float = 60,
+    approval_timeout: float | None = None,
     connect_timeout: float = 30,
     log_to_stderr: bool = False,
     log_level: str = "INFO",
@@ -1479,7 +1481,7 @@ Endpoints:
 
 Example
 
-```python
+```
 async with ToolServer(approval_required=True) as server:
     async with ApprovalClient(callback=on_approval_request):
         # Execute code that calls MCP tools
@@ -1488,19 +1490,19 @@ async with ToolServer(approval_required=True) as server:
 
 Parameters:
 
-| Name                | Type    | Description                                            | Default       |
-| ------------------- | ------- | ------------------------------------------------------ | ------------- |
-| `host`              |         | Hostname the server binds to.                          | `'localhost'` |
-| `port`              | `int`   | Port number the server listens on.                     | `8900`        |
-| `approval_required` | `bool`  | Whether tool calls require approval.                   | `False`       |
-| `approval_timeout`  | `float` | Timeout in seconds for approval requests.              | `60`          |
-| `connect_timeout`   | `float` | Timeout in seconds for starting MCP servers.           | `30`          |
-| `log_to_stderr`     | `bool`  | Whether to log to stderr instead of stdout.            | `False`       |
-| `log_level`         | `str`   | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL). | `'INFO'`      |
+| Name                | Type    | Description                                            | Default                                                                   |
+| ------------------- | ------- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `host`              |         | Hostname the server binds to.                          | `'localhost'`                                                             |
+| `port`              | `int`   | Port number the server listens on.                     | `8900`                                                                    |
+| `approval_required` | `bool`  | Whether tool calls require approval.                   | `False`                                                                   |
+| `approval_timeout`  | \`float | None\`                                                 | Timeout in seconds for approval requests. If None, no timeout is applied. |
+| `connect_timeout`   | `float` | Timeout in seconds for starting MCP servers.           | `30`                                                                      |
+| `log_to_stderr`     | `bool`  | Whether to log to stderr instead of stdout.            | `False`                                                                   |
+| `log_level`         | `str`   | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL). | `'INFO'`                                                                  |
 
 ### join
 
-```python
+```
 join()
 ```
 
@@ -1508,7 +1510,7 @@ Wait for the HTTP server task to stop.
 
 ### start
 
-```python
+```
 start()
 ```
 
@@ -1522,7 +1524,7 @@ Raises:
 
 ### stop
 
-```python
+```
 stop()
 ```
 
@@ -1530,7 +1532,7 @@ Stop the HTTP server and close all managed MCP servers.
 
 ## ipybox.tool_exec.client.ToolRunner
 
-```python
+```
 ToolRunner(
     server_name: str,
     server_params: dict[str, Any],
@@ -1543,7 +1545,7 @@ Client for executing MCP tools on a ToolServer.
 
 Example
 
-```python
+```
 runner = ToolRunner(
     server_name="fetch",
     server_params={"command": "uvx", "args": ["mcp-server-fetch"]},
@@ -1562,7 +1564,7 @@ Parameters:
 
 ### reset
 
-```python
+```
 reset()
 ```
 
@@ -1570,7 +1572,7 @@ Reset the `ToolServer`, stopping all started MCP servers.
 
 ### run
 
-```python
+```
 run(
     tool_name: str, tool_args: dict[str, Any]
 ) -> dict[str, Any] | str | None
@@ -1599,7 +1601,7 @@ Raises:
 
 ### run_sync
 
-```python
+```
 run_sync(
     tool_name: str, tool_args: dict[str, Any]
 ) -> dict[str, Any] | str | None
@@ -1634,7 +1636,7 @@ Raised when tool execution fails on the server or when approval is rejected.
 
 ## ipybox.tool_exec.approval.client.ApprovalClient
 
-```python
+```
 ApprovalClient(
     callback: ApprovalCallback,
     host: str = "localhost",
@@ -1648,7 +1650,7 @@ Client for handling tool call approval requests.
 
 Example
 
-```python
+```
 async def on_approval_request(request: ApprovalRequest):
     print(f"Approval request: {request}")
     await request.accept()
@@ -1668,7 +1670,7 @@ Parameters:
 
 ### connect
 
-```python
+```
 connect()
 ```
 
@@ -1676,7 +1678,7 @@ Connect to a `ToolServer`'s `ApprovalChannel`.
 
 ### disconnect
 
-```python
+```
 disconnect()
 ```
 
@@ -1684,7 +1686,7 @@ Disconnect from the `ToolServer`'s `ApprovalChannel`.
 
 ## ipybox.tool_exec.approval.client.ApprovalRequest
 
-```python
+```
 ApprovalRequest(
     server_name: str,
     tool_name: str,
@@ -1699,7 +1701,7 @@ An MCP tool call approval request.
 
 Example
 
-```python
+```
 async def on_approval_request(request: ApprovalRequest):
     print(f"Approval request: {request}")
     if request.tool_name == "dangerous_tool":
@@ -1719,7 +1721,7 @@ Parameters:
 
 ### accept
 
-```python
+```
 accept()
 ```
 
@@ -1727,7 +1729,7 @@ Accept the approval request.
 
 ### reject
 
-```python
+```
 reject()
 ```
 
@@ -1735,10 +1737,10 @@ Reject the approval request.
 
 ## ipybox.tool_exec.approval.server.ApprovalChannel
 
-```python
+```
 ApprovalChannel(
     approval_required: bool = False,
-    approval_timeout: float = 60,
+    approval_timeout: float | None = None,
 )
 ```
 
@@ -1750,14 +1752,14 @@ When `approval_required` is `False`, all approval requests are automatically gra
 
 Parameters:
 
-| Name                | Type    | Description                                      | Default |
-| ------------------- | ------- | ------------------------------------------------ | ------- |
-| `approval_required` | `bool`  | Whether approval is required for tool execution. | `False` |
-| `approval_timeout`  | `float` | Timeout in seconds for approval requests.        | `60`    |
+| Name                | Type    | Description                                      | Default                                                                   |
+| ------------------- | ------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
+| `approval_required` | `bool`  | Whether approval is required for tool execution. | `False`                                                                   |
+| `approval_timeout`  | \`float | None\`                                           | Timeout in seconds for approval requests. If None, no timeout is applied. |
 
 ### open
 
-```python
+```
 open: bool
 ```
 
@@ -1765,7 +1767,7 @@ Whether an `ApprovalClient` is currently connected.
 
 ### connect
 
-```python
+```
 connect(websocket: WebSocket)
 ```
 
@@ -1781,7 +1783,7 @@ Parameters:
 
 ### disconnect
 
-```python
+```
 disconnect()
 ```
 
@@ -1789,7 +1791,7 @@ Disconnect the WebSocket and error all pending approval requests.
 
 ### join
 
-```python
+```
 join(timeout: float = 5)
 ```
 
@@ -1803,7 +1805,7 @@ Parameters:
 
 ### request
 
-```python
+```
 request(
     server_name: str,
     tool_name: str,
@@ -1838,7 +1840,7 @@ Raises:
 
 ## ipybox.kernel_mgr.server.KernelGateway
 
-```python
+```
 KernelGateway(
     host: str = "localhost",
     port: int = 8888,
@@ -1858,7 +1860,7 @@ When sandboxing is enabled, the gateway runs inside Anthropic's [sandbox-runtime
 
 Example
 
-```python
+```
 async with KernelGateway(host="localhost", port=8888) as gateway:
     # Gateway is running, connect with KernelClient
     await gateway.join()  # Wait until gateway stops
@@ -1878,7 +1880,7 @@ Parameters:
 
 ### join
 
-```python
+```
 join()
 ```
 
@@ -1886,7 +1888,7 @@ Waits for the kernel gateway process to exit.
 
 ### start
 
-```python
+```
 start()
 ```
 
@@ -1900,7 +1902,7 @@ Raises:
 
 ### stop
 
-```python
+```
 stop(timeout: float = 10)
 ```
 
@@ -1916,7 +1918,7 @@ Parameters:
 
 ## ipybox.kernel_mgr.client.KernelClient
 
-```python
+```
 KernelClient(
     host: str = "localhost",
     port: int = 8888,
@@ -1931,7 +1933,7 @@ Connects to a KernelGateway to create and communicate with an IPython kernel. Co
 
 Example
 
-```python
+```
 async with KernelClient(host="localhost", port=8888) as client:
     # Simple execution
     result = await client.execute("print('hello')")
@@ -1957,7 +1959,7 @@ Parameters:
 
 ### kernel_id
 
-```python
+```
 kernel_id
 ```
 
@@ -1971,7 +1973,7 @@ Raises:
 
 ### connect
 
-```python
+```
 connect(retries: int = 10, retry_interval: float = 1.0)
 ```
 
@@ -1992,7 +1994,7 @@ Raises:
 
 ### disconnect
 
-```python
+```
 disconnect()
 ```
 
@@ -2000,8 +2002,10 @@ Disconnects from and deletes the running IPython kernel.
 
 ### execute
 
-```python
-execute(code: str, timeout: float = 120) -> ExecutionResult
+```
+execute(
+    code: str, timeout: float | None = None
+) -> ExecutionResult
 ```
 
 Executes code in this client's IPython kernel and returns the result.
@@ -2010,10 +2014,10 @@ Waits for execution to complete and returns the final result. Use stream for inc
 
 Parameters:
 
-| Name      | Type    | Description                                               | Default    |
-| --------- | ------- | --------------------------------------------------------- | ---------- |
-| `code`    | `str`   | Python code to execute.                                   | *required* |
-| `timeout` | `float` | Maximum time in seconds to wait for the execution result. | `120`      |
+| Name      | Type    | Description             | Default                                                                                   |
+| --------- | ------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+| `code`    | `str`   | Python code to execute. | *required*                                                                                |
+| `timeout` | \`float | None\`                  | Maximum time in seconds to wait for the execution result. If None, no timeout is applied. |
 
 Returns:
 
@@ -2030,7 +2034,7 @@ Raises:
 
 ### reset
 
-```python
+```
 reset()
 ```
 
@@ -2040,9 +2044,9 @@ Deletes the running kernel and creates a new one.
 
 ### stream
 
-```python
+```
 stream(
-    code: str, timeout: float = 120
+    code: str, timeout: float | None = None
 ) -> AsyncIterator[str | ExecutionResult]
 ```
 
@@ -2052,10 +2056,10 @@ Yields output chunks as strings during execution, and yields the final Execution
 
 Parameters:
 
-| Name      | Type    | Description                                               | Default    |
-| --------- | ------- | --------------------------------------------------------- | ---------- |
-| `code`    | `str`   | Python code to execute.                                   | *required* |
-| `timeout` | `float` | Maximum time in seconds to wait for the execution result. | `120`      |
+| Name      | Type    | Description             | Default                                                                                   |
+| --------- | ------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+| `code`    | `str`   | Python code to execute. | *required*                                                                                |
+| `timeout` | \`float | None\`                  | Maximum time in seconds to wait for the execution result. If None, no timeout is applied. |
 
 Yields:
 
@@ -2073,7 +2077,7 @@ Raises:
 
 ## ipybox.kernel_mgr.client.ExecutionResult
 
-```python
+```
 ExecutionResult(text: str | None, images: list[Path])
 ```
 

@@ -1162,30 +1162,30 @@
 <h1 id="installation">Installation</h1>
 <h2 id="python-package">Python package</h2>
 <p>Install ipybox using <code>pip</code>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>ipybox
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>ipybox
+</code></pre></div>
 <p>or <code>uv</code>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>add<span class="w"> </span>ipybox
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>ipybox
+</code></pre></div>
 <h2 id="mcp-server">MCP server</h2>
 <p>ipybox can also be run as an <a href="../mcpserver/">MCP server</a> using <code>uvx</code>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uvx<span class="w"> </span>ipybox<span class="w"> </span>--workspace<span class="w"> </span>/path/to/workspace
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>uvx<span class="w"> </span>ipybox<span class="w"> </span>--workspace<span class="w"> </span>/path/to/workspace
+</code></pre></div>
 <p>See the <a href="../mcpserver/">MCP server documentation</a> for configuration details.</p>
 <h2 id="sandbox-runtime">sandbox-runtime</h2>
 <p>To use ipybox's <a href="../sandbox/">sandboxing</a> features, you need to install Anthropic's <a href="https://github.com/anthropic-experimental/sandbox-runtime">sandbox-runtime</a> separately. This provides the <code>srt</code> command for IPython kernel and MCP server isolation.</p>
 <p>Install via npm:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@anthropic-ai/sandbox-runtime@0.0.21
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@anthropic-ai/sandbox-runtime@0.0.21
+</code></pre></div>
 <h3 id="mac-os">Mac OS</h3>
 <p>On Mac OS, <code>sandbox-runtime</code> requires <code>ripgrep</code>. Install it using Homebrew:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>brew<span class="w"> </span>install<span class="w"> </span>ripgrep
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>brew<span class="w"> </span>install<span class="w"> </span>ripgrep
+</code></pre></div>
 <p>No other dependencies are needed on Mac OS, as <code>sandbox-runtime</code> uses the native <code>sandbox-exec</code> command for sandboxing.</p>
 <h3 id="linux">Linux</h3>
 <p>On Linux, install the required system packages:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>apt-get<span class="w"> </span>install<span class="w"> </span>bubblewrap<span class="w"> </span>socat<span class="w"> </span>ripgrep
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>apt-get<span class="w"> </span>install<span class="w"> </span>bubblewrap<span class="w"> </span>socat<span class="w"> </span>ripgrep
+</code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p><a href="../sandbox/">Sandboxing</a> with <code>srt</code> currently doesn't work with ipybox on Linux, a fix is work in progress. You can still use ipybox on Linux with <code>sandbox=False</code>, or run the ipybox <a href="../mcpserver/">MCP server</a> as a Docker container.</p>

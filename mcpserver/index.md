@@ -13,7 +13,7 @@ An application example of this MCP server is the [programmatic tool calling plug
 
 ## Configuration
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -38,7 +38,7 @@ Environment variables can be passed to ipybox either via an `"env"` key in the M
 
 /path/to/workspace/.env
 
-```text
+```
 API_KEY_1=...
 API_KEY_2=...
 KERNEL_ENV_SECRET_1=...
@@ -51,7 +51,7 @@ These variables are available to MCP servers registered with ipybox but are not 
 
 This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a [BRAVE_API_KEY](https://gradion-ai.github.io/ipybox/quickstart/#get-a-brave-api-key):
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -69,13 +69,13 @@ or add the API key to a `.env` file in the workspace directory:
 
 /path/to/workspace/.env
 
-```text
+```
 BRAVE_API_KEY=your-api-key
 ```
 
 An agent then registers the Brave Search MCP server by calling `register_mcp_server` with the following argument:
 
-```json
+```
 {
   "server_name": "brave_search",
   "server_params": {
@@ -90,7 +90,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from the MC
 
 After registration, the agent calls `execute_ipython_cell` with Python code that uses the generated API:
 
-```python
+```
 from mcptools.brave_search.brave_web_search import Params, run
 
 result = run(Params(query="Python asyncio tutorial", count=3))
@@ -119,7 +119,7 @@ Executes Python code in a stateful IPython kernel. Executed code can use the gen
 Parameters:
 
 - `code` — Python code to execute
-- `timeout` — Maximum execution time in seconds (default: 120)
+- `timeout` — Maximum execution time in seconds (default: no timeout)
 - `max_output_chars` — Output character limit (default: 5000)
 
 Returns the execution output.
@@ -140,7 +140,7 @@ Creates a new kernel, clearing all variables and imports. Installed packages and
 
 To isolate code execution via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime), enable [sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md) with the `--sandbox` option:
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {
@@ -168,7 +168,7 @@ Sandboxing with [sandbox-runtime](https://github.com/anthropic-experimental/sand
 
 ipybox can be run as a Docker container. Clone the [project](https://github.com/gradion-ai/ipybox) and build the image:
 
-```bash
+```
 git clone https://github.com/gradion-ai/ipybox.git
 cd ipybox
 ./docker-build.sh
@@ -178,7 +178,7 @@ The build script creates a container user with your UID/GID, ensuring files gene
 
 Then configure the MCP server:
 
-```json
+```
 {
   "mcpServers": {
     "ipybox": {

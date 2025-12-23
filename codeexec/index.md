@@ -1,6 +1,6 @@
 # Code execution
 
-```python
+```
 from ipybox import (
     ApprovalRequest,
     CodeExecutionChunk,
@@ -15,7 +15,7 @@ CodeExecutor runs Python code in an IPython kernel where variables and definitio
 
 Use `execute()` for non-interactive execution where MCP tool calls, if any, are auto-approved:
 
-```python
+```
 async with CodeExecutor() as executor:
     result = await executor.execute("print('hello world')")
     assert result.text == "hello world"
@@ -27,7 +27,7 @@ For application-level approval control, use `stream()` instead.
 
 When code calls the [generated Python tool API](https://gradion-ai.github.io/ipybox/apigen/index.md), ipybox suspends execution and yields an ApprovalRequest. You must call `accept()` to continue execution:
 
-```python
+```
 code = """
 from mcptools.brave_search.brave_image_search import Params, Result, run
 
@@ -52,7 +52,7 @@ The approval request includes `tool_name` and `tool_args` so you can inspect wha
 
 Enable `chunks=True` to receive output incrementally as it's produced:
 
-```python
+```
 code = """
 from time import sleep
 print("chunk 1")
@@ -74,7 +74,7 @@ CodeExecutionChunk events contain partial output. The final CodeExecutionResult 
 
 Plots are automatically captured as PNG files in the `images` directory. Use `images_dir` to customize the location:
 
-```python
+```
 code = """
 import matplotlib.pyplot as plt
 plt.plot([1, 2, 3], [1, 4, 9])
@@ -94,22 +94,22 @@ Generated images are available in `result.images` as a list of `Path` objects.
 
 Configure approval and execution timeouts:
 
-```python
-# set custom approval timeout, default is 60 seconds
+```
+# set custom approval timeout, default is no timeout
 async with CodeExecutor(approval_timeout=10) as executor:
-    # set custom execution timeout, default is 120 seconds
+    # set custom execution timeout, default is no timeout
     async for item in executor.stream("...", timeout=10):
         ...
 ```
 
-- `approval_timeout`: How long to wait for `accept()`/`reject()` (default: 60s)
-- `timeout` in `stream()`: Maximum total execution time including approval waits (default: 120s)
+- `approval_timeout`: How long to wait for `accept()`/`reject()` (default: no timeout)
+- `timeout` in `stream()`: Maximum total execution time including approval waits (default: no timeout)
 
 ## Kernel environment
 
 The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with `kernel_env`:
 
-```python
+```
 # IPython kernel does not inherit environment variables from parent process
 # Kernel environment must be explicitly set using the kernel_env parameter
 async with CodeExecutor(kernel_env={"TEST_VAR": "test_val"}) as executor:
@@ -125,7 +125,7 @@ Environment variables referenced in `server_params` via `${VAR_NAME}` are taken 
 
 Clear all variables and definitions by resetting the IPython kernel with `reset()`:
 
-```python
+```
 async with CodeExecutor() as executor:
     await executor.execute("x = 42")
     result = await executor.execute("print(x)")
@@ -149,7 +149,7 @@ This also stops any MCP servers started during execution. They restart lazily on
 
 The kernel shares the working directory with the parent process:
 
-```python
+```
 async with CodeExecutor() as executor:
     import os
 

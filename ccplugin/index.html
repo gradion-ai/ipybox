@@ -1309,13 +1309,13 @@
 </ul>
 <h2 id="environment-setup">Environment setup</h2>
 <p>The <a href="#usage-example">example below</a> uses the <a href="https://github.com/github/github-mcp-server">GitHub MCP server</a>. Create a <code>.env</code> file with your GitHub personal access token (PAT) in the current working directory:</p>
-<div class="language-text highlight"><span class="filename">.env</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>GITHUB_API_KEY=your-github-personal-access-token
-</span></code></pre></div>
+<div class="highlight"><span class="filename">.env</span><pre><span></span><code>GITHUB_API_KEY=your-github-personal-access-token
+</code></pre></div>
 <p>The plugin automatically loads environment variables from this file.</p>
 <h2 id="plugin-installation">Plugin installation</h2>
 <p>Add the ipybox repository as plugin marketplace to Claude Code:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>claude<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>https://github.com/gradion-ai/ipybox
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>claude<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>https://github.com/gradion-ai/ipybox
+</code></pre></div>
 <p>Then install one of the available plugins:</p>
 <table>
 <thead>
@@ -1339,8 +1339,8 @@
 </tr>
 </tbody>
 </table>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>claude<span class="w"> </span>plugin<span class="w"> </span>install<span class="w"> </span>codeact-default@ipybox
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code>claude<span class="w"> </span>plugin<span class="w"> </span>install<span class="w"> </span>codeact-default@ipybox
+</code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Only <strong>one</strong> plugin from this marketplace should be active at a time. Having multiple plugins active simultaneously may cause conflicts.</p>
@@ -1362,152 +1362,152 @@
 <li><code>list_commits</code></li>
 </ul>
 <h3 id="register-the-github-mcp-server">Register the GitHub MCP server</h3>
-<div class="language-text highlight"><span class="filename">User prompt</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Register this MCP server at ipybox under name github:
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>{
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  &quot;url&quot;: &quot;https://api.githubcopilot.com/mcp/&quot;,
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  &quot;headers&quot;: {
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    &quot;Authorization&quot;: &quot;Bearer ${GITHUB_API_KEY}&quot;
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  }
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>}
-</span></code></pre></div>
+<div class="highlight"><span class="filename">User prompt</span><pre><span></span><code>Register this MCP server at ipybox under name github:
+{
+  &quot;url&quot;: &quot;https://api.githubcopilot.com/mcp/&quot;,
+  &quot;headers&quot;: {
+    &quot;Authorization&quot;: &quot;Bearer ${GITHUB_API_KEY}&quot;
+  }
+}
+</code></pre></div>
 <p>The <code>${GITHUB_API_KEY}</code> placeholder is automatically replaced with the value from your <code>.env</code> file.</p>
 <p>This registers the GitHub MCP server and generates a typed Python API for its tools under <code>mcptools/github/</code>. Each tool becomes a module named after the tool (<code>search_repositories.py</code>, <code>list_commits.py</code>, etc.).</p>
 <h3 id="use-the-github-mcp-server-programmatically">Use the GitHub MCP server programmatically</h3>
 <p>The codeact skill can be activated in Claude Code with phrases like "use the codeact skill" or similar:</p>
-<div class="language-text highlight"><span class="filename">User prompt</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Use the codeact skill to get the latest 5 commits of the 3 github repos 
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>of torvalds with the most stars. For each repo, output name, stars and 
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>the first line of commit messages, and the link to the commit
-</span></code></pre></div>
+<div class="highlight"><span class="filename">User prompt</span><pre><span></span><code>Use the codeact skill to get the latest 5 commits of the 3 github repos 
+of torvalds with the most stars. For each repo, output name, stars and 
+the first line of commit messages, and the link to the commit
+</code></pre></div>
 <p>Claude Code first lists directories under <code>mcptools/</code> to see which tools are available. It then reads the tool files <a href="https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/search_repositories_orig.py">search_repositories.py</a> and <a href="https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/list_commits.py">list_commits.py</a> to understand their interfaces, as these appear relevant to the task.</p>
 <p>Claude Code generates two code actions. The first searches for the top 3 repos of Linus Torvalds sorted by stars:</p>
-<div class="language-python highlight"><span class="filename">Code action</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.github</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_repositories</span><span class="p">,</span> <span class="n">list_commits</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Search for torvalds&#39; repositories sorted by stars (descending)</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">repos_result</span> <span class="o">=</span> <span class="n">search_repositories</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">query</span><span class="o">=</span><span class="s2">&quot;user:torvalds&quot;</span><span class="p">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">sort</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Sort</span><span class="o">.</span><span class="n">stars</span><span class="p">,</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">order</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Order</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">perPage</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">minimal_output</span><span class="o">=</span><span class="kc">False</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="p">))</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="n">repos_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">repos_result</span><span class="p">)</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">repos_data</span><span class="p">[</span><span class="s1">&#39;total_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> repos&quot;</span><span class="p">)</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="c1"># Get top 3 repos</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">top_repos</span> <span class="o">=</span> <span class="n">repos_data</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">top_repos</span><span class="p">:</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">repo</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">repo</span><span class="p">[</span><span class="s1">&#39;stargazers_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><span class="filename">Code action</span><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.github</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_repositories</span><span class="p">,</span> <span class="n">list_commits</span>
+
+<span class="c1"># Search for torvalds&#39; repositories sorted by stars (descending)</span>
+<span class="n">repos_result</span> <span class="o">=</span> <span class="n">search_repositories</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
+    <span class="n">query</span><span class="o">=</span><span class="s2">&quot;user:torvalds&quot;</span><span class="p">,</span>
+    <span class="n">sort</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Sort</span><span class="o">.</span><span class="n">stars</span><span class="p">,</span>
+    <span class="n">order</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Order</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span>
+    <span class="n">perPage</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">minimal_output</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">))</span>
+
+<span class="n">repos_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">repos_result</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">repos_data</span><span class="p">[</span><span class="s1">&#39;total_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> repos&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get top 3 repos</span>
+<span class="n">top_repos</span> <span class="o">=</span> <span class="n">repos_data</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">top_repos</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">repo</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">repo</span><span class="p">[</span><span class="s1">&#39;stargazers_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>Here, Claude Code makes assumptions about the tool response structure. The GitHub MCP server tools do not provide output schemas, so Claude Code guesses the structure from its training data. These assumptions may or may not be correct depending on the MCP server's popularity, but in this example they work. MCP tools that provide output schemas get a generated <code>Result</code> class with typed fields, but the GitHub MCP server tools return unstructured strings. </p>
 <p>The second code action uses the repository information stored in <code>top_repos</code> to get the latest 5 commits of each repo:</p>
-<div class="language-python highlight"><span class="filename">Code action</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Get latest 5 commits for each of the top 3 repos</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">top_repos</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">repo_name</span> <span class="o">=</span> <span class="n">repo</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">stars</span> <span class="o">=</span> <span class="n">repo</span><span class="p">[</span><span class="s1">&#39;stargazers_count&#39;</span><span class="p">]</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📦 </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2"> | ⭐ </span><span class="si">{</span><span class="n">stars</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="c1"># Get commits</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">commits_result</span> <span class="o">=</span> <span class="n">list_commits</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">list_commits</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="n">owner</span><span class="o">=</span><span class="s2">&quot;torvalds&quot;</span><span class="p">,</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="n">repo</span><span class="o">=</span><span class="n">repo_name</span><span class="p">,</span>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="n">perPage</span><span class="o">=</span><span class="mi">5</span>
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="p">))</span>
-</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="n">commits_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">commits_result</span><span class="p">)</span>
-</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
-</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">commit</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">commits_data</span><span class="p">[:</span><span class="mi">5</span><span class="p">],</span> <span class="mi">1</span><span class="p">):</span>
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>        <span class="n">sha</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s1">&#39;sha&#39;</span><span class="p">]</span>
-</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>        <span class="n">short_sha</span> <span class="o">=</span> <span class="n">sha</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span>
-</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>        <span class="n">message</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s1">&#39;commit&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># First line only</span>
-</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>        <span class="n">url</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s1">&#39;html_url&#39;</span><span class="p">]</span>
-</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>
-</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   🔗 </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><span class="filename">Code action</span><pre><span></span><code><span class="c1"># Get latest 5 commits for each of the top 3 repos</span>
+<span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">top_repos</span><span class="p">:</span>
+    <span class="n">repo_name</span> <span class="o">=</span> <span class="n">repo</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+    <span class="n">stars</span> <span class="o">=</span> <span class="n">repo</span><span class="p">[</span><span class="s1">&#39;stargazers_count&#39;</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📦 </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2"> | ⭐ </span><span class="si">{</span><span class="n">stars</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get commits</span>
+    <span class="n">commits_result</span> <span class="o">=</span> <span class="n">list_commits</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">list_commits</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
+        <span class="n">owner</span><span class="o">=</span><span class="s2">&quot;torvalds&quot;</span><span class="p">,</span>
+        <span class="n">repo</span><span class="o">=</span><span class="n">repo_name</span><span class="p">,</span>
+        <span class="n">perPage</span><span class="o">=</span><span class="mi">5</span>
+    <span class="p">))</span>
+
+    <span class="n">commits_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">commits_result</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">commit</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">commits_data</span><span class="p">[:</span><span class="mi">5</span><span class="p">],</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sha</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s1">&#39;sha&#39;</span><span class="p">]</span>
+        <span class="n">short_sha</span> <span class="o">=</span> <span class="n">sha</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s1">&#39;commit&#39;</span><span class="p">][</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># First line only</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s1">&#39;html_url&#39;</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   🔗 </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>This prints the requested information. However, intermediate results were added to the agent's context window. To encourage Claude Code to chain <code>search_repositories</code> and <code>list_commits</code> in a single code action, we generate an output parser for <code>search_repositories</code>.</p>
 <h3 id="generate-an-output-parser">Generate an output parser</h3>
 <p>To compensate for the lack of output schemas, we generate an output parser for the <code>search_repositories</code> tool:</p>
-<div class="language-text highlight"><span class="filename">User prompt</span><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Generate an output parser for search_repositories
-</span></code></pre></div>
+<div class="highlight"><span class="filename">User prompt</span><pre><span></span><code>Generate an output parser for search_repositories
+</code></pre></div>
 <p>This adds a <code>run_parsed()</code> function to <a href="https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcptools/github/search_repositories.py">search_repositories.py</a>, returning a structured <code>ParseResult</code>. Claude Code infers this type by interacting with the tool using example inputs. The codeact skill encourages Claude Code to prioritize <code>run_parsed()</code> over <code>run()</code> when selecting tools.</p>
 <p>The parsing implementation details are stored in <a href="https://github.com/gradion-ai/ipybox/blob/main/docs/generated/mcpparse/github/search_repositories.py">mcpparse/github/search_repositories.py</a>. Keeping implementation separate from interface prevents polluting the interfaces that Claude Code inspects.</p>
 <h3 id="chaining-tools-in-a-single-code-action">Chaining tools in a single code action</h3>
 <p>Running the same task again (optionally after restarting Claude Code), Claude Code now chains the tools in a single code action because it knows the structure of the <code>search_repositories</code> result up-front. It uses the new <code>run_parsed()</code> function and navigates the structured output based on the <code>ParseResult</code> type:</p>
-<div class="language-text highlight"><span class="filename">User prompt</span><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Use the codeact skill to get the latest 5 commits of the 3 github repos 
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>of torvalds with the most stars. For each repo, output name, stars and 
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>the first line of commit messages, and the link to the commit
-</span></code></pre></div>
-<div class="language-python highlight"><span class="filename">Code action</span><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.github</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_repositories</span><span class="p">,</span> <span class="n">list_commits</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Get Torvalds&#39; repos sorted by stars</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">repos_result</span> <span class="o">=</span> <span class="n">search_repositories</span><span class="o">.</span><span class="n">run_parsed</span><span class="p">(</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">search_repositories</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="n">query</span><span class="o">=</span><span class="s2">&quot;user:torvalds&quot;</span><span class="p">,</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="n">sort</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Sort</span><span class="o">.</span><span class="n">stars</span><span class="p">,</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="n">order</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Order</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>        <span class="n">perPage</span><span class="o">=</span><span class="mi">3</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="p">)</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="p">)</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="c1"># Get top 3 repos</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="n">top_repos</span> <span class="o">=</span> <span class="n">repos_result</span><span class="o">.</span><span class="n">repositories</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">top_repos</span><span class="p">)</span><span class="si">}</span><span class="s2"> repos</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">top_repos</span><span class="p">:</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📦 </span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> ⭐ </span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">stargazers_count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>
-</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>    <span class="c1"># Get latest 5 commits</span>
-</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>    <span class="n">commits_raw</span> <span class="o">=</span> <span class="n">list_commits</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="n">list_commits</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
-</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>            <span class="n">owner</span><span class="o">=</span><span class="s2">&quot;torvalds&quot;</span><span class="p">,</span>
-</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>            <span class="n">repo</span><span class="o">=</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>            <span class="n">perPage</span><span class="o">=</span><span class="mi">5</span>
-</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="p">)</span>
-</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>    <span class="p">)</span>
-</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>
-</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>    <span class="c1"># Parse the commits JSON</span>
-</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>    <span class="n">commits</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">commits_raw</span><span class="p">)</span>
-</span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>
-</span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>    <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="n">commits</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
-</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>        <span class="n">sha</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s2">&quot;sha&quot;</span><span class="p">][:</span><span class="mi">7</span><span class="p">]</span>
-</span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>        <span class="n">message</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s2">&quot;commit&quot;</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="__span-9-37"><a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>        <span class="n">url</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s2">&quot;html_url&quot;</span><span class="p">]</span>
-</span><span id="__span-9-38"><a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">sha</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-9-39"><a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;         </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-9-40"><a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>
-</span><span id="__span-9-41"><a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>    <span class="nb">print</span><span class="p">()</span>
-</span></code></pre></div>
+<div class="highlight"><span class="filename">User prompt</span><pre><span></span><code>Use the codeact skill to get the latest 5 commits of the 3 github repos 
+of torvalds with the most stars. For each repo, output name, stars and 
+the first line of commit messages, and the link to the commit
+</code></pre></div>
+<div class="highlight"><span class="filename">Code action</span><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.github</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_repositories</span><span class="p">,</span> <span class="n">list_commits</span>
+
+<span class="c1"># Get Torvalds&#39; repos sorted by stars</span>
+<span class="n">repos_result</span> <span class="o">=</span> <span class="n">search_repositories</span><span class="o">.</span><span class="n">run_parsed</span><span class="p">(</span>
+    <span class="n">search_repositories</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
+        <span class="n">query</span><span class="o">=</span><span class="s2">&quot;user:torvalds&quot;</span><span class="p">,</span>
+        <span class="n">sort</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Sort</span><span class="o">.</span><span class="n">stars</span><span class="p">,</span>
+        <span class="n">order</span><span class="o">=</span><span class="n">search_repositories</span><span class="o">.</span><span class="n">Order</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span>
+        <span class="n">perPage</span><span class="o">=</span><span class="mi">3</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Get top 3 repos</span>
+<span class="n">top_repos</span> <span class="o">=</span> <span class="n">repos_result</span><span class="o">.</span><span class="n">repositories</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">top_repos</span><span class="p">)</span><span class="si">}</span><span class="s2"> repos</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">top_repos</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📦 </span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> ⭐ </span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">stargazers_count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> stars&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+    <span class="c1"># Get latest 5 commits</span>
+    <span class="n">commits_raw</span> <span class="o">=</span> <span class="n">list_commits</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">list_commits</span><span class="o">.</span><span class="n">Params</span><span class="p">(</span>
+            <span class="n">owner</span><span class="o">=</span><span class="s2">&quot;torvalds&quot;</span><span class="p">,</span>
+            <span class="n">repo</span><span class="o">=</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">perPage</span><span class="o">=</span><span class="mi">5</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Parse the commits JSON</span>
+    <span class="n">commits</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">commits_raw</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="n">commits</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+        <span class="n">sha</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s2">&quot;sha&quot;</span><span class="p">][:</span><span class="mi">7</span><span class="p">]</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s2">&quot;commit&quot;</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">commit</span><span class="p">[</span><span class="s2">&quot;html_url&quot;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">sha</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;         </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+</code></pre></div>
 <h3 id="saving-code-actions-as-tools">Saving code actions as tools</h3>
 <p>Code actions can be saved and reused as tools in later code actions. To save the previous code action, use a prompt like:</p>
-<div class="language-text highlight"><span class="filename">User prompt</span><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Save this as code action under github category with name commits_of_top_repos. 
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>Make username, top_n_repos and last_n_commits parameters
-</span></code></pre></div>
+<div class="highlight"><span class="filename">User prompt</span><pre><span></span><code>Save this as code action under github category with name commits_of_top_repos. 
+Make username, top_n_repos and last_n_commits parameters
+</code></pre></div>
 <p>This creates a new package <code>gentools/github/commits_of_top_repos/</code> with an <a href="https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/api.py">api.py</a> module that defines the typed interface and an <a href="https://github.com/gradion-ai/ipybox/blob/main/docs/generated/gentools/github/commits_of_top_repos/impl.py">impl.py</a> module that contains the implementation. </p>
 <p>The interface in <code>api.py</code> exposes the tool's parameters and return types and is relevant for understanding tool usage. The implementation in <code>impl.py</code> is not inspected by Claude Code during tool selection, saving token usage.</p>
 <h3 id="using-saved-code-actions-as-tools">Using saved code actions as tools</h3>
 <p>After restarting Claude Code or clearing its context window, to enforce re-discovery of tools, the same task now uses the saved code action:</p>
-<div class="language-text highlight"><span class="filename">User prompt</span><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Use the codeact skill to get the latest 5 commits of the 3 github repos 
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>of torvalds with the most stars. For each repo, output name, stars and 
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>the first line of commit messages, and the link to the commit
-</span></code></pre></div>
-<div class="language-python highlight"><span class="filename">Code action</span><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">gentools.github.commits_of_top_repos</span><span class="w"> </span><span class="kn">import</span> <span class="n">run</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">results</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;torvalds&quot;</span><span class="p">,</span> <span class="n">top_n_repos</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">last_n_commits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## </span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">stars</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> ⭐)&quot;</span><span class="p">)</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="n">repo</span><span class="o">.</span><span class="n">commits</span><span class="p">:</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;• </span><span class="si">{</span><span class="n">commit</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">commit</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><span class="filename">User prompt</span><pre><span></span><code>Use the codeact skill to get the latest 5 commits of the 3 github repos 
+of torvalds with the most stars. For each repo, output name, stars and 
+the first line of commit messages, and the link to the commit
+</code></pre></div>
+<div class="highlight"><span class="filename">Code action</span><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">gentools.github.commits_of_top_repos</span><span class="w"> </span><span class="kn">import</span> <span class="n">run</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;torvalds&quot;</span><span class="p">,</span> <span class="n">top_n_repos</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">last_n_commits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">## </span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">repo</span><span class="o">.</span><span class="n">stars</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> ⭐)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="n">repo</span><span class="o">.</span><span class="n">commits</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;• </span><span class="si">{</span><span class="n">commit</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">commit</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>To conclude, the usage pattern in this example supports building a library of code actions. Each saved code action becomes a tool available for use in future code actions, enabling composition and reuse.</p>
 <div class="footnote">
 <hr />

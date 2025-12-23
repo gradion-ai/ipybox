@@ -1214,124 +1214,124 @@
 
 
 <h1 id="code-execution">Code execution</h1>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ApprovalRequest</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">CodeExecutionChunk</span><span class="p">,</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">CodeExecutionResult</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">CodeExecutor</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ApprovalRequest</span><span class="p">,</span>
+    <span class="n">CodeExecutionChunk</span><span class="p">,</span>
+    <span class="n">CodeExecutionResult</span><span class="p">,</span>
+    <span class="n">CodeExecutor</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
 <p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutor"><code>CodeExecutor</code></a> runs Python code in an IPython kernel where variables and definitions persist across executions.</p>
 <h2 id="basic-execution">Basic execution</h2>
 <p>Use <code>execute()</code> for non-interactive execution where MCP tool calls, if any, are auto-approved:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(&#39;hello world&#39;)&quot;</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(&#39;hello world&#39;)&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
+</code></pre></div>
 <p>For application-level approval control, use <code>stream()</code> instead.</p>
 <h2 id="tool-call-approval">Tool call approval</h2>
 <p>When code calls the <a href="../apigen/">generated Python tool API</a>, ipybox suspends execution and yields an <a class="autorefs autorefs-internal" href="../api/tool_executor/#ipybox.tool_exec.approval.client.ApprovalRequest"><code>ApprovalRequest</code></a>. You must call <code>accept()</code> to continue execution:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="s2">result: Result = run(Params(query=&quot;neural topic models&quot;, count=3))</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="s2">print(f&quot;num results = {len(result.items)}&quot;)</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">():</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;brave_image_search&quot;</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_args</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;neural topic models&quot;</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_args</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;num results = 3&quot;</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>
+
+<span class="s2">result: Result = run(Params(query=&quot;neural topic models&quot;, count=3))</span>
+<span class="s2">print(f&quot;num results = {len(result.items)}&quot;)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;brave_image_search&quot;</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_args</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;neural topic models&quot;</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_args</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;num results = 3&quot;</span>
+</code></pre></div>
 <p>The approval request includes <code>tool_name</code> and <code>tool_args</code> so you can inspect what's being called. Calling <code>reject()</code> raises a <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionError"><code>CodeExecutionError</code></a>.</p>
 <h2 id="stream-output-chunks">Stream output chunks</h2>
 <p>Enable <code>chunks=True</code> to receive output incrementally as it's produced:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s2">from time import sleep</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="s2">print(&quot;chunk 1&quot;)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s2">sleep(0.5)</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="s2">print(&quot;chunk 2&quot;)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>            <span class="k">case</span> <span class="n">CodeExecutionChunk</span><span class="p">():</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;chunk 1&quot;</span><span class="p">,</span> <span class="s2">&quot;chunk 2&quot;</span><span class="p">]</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;chunk 1</span><span class="se">\n</span><span class="s2">chunk 2&quot;</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">from time import sleep</span>
+<span class="s2">print(&quot;chunk 1&quot;)</span>
+<span class="s2">sleep(0.5)</span>
+<span class="s2">print(&quot;chunk 2&quot;)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">CodeExecutionChunk</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;chunk 1&quot;</span><span class="p">,</span> <span class="s2">&quot;chunk 2&quot;</span><span class="p">]</span>
+            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;chunk 1</span><span class="se">\n</span><span class="s2">chunk 2&quot;</span>
+</code></pre></div>
 <p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionChunk"><code>CodeExecutionChunk</code></a> events contain partial output. The final <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> still contains the complete output.</p>
 <h2 id="capturing-plots">Capturing plots</h2>
 <p>Plots are automatically captured as PNG files in the <code>images</code> directory. Use <code>images_dir</code> to customize the location:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="s2">import matplotlib.pyplot as plt</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="s2">plt.plot([1, 2, 3], [1, 4, 9])</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="s2">plt.show()</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">images_dir</span><span class="p">:</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">images_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">images_dir</span><span class="p">))</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.png&quot;</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">import matplotlib.pyplot as plt</span>
+<span class="s2">plt.plot([1, 2, 3], [1, 4, 9])</span>
+<span class="s2">plt.show()</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">images_dir</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">images_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">images_dir</span><span class="p">))</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.png&quot;</span>
+</code></pre></div>
 <p>Generated images are available in <code>result.images</code> as a list of <code>Path</code> objects.</p>
 <h2 id="custom-timeouts">Custom timeouts</h2>
 <p>Configure approval and execution timeouts:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># set custom approval timeout, default is 60 seconds</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approval_timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="c1"># set custom execution timeout, default is 120 seconds</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="o">...</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># set custom approval timeout, default is no timeout</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approval_timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="c1"># set custom execution timeout, default is no timeout</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="o">...</span>
+</code></pre></div>
 <ul>
-<li><code>approval_timeout</code>: How long to wait for <code>accept()</code>/<code>reject()</code> (default: 60s)</li>
-<li><code>timeout</code> in <code>stream()</code>: Maximum total execution time including approval waits (default: 120s)</li>
+<li><code>approval_timeout</code>: How long to wait for <code>accept()</code>/<code>reject()</code> (default: no timeout)</li>
+<li><code>timeout</code> in <code>stream()</code>: Maximum total execution time including approval waits (default: no timeout)</li>
 </ul>
 <h2 id="kernel-environment">Kernel environment</h2>
 <p>The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with <code>kernel_env</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># IPython kernel does not inherit environment variables from parent process</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># Kernel environment must be explicitly set using the kernel_env parameter</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">kernel_env</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TEST_VAR&quot;</span><span class="p">:</span> <span class="s2">&quot;test_val&quot;</span><span class="p">})</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.environ[&#39;TEST_VAR&#39;])&quot;</span><span class="p">)</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;test_val&quot;</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># IPython kernel does not inherit environment variables from parent process</span>
+<span class="c1"># Kernel environment must be explicitly set using the kernel_env parameter</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">kernel_env</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TEST_VAR&quot;</span><span class="p">:</span> <span class="s2">&quot;test_val&quot;</span><span class="p">})</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.environ[&#39;TEST_VAR&#39;])&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;test_val&quot;</span>
+</code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Environment variables referenced in <code>server_params</code> via <code>${VAR_NAME}</code> are taken from the parent process and do not need to be passed to <code>kernel_env</code>.</p>
 </div>
 <h2 id="kernel-reset">Kernel reset</h2>
 <p>Clear all variables and definitions by resetting the IPython kernel with <code>reset()</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;x = 42&quot;</span><span class="p">)</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(x)&quot;</span><span class="p">)</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;42&quot;</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="s2">    try:</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="s2">        print(x)</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="s2">    except NameError:</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="s2">        print(&quot;x not defined&quot;)</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="s2">    &quot;&quot;&quot;</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;x not defined&quot;</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;x = 42&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(x)&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;42&quot;</span>
+
+    <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    try:</span>
+<span class="s2">        print(x)</span>
+<span class="s2">    except NameError:</span>
+<span class="s2">        print(&quot;x not defined&quot;)</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;x not defined&quot;</span>
+</code></pre></div>
 <p>This also stops any MCP servers started during execution. They restart lazily on their next tool call.</p>
 <h2 id="working-directory">Working directory</h2>
 <p>The kernel shares the working directory with the parent process:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.getcwd())&quot;</span><span class="p">)</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.getcwd())&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+</code></pre></div>
 
 
 

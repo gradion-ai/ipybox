@@ -35,7 +35,7 @@ The [example below](#usage-example) uses the [GitHub MCP server](https://github.
 
 .env
 
-```text
+```
 GITHUB_API_KEY=your-github-personal-access-token
 ```
 
@@ -45,7 +45,7 @@ The plugin automatically loads environment variables from this file.
 
 Add the ipybox repository as plugin marketplace to Claude Code:
 
-```bash
+```
 claude plugin marketplace add https://github.com/gradion-ai/ipybox
 ```
 
@@ -57,7 +57,7 @@ Then install one of the available plugins:
 | `codeact-sandbox` | Runs ipybox with a [sandboxed](https://gradion-ai.github.io/ipybox/sandbox/index.md) IPython kernel |
 | `codeact-docker`  | Runs ipybox as a Docker container                                                                   |
 
-```bash
+```
 claude plugin install codeact-default@ipybox
 ```
 
@@ -88,7 +88,7 @@ It uses two tools from the GitHub MCP server:
 
 User prompt
 
-```text
+```
 Register this MCP server at ipybox under name github:
 {
   "url": "https://api.githubcopilot.com/mcp/",
@@ -108,7 +108,7 @@ The codeact skill can be activated in Claude Code with phrases like "use the cod
 
 User prompt
 
-```text
+```
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
 of torvalds with the most stars. For each repo, output name, stars and 
 the first line of commit messages, and the link to the commit
@@ -120,7 +120,7 @@ Claude Code generates two code actions. The first searches for the top 3 repos o
 
 Code action
 
-```python
+```
 import json
 from mcptools.github import search_repositories, list_commits
 
@@ -148,7 +148,7 @@ The second code action uses the repository information stored in `top_repos` to 
 
 Code action
 
-```python
+```
 # Get latest 5 commits for each of the top 3 repos
 for repo in top_repos:
     repo_name = repo['name']
@@ -185,7 +185,7 @@ To compensate for the lack of output schemas, we generate an output parser for t
 
 User prompt
 
-```text
+```
 Generate an output parser for search_repositories
 ```
 
@@ -199,7 +199,7 @@ Running the same task again (optionally after restarting Claude Code), Claude Co
 
 User prompt
 
-```text
+```
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
 of torvalds with the most stars. For each repo, output name, stars and 
 the first line of commit messages, and the link to the commit
@@ -207,7 +207,7 @@ the first line of commit messages, and the link to the commit
 
 Code action
 
-```python
+```
 import json
 from mcptools.github import search_repositories, list_commits
 
@@ -257,7 +257,7 @@ Code actions can be saved and reused as tools in later code actions. To save the
 
 User prompt
 
-```text
+```
 Save this as code action under github category with name commits_of_top_repos. 
 Make username, top_n_repos and last_n_commits parameters
 ```
@@ -272,7 +272,7 @@ After restarting Claude Code or clearing its context window, to enforce re-disco
 
 User prompt
 
-```text
+```
 Use the codeact skill to get the latest 5 commits of the 3 github repos 
 of torvalds with the most stars. For each repo, output name, stars and 
 the first line of commit messages, and the link to the commit
@@ -280,7 +280,7 @@ the first line of commit messages, and the link to the commit
 
 Code action
 
-```python
+```
 from gentools.github.commits_of_top_repos import run
 
 results = run(username="torvalds", top_n_repos=3, last_n_commits=5)

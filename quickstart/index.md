@@ -4,7 +4,7 @@ This guide walks through a complete example: generating a Python tool API for th
 
 ## Installation
 
-```bash
+```
 pip install ipybox
 ```
 
@@ -12,19 +12,19 @@ pip install ipybox
 
 Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com). Once you have your key, set it as an environment variable:
 
-```bash
+```
 export BRAVE_API_KEY=your_api_key_here
 ```
 
 Or create a `.env` file in your project root (ipybox loads it automatically):
 
-```text
+```
 BRAVE_API_KEY=your_api_key_here
 ```
 
 ## Complete example
 
-```python
+```
 import asyncio
 from pathlib import Path
 
@@ -96,7 +96,7 @@ The `server_params` dict defines how to connect to an MCP server. For stdio serv
 - `args`: Command-line arguments
 - `env`: Environment variables to pass
 
-```python
+```
 SERVER_PARAMS = {
     "command": "npx",
     "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
@@ -110,7 +110,7 @@ The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your e
 
 generate_mcp_sources() connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:
 
-```python
+```
 await generate_mcp_sources(
     server_name="brave_search",
     server_params=SERVER_PARAMS,
@@ -120,7 +120,7 @@ await generate_mcp_sources(
 
 This creates an `mcptools/brave_search` package with a Python module for each MCP server tool:
 
-```text
+```
 mcptools/brave_search/
 ├── __init__.py
 ├── brave_web_search.py
@@ -135,7 +135,7 @@ Each module contains a Pydantic `Params` class for input validation, a `Result` 
 
 CodeExecutor runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.
 
-```python
+```
 async with CodeExecutor() as executor:
     async for item in executor.stream(CODE):
         ...
@@ -147,7 +147,7 @@ The `stream()` method yields events as execution progresses. You'll receive Appr
 
 When an MCP tool is called during code execution, ipybox pauses execution and sends an ApprovalRequest to your application. You must explicitly approve or reject each tool call:
 
-```python
+```
 case ApprovalRequest() as req:
     if user_approves:
         await req.accept()
