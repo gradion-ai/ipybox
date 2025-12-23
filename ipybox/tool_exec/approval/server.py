@@ -20,12 +20,13 @@ class ApprovalChannel:
     def __init__(
         self,
         approval_required: bool = False,
-        approval_timeout: float = 60,
+        approval_timeout: float | None = None,
     ):
         """
         Args:
             approval_required: Whether approval is required for tool execution.
-            approval_timeout: Timeout in seconds for approval requests.
+            approval_timeout: Timeout in seconds for approval requests. If `None`,
+                no timeout is applied.
         """
         self.approval_required = approval_required
         self.approval_timeout = approval_timeout
