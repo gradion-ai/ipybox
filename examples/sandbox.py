@@ -44,22 +44,22 @@ async def custom_sandbox():
     # --8<-- [end:custom_sandbox]
 
 
-async def sandboxed_mcp_server():
-    # --8<-- [start:sandboxed_mcp_server_params]
+async def sandboxed_filesystem_mcp_server():
+    # --8<-- [start:sandboxed_filesystem_mcp_server_params]
     server_params = {
         "command": "srt",
         "args": [
             "--settings",
-            "examples/sandbox-mcp.json",
+            "examples/sandbox-filesystem-mcp.json",
             "npx",
             "-y",
             "@modelcontextprotocol/server-filesystem",
             ".",
         ],
     }
-    # --8<-- [end:sandboxed_mcp_server_params]
+    # --8<-- [end:sandboxed_filesystem_mcp_server_params]
 
-    # --8<-- [start:sandboxed_mcp_server_usage]
+    # --8<-- [start:sandboxed_filesystem_mcp_server_usage]
     await generate_mcp_sources("filesystem", server_params, Path("mcptools"))
 
     list_dir_code = """
@@ -85,13 +85,44 @@ async def sandboxed_mcp_server():
             assert False, "Read access to .env not blocked"
         except CodeExecutionError as e:
             assert "operation not permitted" in str(e)
-    # --8<-- [end:sandboxed_mcp_server_usage]
+    # --8<-- [end:sandboxed_filesystem_mcp_server_usage]
+
+
+async def sandboxed_fetch_mcp_server():
+    # --8<-- [start:sandboxed_fetch_mcp_server_params]
+    server_params = {
+        "command": "srt",
+        "args": [
+            "--settings",
+            "examples/sandbox-fetch-mcp.json",
+            "python",
+            "-m",
+            "mcp_server_fetch",
+        ],
+    }
+    # --8<-- [end:sandboxed_fetch_mcp_server_params]
+
+    # --8<-- [start:sandboxed_fetch_mcp_server_usage]
+    await generate_mcp_sources("fetch", server_params, Path("mcptools"))
+
+    fetch_code = """
+    from mcptools.fetch import fetch
+    result = fetch.run(fetch.Params(url="https://example.com"))
+    print(result)
+    """
+
+    async with CodeExecutor(sandbox=True) as executor:
+        result = await executor.execute(fetch_code)
+        print(result.text)
+        assert "This domain is for use in documentation examples" in result.text
+    # --8<-- [end:sandboxed_fetch_mcp_server_usage]
 
 
 async def main():
     await default_sandbox()
     await custom_sandbox()
-    await sandboxed_mcp_server()
+    await sandboxed_filesystem_mcp_server()
+    await sandboxed_fetch_mcp_server()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,13 @@
+{
+  "enableWeakerNestedSandbox": false,
+  "filesystem": {
+    "denyRead": [".env"],
+    "allowWrite": [".", "~/.npm", "/tmp/**", "/private/tmp/**"],
+    "denyWrite": []
+  },
+  "network": {
+    "allowedDomains": ["registry.npmjs.org", "example.com"],
+    "deniedDomains": [],
+    "allowLocalBinding": true
+  }
+}

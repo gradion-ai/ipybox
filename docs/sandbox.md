@@ -42,24 +42,55 @@ and pass it as `sandbox_config` argument:
 
 ## Sandboxing MCP servers
 
+### Filesystem MCP server
+
 stdio MCP servers like the [filesystem MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) can be configured to run in a sandbox using `srt` as command:
 
 ```python
---8<-- "examples/sandbox.py:sandboxed_mcp_server_params"
+--8<-- "examples/sandbox.py:sandboxed_filesystem_mcp_server_params"
 ```
 
 The sandbox configuration is:
 
 ```json title="examples/sandbox-mcp.json"
---8<-- "examples/sandbox-mcp.json"
+--8<-- "examples/sandbox-filesystem-mcp.json"
 ```
 
 The server itself is configured with permissions to access all files in the current directory (`"."`), but the sandbox additionally blocks read access to `.env`. The sandbox also allows access to `registry.npmjs.org` for downloading the server package via `npx`, and `~/.npm` for the local `npm` cache.
 
 ```python
---8<-- "examples/sandbox.py:sandboxed_mcp_server_usage"
+--8<-- "examples/sandbox.py:sandboxed_filesystem_mcp_server_usage"
 ```
 
-!!! Info
+!!! info
 
-    MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed. 
+    MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed.
+
+### Fetch MCP server
+
+The [fetch MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch) retrieves web content and converts it to markdown. Install the server and SOCKS proxy support (used by sandbox-runtime for network filtering) as project dependencies:
+
+```bash
+uv add mcp-server-fetch
+uv add "httpx[socks]>=0.28.1"
+```
+
+!!! note
+
+    Running via `uvx` is currently not supported because `srt` restricts access to system configuration required by `uvx`.
+
+Configure the server to run in a sandbox using `python -m mcp_server_fetch`:
+
+```python
+--8<-- "examples/sandbox.py:sandboxed_fetch_mcp_server_params"
+```
+
+The sandbox configuration allows access to `example.com` for fetching content and `registry.npmjs.org` for the [readability](https://github.com/mozilla/readability) dependency:
+
+```json title="examples/sandbox-fetch-mcp.json"
+--8<-- "examples/sandbox-fetch-mcp.json"
+```
+
+```python
+--8<-- "examples/sandbox.py:sandboxed_fetch_mcp_server_usage"
+```
