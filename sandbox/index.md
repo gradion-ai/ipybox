@@ -95,6 +95,8 @@ async with CodeExecutor(
 
 ## Sandboxing MCP servers
 
+### Filesystem MCP server
+
 stdio MCP servers like the [filesystem MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) can be configured to run in a sandbox using `srt` as command:
 
 ```
@@ -102,7 +104,7 @@ server_params = {
     "command": "srt",
     "args": [
         "--settings",
-        "examples/sandbox-mcp.json",
+        "examples/sandbox-filesystem-mcp.json",
         "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
@@ -113,7 +115,7 @@ server_params = {
 
 The sandbox configuration is:
 
-examples/sandbox-mcp.json
+examples/sandbox-filesystem-mcp.json
 
 ```
 {
@@ -164,3 +166,66 @@ async with CodeExecutor(sandbox=True) as executor:
 Info
 
 MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed.
+
+### Fetch MCP server
+
+The [fetch MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch) retrieves web content and converts it to markdown. Install the server and SOCKS proxy support (used by sandbox-runtime for network filtering) as project dependencies:
+
+```
+uv add mcp-server-fetch
+uv add "httpx[socks]>=0.28.1"
+```
+
+Note
+
+Running via `uvx` is currently not supported because `srt` restricts access to system configuration required by `uvx`.
+
+Configure the server to run in a sandbox using `python -m mcp_server_fetch`:
+
+```
+server_params = {
+    "command": "srt",
+    "args": [
+        "--settings",
+        "examples/sandbox-fetch-mcp.json",
+        "python",
+        "-m",
+        "mcp_server_fetch",
+    ],
+}
+```
+
+The sandbox configuration allows access to `example.com` for fetching content and `registry.npmjs.org` for the [readability](https://github.com/mozilla/readability) dependency:
+
+examples/sandbox-fetch-mcp.json
+
+```
+{
+  "enableWeakerNestedSandbox": false,
+  "filesystem": {
+    "denyRead": [".env"],
+    "allowWrite": [".", "~/.npm", "/tmp/**", "/private/tmp/**"],
+    "denyWrite": []
+  },
+  "network": {
+    "allowedDomains": ["registry.npmjs.org", "example.com"],
+    "deniedDomains": [],
+    "allowLocalBinding": true
+  }
+}
+```
+
+```
+await generate_mcp_sources("fetch", server_params, Path("mcptools"))
+
+fetch_code = """
+from mcptools.fetch import fetch
+result = fetch.run(fetch.Params(url="https://example.com"))
+print(result)
+"""
+
+async with CodeExecutor(sandbox=True) as executor:
+    result = await executor.execute(fetch_code)
+    print(result.text)
+    assert "This domain is for use in documentation examples" in result.text
+```

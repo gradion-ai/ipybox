@@ -624,6 +624,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Sandboxing MCP servers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filesystem-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filesystem MCP server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fetch MCP server
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1081,6 +1109,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Sandboxing MCP servers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filesystem-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filesystem MCP server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fetch MCP server
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1177,12 +1233,13 @@
     <span class="k">assert</span> <span class="s2">&quot;Example Domain&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
 </code></pre></div>
 <h2 id="sandboxing-mcp-servers">Sandboxing MCP servers</h2>
+<h3 id="filesystem-mcp-server">Filesystem MCP server</h3>
 <p>stdio MCP servers like the <a href="https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem">filesystem MCP server</a> can be configured to run in a sandbox using <code>srt</code> as command:</p>
 <div class="highlight"><pre><span></span><code><span class="n">server_params</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;srt&quot;</span><span class="p">,</span>
     <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;--settings&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;examples/sandbox-mcp.json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/sandbox-filesystem-mcp.json&quot;</span><span class="p">,</span>
         <span class="s2">&quot;npx&quot;</span><span class="p">,</span>
         <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
         <span class="s2">&quot;@modelcontextprotocol/server-filesystem&quot;</span><span class="p">,</span>
@@ -1191,7 +1248,7 @@
 <span class="p">}</span>
 </code></pre></div>
 <p>The sandbox configuration is:</p>
-<div class="highlight"><span class="filename">examples/sandbox-mcp.json</span><pre><span></span><code><span class="p">{</span>
+<div class="highlight"><span class="filename">examples/sandbox-filesystem-mcp.json</span><pre><span></span><code><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;enableWeakerNestedSandbox&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;filesystem&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;denyRead&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;.env&quot;</span><span class="p">],</span>
@@ -1234,8 +1291,57 @@
 </code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed. </p>
+<p>MCP server sandboxing is independent of kernel sandboxing and usually not needed when using trusted servers, but provides an additional security layer when needed.</p>
 </div>
+<h3 id="fetch-mcp-server">Fetch MCP server</h3>
+<p>The <a href="https://github.com/modelcontextprotocol/servers/tree/main/src/fetch">fetch MCP server</a> retrieves web content and converts it to markdown. Install the server and SOCKS proxy support (used by sandbox-runtime for network filtering) as project dependencies:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>mcp-server-fetch
+uv<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;httpx[socks]&gt;=0.28.1&quot;</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Running via <code>uvx</code> is currently not supported because <code>srt</code> restricts access to system configuration required by <code>uvx</code>.</p>
+</div>
+<p>Configure the server to run in a sandbox using <code>python -m mcp_server_fetch</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">server_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;srt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;--settings&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;examples/sandbox-fetch-mcp.json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mcp_server_fetch&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The sandbox configuration allows access to <code>example.com</code> for fetching content and <code>registry.npmjs.org</code> for the <a href="https://github.com/mozilla/readability">readability</a> dependency:</p>
+<div class="highlight"><span class="filename">examples/sandbox-fetch-mcp.json</span><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;enableWeakerNestedSandbox&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;filesystem&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;denyRead&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;.env&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;allowWrite&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;~/.npm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/tmp/**&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/private/tmp/**&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;denyWrite&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;network&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;allowedDomains&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;registry.npmjs.org&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;example.com&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;deniedDomains&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;allowLocalBinding&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span><span class="s2">&quot;fetch&quot;</span><span class="p">,</span> <span class="n">server_params</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">))</span>
+
+<span class="n">fetch_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">from mcptools.fetch import fetch</span>
+<span class="s2">result = fetch.run(fetch.Params(url=&quot;https://example.com&quot;))</span>
+<span class="s2">print(result)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">sandbox</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">fetch_code</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot;This domain is for use in documentation examples&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span>
+</code></pre></div>
 
 
 
