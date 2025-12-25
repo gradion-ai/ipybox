@@ -52,7 +52,7 @@ stdio MCP servers like the [filesystem MCP server](https://github.com/modelconte
 
 The sandbox configuration is:
 
-```json title="examples/sandbox-mcp.json"
+```json title="examples/sandbox-filesystem-mcp.json"
 --8<-- "examples/sandbox-filesystem-mcp.json"
 ```
 
