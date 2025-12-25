@@ -164,6 +164,7 @@ class ToolServer:
             port=self.port,
             log_config=LOGGING_CONFIG,
             log_level=self.log_level.lower(),
+            ws="wsproto",
         )
 
         self._server = uvicorn.Server(config)
