@@ -95,4 +95,4 @@ jobs:
     - name: Verify publication
       run: |
         echo "Server published successfully to MCP Registry"
-        echo "Visit https://modelcontextprotocol.io/servers to verify the publication"
+        echo "Visit https://registry.modelcontextprotocol.io/v0.1/servers/io.github.gradion-ai%2Fipybox/versions/$VERSION to verify the publication"
