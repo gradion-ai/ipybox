@@ -16,6 +16,10 @@ Code actions are stored with interface separated from implementation. This separ
 
     This plugin is a demonstration of the "code as tool" approach. It is a prototype that requires further optimization and refinement.
 
+!!! tip "freeact"
+    
+    An agent that natively provides this functionality is the [freeact](https://gradion-ai.github.io/freeact/) code action agent. It uses Gemini 3 instead of Claude and supports unified approval of code actions and tool calls.
+
 The `codeact` skill distributes responsibilities between ipybox and Claude Code:
 
 ipybox:

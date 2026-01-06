@@ -129,6 +129,9 @@ nav:
     - Agent Integration:
       - ipybox MCP Server: mcpserver.md
       - Claude Code plugin: ccplugin.md
+    - LLM readable:
+      - llms.txt: llms.txt
+      - llms-full.txt: llms-full.txt
   - API Reference:
     - High-level API:
       - Code Executor: api/code_executor.md

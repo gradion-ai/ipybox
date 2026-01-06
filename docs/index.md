@@ -15,6 +15,10 @@ ipybox is a Python code execution sandbox with first-class support for programma
 
 ipybox is designed for agents that interact with their environment through [code actions](https://arxiv.org/abs/2402.01030) rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.
 
+!!! tip "freeact"
+
+    A code action agent built on ipybox is [freeact](https://gradion-ai.github.io/freeact/). In addition to inheriting the [features](#features) of ipybox, it supports progressive loading of tools and [agent skills](https://agentskills.io), and can save successful code actions as tools, evolving its own tool library over time. 
+
 ## Features
 
 - **Stateful code execution** — state persists across executions in IPython kernels
@@ -27,7 +31,3 @@ ipybox is designed for agents that interact with their environment through [code
 - **Local code execution** — no cloud dependencies, everything runs on your machine
 - **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
 - **Claude Code plugin** — a plugin for [programmatic tool calling in Claude Code](ccplugin.md)
-
-## LLM-friendly documentation
-
-For LLM-friendly versions of this documentation, see [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt).
