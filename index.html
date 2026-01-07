@@ -473,17 +473,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#llm-friendly-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LLM-friendly documentation
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -731,6 +720,125 @@
     
   
     Claude Code plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM readable
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LLM readable
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="llms.txt" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    llms.txt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="llms-full.txt" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    llms-full.txt
   
 
     
@@ -1070,17 +1178,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#llm-friendly-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LLM-friendly documentation
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1115,8 +1212,8 @@
 <h2 id="agent-integration">Agent integration</h2>
 <p>ipybox is designed for agents that interact with their environment through <a href="https://arxiv.org/abs/2402.01030">code actions</a> rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.</p>
 <div class="admonition info">
-<p class="admonition-title">freeact agent</p>
-<p><a href="https://gradion-ai.github.io/freeact/">freeact</a> is a lightweight, general-purpose agent built on ipybox that acts via code actions rather than JSON tool calls. It also functions as a toolsmith, developing new tools from successful code actions to evolve its own tool library. It supports the <a href="https://agentskills.io">agentskills.io</a> specification for extending its capabilities with specialized knowledge and workflows.</p>
+<p class="admonition-title">freeact</p>
+<p>A code action agent built on ipybox is <a href="https://gradion-ai.github.io/freeact/">freeact</a>. In addition to inheriting the <a href="#features">features</a> of ipybox, it supports progressive loading of tools and <a href="https://agentskills.io">agent skills</a>, and can save successful code actions as tools, evolving its own tool library over time. </p>
 </div>
 <h2 id="features">Features</h2>
 <ul>
@@ -1131,8 +1228,6 @@
 <li><strong>Python SDK and MCP server</strong> — use ipybox programmatically or as an MCP server</li>
 <li><strong>Claude Code plugin</strong> — a plugin for <a href="ccplugin/">programmatic tool calling in Claude Code</a></li>
 </ul>
-<h2 id="llm-friendly-documentation">LLM-friendly documentation</h2>
-<p>For LLM-friendly versions of this documentation, see <a href="llms.txt">llms.txt</a> and <a href="llms-full.txt">llms-full.txt</a>.</p>
 
 
 
