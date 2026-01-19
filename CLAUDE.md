@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 uv sync                      # Install/sync dependencies
+uv run invoke precommit-install  # Set up pre-commit hooks (once, after initial sync)
 uv add <dep>                 # Add dependency (--dev for dev deps)
 uv run invoke cc             # Run code checks (auto-fixes formatting, mypy errors need manual fix)
 uv run invoke test           # Run all tests
