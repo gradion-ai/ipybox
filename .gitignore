@@ -10,8 +10,9 @@ site/
 /mcptools/
 /mcpparse/
 /codeact/
+/examples_draft/
 /sandbox.*
-.claude/settings.local.json
+.freeact/
 .mcpregistry*
 .env
 GEMINI.md
