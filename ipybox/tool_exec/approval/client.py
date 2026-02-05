@@ -17,7 +17,8 @@ class ApprovalRequest:
     [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient]. The callback
     must call [`accept`][ipybox.tool_exec.approval.client.ApprovalRequest.accept]
     or [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject] for making
-    an approval decision.
+    an approval decision. Consumers can await [`response`][ipybox.tool_exec.approval.client.ApprovalRequest.response]
+    to observe the decision.
 
     Example:
         ```python
@@ -36,7 +37,6 @@ class ApprovalRequest:
         tool_name: str,
         tool_args: dict[str, Any],
         respond: Callable[[bool], Awaitable[None]],
-        on_decision: Callable[[], None] | None = None,
     ):
         """
         Args:
@@ -44,14 +44,12 @@ class ApprovalRequest:
             tool_name: Name of the tool to execute.
             tool_args: Arguments to pass to the tool.
             respond: Function to make an approval decision.
-            on_decision: Optional callback invoked once when a decision is made.
         """
         self.server_name = server_name
         self.tool_name = tool_name
         self.tool_args = tool_args
         self._respond = respond
-        self._on_decision = on_decision
-        self._decision_made = False
+        self._decision = asyncio.get_running_loop().create_future()
 
     def __str__(self) -> str:
         kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.tool_args.items()])
@@ -59,34 +57,43 @@ class ApprovalRequest:
 
     async def accept(self):
         """Accept the approval request."""
-        self._notify_decision()
+        self._set_decision(True)
         return await self._respond(True)
 
     async def reject(self):
         """Reject the approval request."""
-        self._notify_decision()
+        self._set_decision(False)
         return await self._respond(False)
 
-    def set_on_decision(self, on_decision: Callable[[], None]):
+    async def response(self) -> bool:
+        """Wait for and return the approval decision."""
+        return await self._decision
+
+    def on_decision(self, callback: Callable[[bool], None]):
         """Register a callback invoked once when a decision is made."""
-        if self._on_decision is None:
-            self._on_decision = on_decision
+
+        def invoke(result: bool):
+            try:
+                callback(result)
+            except Exception:
+                logger.exception("Error in approval decision callback")
+
+        if self._decision.done():
+            invoke(self._decision.result())
             return
 
-        previous = self._on_decision
+        def _done(fut: asyncio.Future[bool]):
+            invoke(fut.result())
 
-        def chained():
-            previous()
-            on_decision()
+        self._decision.add_done_callback(_done)
 
-        self._on_decision = chained
+    def set_on_decision(self, on_decision: Callable[[], None]):
+        """Backwards-compatible alias for registering a decision callback."""
+        self.on_decision(lambda _result: on_decision())
 
-    def _notify_decision(self):
-        if self._decision_made:
-            return
-        self._decision_made = True
-        if self._on_decision is not None:
-            self._on_decision()
+    def _set_decision(self, decision: bool):
+        if not self._decision.done():
+            self._decision.set_result(decision)
 
 
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]

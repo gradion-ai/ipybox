@@ -342,6 +342,12 @@ class KernelClient:
             drained += 1
         return drained
 
+    async def interrupt_and_drain(self, drain_timeout: float = 1.0, settle_delay: float = 0.2):
+        """Interrupt the kernel and drain pending messages."""
+        await self.interrupt()
+        await asyncio.sleep(settle_delay)
+        await self.drain(timeout=drain_timeout)
+
     async def _init_kernel(self):
         await self.execute("%colors nocolor", timeout=10)
 
