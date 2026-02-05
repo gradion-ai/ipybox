@@ -36,6 +36,7 @@ class ApprovalRequest:
         tool_name: str,
         tool_args: dict[str, Any],
         respond: Callable[[bool], Awaitable[None]],
+        on_decision: Callable[[], None] | None = None,
     ):
         """
         Args:
@@ -43,11 +44,14 @@ class ApprovalRequest:
             tool_name: Name of the tool to execute.
             tool_args: Arguments to pass to the tool.
             respond: Function to make an approval decision.
+            on_decision: Optional callback invoked once when a decision is made.
         """
         self.server_name = server_name
         self.tool_name = tool_name
         self.tool_args = tool_args
         self._respond = respond
+        self._on_decision = on_decision
+        self._decision_made = False
 
     def __str__(self) -> str:
         kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.tool_args.items()])
@@ -55,11 +59,34 @@ class ApprovalRequest:
 
     async def accept(self):
         """Accept the approval request."""
+        self._notify_decision()
         return await self._respond(True)
 
     async def reject(self):
         """Reject the approval request."""
+        self._notify_decision()
         return await self._respond(False)
+
+    def set_on_decision(self, on_decision: Callable[[], None]):
+        """Register a callback invoked once when a decision is made."""
+        if self._on_decision is None:
+            self._on_decision = on_decision
+            return
+
+        previous = self._on_decision
+
+        def chained():
+            previous()
+            on_decision()
+
+        self._on_decision = chained
+
+    def _notify_decision(self):
+        if self._decision_made:
+            return
+        self._decision_made = True
+        if self._on_decision is not None:
+            self._on_decision()
 
 
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]
