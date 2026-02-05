@@ -103,7 +103,7 @@ async with CodeExecutor(approval_timeout=10) as executor:
 ```
 
 - `approval_timeout`: How long to wait for `accept()`/`reject()` (default: no timeout)
-- `timeout` in `stream()`: Maximum total execution time including approval waits (default: no timeout)
+- `timeout` in `stream()`: Maximum total execution time **excluding approval waits**. Tool execution time and kernel execution time still count toward this budget (default: no timeout).
 
 ## Kernel environment
 

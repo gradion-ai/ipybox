@@ -160,6 +160,20 @@ disconnect()
 
 Disconnects from and deletes the running IPython kernel.
 
+### drain
+
+```
+drain(timeout: float = 1.0) -> int
+```
+
+Drain pending kernel messages for up to `timeout` seconds.
+
+Returns:
+
+| Type  | Description                     |
+| ----- | ------------------------------- |
+| `int` | The number of messages drained. |
+
 ### execute
 
 ```
@@ -191,6 +205,24 @@ Raises:
 | ---------------- | ----------------------------------------------- |
 | `ExecutionError` | If code execution raises an error.              |
 | `TimeoutError`   | If code execution duration exceeds the timeout. |
+
+### interrupt
+
+```
+interrupt()
+```
+
+Interrupt the running IPython kernel.
+
+### interrupt_and_drain
+
+```
+interrupt_and_drain(
+    drain_timeout: float = 1.0, settle_delay: float = 0.2
+)
+```
+
+Interrupt the kernel and drain pending messages.
 
 ### reset
 

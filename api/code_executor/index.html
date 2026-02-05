@@ -1709,7 +1709,8 @@ directly.</p>
             <td>
               <div class="doc-md-description">
                 <p>Maximum time in seconds to wait for execution to complete.
-If <code>None</code>, no timeout is applied.</p>
+If <code>None</code>, no timeout is applied. Approval wait time is excluded
+from this timeout budget.</p>
               </div>
             </td>
             <td>
@@ -1768,7 +1769,8 @@ If <code>None</code>, no timeout is applied.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If code execution exceeds the timeout.</p>
+                <p>If code execution exceeds the timeout (excluding
+approval wait time).</p>
               </div>
             </td>
           </tr>
@@ -1930,7 +1932,8 @@ result to the kernel. If rejected, the tool call fails with an error.</p>
             <td>
               <div class="doc-md-description">
                 <p>Maximum time in seconds to wait for execution to complete.
-If <code>None</code>, no timeout is applied.</p>
+If <code>None</code>, no timeout is applied. Approval wait time is excluded
+from this timeout budget.</p>
               </div>
             </td>
             <td>
@@ -2036,7 +2039,8 @@ errors). The error message contains the stack trace from the kernel.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If code execution exceeds the timeout.</p>
+                <p>If code execution exceeds the timeout (excluding
+approval wait time).</p>
               </div>
             </td>
           </tr>

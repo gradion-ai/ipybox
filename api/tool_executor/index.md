@@ -240,7 +240,7 @@ ApprovalRequest(
 
 An MCP tool call approval request.
 
-`ApprovalRequest` instances are passed to the approval callback registered with ApprovalClient. The callback must call accept or reject for making an approval decision.
+`ApprovalRequest` instances are passed to the approval callback registered with ApprovalClient. The callback must call accept or reject for making an approval decision. Consumers can await response to observe the decision.
 
 Example
 
@@ -270,6 +270,14 @@ accept()
 
 Accept the approval request.
 
+### on_decision
+
+```
+on_decision(callback: Callable[[bool], None])
+```
+
+Register a callback invoked once when a decision is made.
+
 ### reject
 
 ```
@@ -277,6 +285,22 @@ reject()
 ```
 
 Reject the approval request.
+
+### response
+
+```
+response() -> bool
+```
+
+Wait for and return the approval decision.
+
+### set_on_decision
+
+```
+set_on_decision(on_decision: Callable[[], None])
+```
+
+Backwards-compatible alias for registering a decision callback.
 
 ## ipybox.tool_exec.approval.server.ApprovalChannel
 

@@ -1370,7 +1370,7 @@
 </code></pre></div>
 <ul>
 <li><code>approval_timeout</code>: How long to wait for <code>accept()</code>/<code>reject()</code> (default: no timeout)</li>
-<li><code>timeout</code> in <code>stream()</code>: Maximum total execution time including approval waits (default: no timeout)</li>
+<li><code>timeout</code> in <code>stream()</code>: Maximum total execution time <strong>excluding approval waits</strong>. Tool execution time and kernel execution time still count toward this budget (default: no timeout).</li>
 </ul>
 <h2 id="kernel-environment">Kernel environment</h2>
 <p>The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with <code>kernel_env</code>:</p>

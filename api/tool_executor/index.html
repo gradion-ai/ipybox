@@ -1192,10 +1192,43 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.on_decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        on_decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.reject" class="md-nav__link">
     <span class="md-ellipsis">
       
         reject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.set_on_decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_on_decision
       
     </span>
   </a>
@@ -1529,10 +1562,43 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.on_decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        on_decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.reject" class="md-nav__link">
     <span class="md-ellipsis">
       
         reject
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipybox.tool_exec.approval.client.ApprovalRequest.set_on_decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_on_decision
       
     </span>
   </a>
@@ -2571,7 +2637,8 @@ accept or reject the request.</p>
 <a class="autorefs autorefs-internal" href="#ipybox.tool_exec.approval.client.ApprovalClient"><code>ApprovalClient</code></a>. The callback
 must call <a class="autorefs autorefs-internal" href="#ipybox.tool_exec.approval.client.ApprovalRequest.accept"><code>accept</code></a>
 or <a class="autorefs autorefs-internal" href="#ipybox.tool_exec.approval.client.ApprovalRequest.reject"><code>reject</code></a> for making
-an approval decision.</p>
+an approval decision. Consumers can await <a class="autorefs autorefs-internal" href="#ipybox.tool_exec.approval.client.ApprovalRequest.response"><code>response</code></a>
+to observe the decision.</p>
 
 
 <details class="example" open>
@@ -2712,6 +2779,26 @@ an approval decision.</p>
 <div class="doc doc-object doc-function">
 
 
+<h3 id="ipybox.tool_exec.approval.client.ApprovalRequest.on_decision" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">on_decision</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">on_decision</span><span class="p">(</span><span class="n">callback</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span><span class="p">],</span> <span class="kc">None</span><span class="p">])</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Register a callback invoked once when a decision is made.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="ipybox.tool_exec.approval.client.ApprovalRequest.reject" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">reject</span>
 
@@ -2727,6 +2814,50 @@ an approval decision.</p>
     <div class="doc doc-contents ">
 
         <p>Reject the approval request.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ipybox.tool_exec.approval.client.ApprovalRequest.response" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">response</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">response</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wait for and return the approval decision.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ipybox.tool_exec.approval.client.ApprovalRequest.set_on_decision" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">set_on_decision</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_on_decision</span><span class="p">(</span><span class="n">on_decision</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Backwards-compatible alias for registering a decision callback.</p>
 
 
     </div>
