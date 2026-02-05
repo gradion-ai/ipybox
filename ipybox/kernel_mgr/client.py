@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from base64 import b64decode
 from dataclasses import dataclass
 from pathlib import Path
@@ -312,6 +313,40 @@ class KernelClient:
                 f"{self.kernel_http_url}/interrupt", json={"kernel_id": self._kernel_id}
             ) as response:
                 logger.info(f"Kernel interrupted: {response.status}")
+
+    async def interrupt(self):
+        """Interrupt the running IPython kernel."""
+        await self._interrupt_kernel()
+
+    async def drain(self, timeout: float = 1.0) -> int:
+        """Drain pending kernel messages for up to `timeout` seconds.
+
+        Returns:
+            The number of messages drained.
+        """
+        if self._ws is None:
+            raise RuntimeError("Not connected to kernel")
+
+        drained = 0
+        deadline = time.monotonic() + timeout
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            try:
+                msg = await asyncio.wait_for(self._read_message(), timeout=remaining)
+            except asyncio.TimeoutError:
+                break
+            if msg is None:
+                break
+            drained += 1
+        return drained
+
+    async def interrupt_and_drain(self, drain_timeout: float = 1.0, settle_delay: float = 0.2):
+        """Interrupt the kernel and drain pending messages."""
+        await self.interrupt()
+        await asyncio.sleep(settle_delay)
+        await self.drain(timeout=drain_timeout)
 
     async def _init_kernel(self):
         await self.execute("%colors nocolor", timeout=10)

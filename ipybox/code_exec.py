@@ -1,4 +1,5 @@
 import asyncio
+import time
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -204,7 +205,8 @@ class CodeExecutor:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for execution to complete.
-                If `None`, no timeout is applied.
+                If `None`, no timeout is applied. Approval wait time is excluded
+                from this timeout budget.
             chunks: Whether to yield
                 [`CodeExecutionChunk`][ipybox.code_exec.CodeExecutionChunk] objects
                 during execution. When `False`, only
@@ -225,28 +227,27 @@ class CodeExecutor:
             CodeExecutionError: If code execution raises an error (syntax errors,
                 runtime errors, rejected or timed-out approval requests, MCP tool
                 errors). The error message contains the stack trace from the kernel.
-            asyncio.TimeoutError: If code execution exceeds the timeout.
+            asyncio.TimeoutError: If code execution exceeds the timeout (excluding
+                approval wait time).
         """
-        queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception] = asyncio.Queue()
-
-        async def stream_execution():
-            try:
-                async for item in self._client.stream(code, timeout=timeout):
-                    await queue.put(item)
-            except Exception as e:
-                await queue.put(e)
+        worker = _StreamWorker(lambda: self._client.stream(code, timeout=None))
+        budget = _build_budget(timeout, worker.queue)
 
         async with ApprovalClient(
-            callback=queue.put,
+            callback=worker.queue.put,
             host=self.tool_server_host,
             port=self.tool_server_port,
         ):
-            task = asyncio.create_task(stream_execution())
+            await worker.start()
+            timed_out = False
+            caught_exc: Exception | None = None
             try:
                 while True:
-                    item = await queue.get()
+                    item = await budget.next_item()
                     match item:
                         case ApprovalRequest():
+                            budget.pause()
+                            item.on_decision(budget.on_decision)
                             yield item
                         case str() if chunks:
                             yield CodeExecutionChunk(text=item)
@@ -257,8 +258,23 @@ class CodeExecutor:
                         case ExecutionResult():
                             yield CodeExecutionResult(text=item.text, images=item.images)
                             break
+            except asyncio.TimeoutError as exc:
+                caught_exc = exc
+                timed_out = True
+                await self._client.interrupt_and_drain()
+                stream_exc = await worker.finalize(timeout=2.0)
+                if stream_exc is not None:
+                    raise exc from stream_exc
+                raise
+            except Exception as exc:
+                caught_exc = exc
+                raise
             finally:
-                await task
+                await budget.cancel_pending()
+                if not timed_out:
+                    stream_exc = await worker.finalize()
+                    if stream_exc is not None and caught_exc is None:
+                        raise stream_exc
 
     async def execute(self, code: str, timeout: float | None = None) -> CodeExecutionResult:
         """Execute Python code with automatic approval of all MCP tool calls.
@@ -270,14 +286,16 @@ class CodeExecutor:
         Args:
             code: Python code to execute.
             timeout: Maximum time in seconds to wait for execution to complete.
-                If `None`, no timeout is applied.
+                If `None`, no timeout is applied. Approval wait time is excluded
+                from this timeout budget.
 
         Returns:
             The execution result containing output text and generated images.
 
         Raises:
             CodeExecutionError: If code execution raises an error.
-            asyncio.TimeoutError: If code execution exceeds the timeout.
+            asyncio.TimeoutError: If code execution exceeds the timeout (excluding
+                approval wait time).
         """
         async for item in self.stream(code, timeout=timeout, chunks=False):
             match item:
@@ -316,3 +334,198 @@ class CodeExecutor:
                     images_dir=self.images_dir,
                 ) as client:
                     yield client
+
+
+class _NoTimeoutBudget:
+    """No-timeout variant of the execution budget.
+
+    Acts as a thin passthrough around the queue so CodeExecutor can use a
+    uniform interface regardless of whether a timeout is configured.
+    """
+
+    def __init__(self, queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]):
+        self._queue = queue
+
+    def pause(self):
+        return
+
+    def on_decision(self, _result: bool):
+        return
+
+    async def next_item(self):
+        return await self._queue.get()
+
+    async def cancel_pending(self):
+        return
+
+
+class _TimedBudget:
+    """Deadline-based timeout budget with pause/resume support.
+
+    While paused, time does not advance toward the deadline. Resume is triggered
+    by approval decisions so only kernel/tool execution time counts.
+    """
+
+    def __init__(self, timeout: float, queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]):
+        self.timeout = timeout
+        self._queue = queue
+        self._message = f"Code execution exceeded timeout of {timeout:.2f}s (approval wait excluded)."
+        self._deadline = time.monotonic() + timeout
+        self._paused = False
+        self._paused_at = 0.0
+        self._resume_at: float | None = None
+        self._resume_event = asyncio.Event()
+        self._queue_task: asyncio.Task | None = None
+
+    def pause(self):
+        if self._paused:
+            return
+        self._paused = True
+        self._paused_at = time.monotonic()
+
+    def signal_resume(self, resume_at: float | None = None):
+        self._resume_at = resume_at if resume_at is not None else time.monotonic()
+        self._resume_event.set()
+
+    def on_decision(self, _result: bool):
+        self.signal_resume(time.monotonic())
+
+    async def next_item(self):
+        while True:
+            if self._paused:
+                if self._resume_event.is_set():
+                    await self._apply_resume()
+                    if self._queue_task is not None:
+                        if self._queue_task.done():
+                            item = await self._pop_queue_task_result()
+                            if item is not None:
+                                return item
+                        await self._cancel_queue_task()
+                    continue
+
+                if self._queue_task is None or self._queue_task.done():
+                    self._queue_task = asyncio.create_task(self._queue.get())
+                resume_task = asyncio.create_task(self._resume_event.wait())
+                done, pending = await asyncio.wait(
+                    {self._queue_task, resume_task},
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+                for task in pending:
+                    task.cancel()
+                    try:
+                        await task
+                    except asyncio.CancelledError:
+                        pass
+
+                if resume_task in done and self._resume_event.is_set():
+                    await self._apply_resume()
+                    if self._queue_task is not None:
+                        if self._queue_task.done():
+                            item = await self._pop_queue_task_result()
+                            if item is not None:
+                                return item
+                        await self._cancel_queue_task()
+                    continue
+
+                if self._queue_task in done:
+                    item = await self._pop_queue_task_result()
+                    if item is not None:
+                        return item
+                    continue
+
+                continue
+
+            remaining = self._deadline - time.monotonic()
+            if remaining <= 0:
+                raise asyncio.TimeoutError(self._message)
+            try:
+                return await asyncio.wait_for(self._queue.get(), timeout=remaining)
+            except asyncio.TimeoutError as exc:
+                raise asyncio.TimeoutError(self._message) from exc
+
+    async def cancel_pending(self):
+        if self._queue_task is None or self._queue_task.done():
+            return
+        await self._cancel_queue_task()
+
+    async def _cancel_queue_task(self):
+        if self._queue_task is None:
+            return
+        self._queue_task.cancel()
+        try:
+            await self._queue_task
+        except asyncio.CancelledError:
+            pass
+        self._queue_task = None
+
+    async def _pop_queue_task_result(self):
+        if self._queue_task is None:
+            return None
+        try:
+            item = self._queue_task.result()
+        except asyncio.CancelledError:
+            self._queue_task = None
+            return None
+        self._queue_task = None
+        return item
+
+    async def _apply_resume(self):
+        if not self._paused:
+            self._resume_event.clear()
+            self._resume_at = None
+            return
+        effective_resume = self._resume_at if self._resume_at is not None else time.monotonic()
+        self._deadline += effective_resume - self._paused_at
+        self._paused = False
+        self._resume_at = None
+        self._resume_event.clear()
+
+
+class _StreamWorker:
+    """Runs the kernel stream in the background and forwards items to a queue."""
+
+    def __init__(self, stream_factory):
+        self._stream_factory = stream_factory
+        self.queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception] = asyncio.Queue()
+        self._task: asyncio.Task | None = None
+        self._finalized = False
+
+    async def start(self):
+        if self._task is not None:
+            raise RuntimeError("Stream worker already started")
+        self._task = asyncio.create_task(self._run())
+
+    async def finalize(self, timeout: float | None = None) -> Exception | None:
+        if self._finalized:
+            return None
+        self._finalized = True
+        if self._task is None:
+            return None
+        try:
+            if timeout is None:
+                await self._task
+            else:
+                await asyncio.wait_for(self._task, timeout=timeout)
+        except asyncio.TimeoutError:
+            self._task.cancel()
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
+        except Exception as exc:
+            return exc
+        return None
+
+    async def _run(self):
+        try:
+            async for item in self._stream_factory():
+                await self.queue.put(item)
+        except Exception as exc:
+            await self.queue.put(exc)
+
+
+def _build_budget(timeout: float | None, queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]):
+    """Create the appropriate budget strategy for the given timeout."""
+    if timeout is None:
+        return _NoTimeoutBudget(queue)
+    return _TimedBudget(timeout, queue)

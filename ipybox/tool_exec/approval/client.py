@@ -17,7 +17,8 @@ class ApprovalRequest:
     [`ApprovalClient`][ipybox.tool_exec.approval.client.ApprovalClient]. The callback
     must call [`accept`][ipybox.tool_exec.approval.client.ApprovalRequest.accept]
     or [`reject`][ipybox.tool_exec.approval.client.ApprovalRequest.reject] for making
-    an approval decision.
+    an approval decision. Consumers can await [`response`][ipybox.tool_exec.approval.client.ApprovalRequest.response]
+    to observe the decision.
 
     Example:
         ```python
@@ -48,6 +49,7 @@ class ApprovalRequest:
         self.tool_name = tool_name
         self.tool_args = tool_args
         self._respond = respond
+        self._decision = asyncio.get_running_loop().create_future()
 
     def __str__(self) -> str:
         kwargs_str = ", ".join([f"{k}={repr(v)}" for k, v in self.tool_args.items()])
@@ -55,11 +57,43 @@ class ApprovalRequest:
 
     async def accept(self):
         """Accept the approval request."""
+        self._set_decision(True)
         return await self._respond(True)
 
     async def reject(self):
         """Reject the approval request."""
+        self._set_decision(False)
         return await self._respond(False)
+
+    async def response(self) -> bool:
+        """Wait for and return the approval decision."""
+        return await self._decision
+
+    def on_decision(self, callback: Callable[[bool], None]):
+        """Register a callback invoked once when a decision is made."""
+
+        def invoke(result: bool):
+            try:
+                callback(result)
+            except Exception:
+                logger.exception("Error in approval decision callback")
+
+        if self._decision.done():
+            invoke(self._decision.result())
+            return
+
+        def _done(fut: asyncio.Future[bool]):
+            invoke(fut.result())
+
+        self._decision.add_done_callback(_done)
+
+    def set_on_decision(self, on_decision: Callable[[], None]):
+        """Backwards-compatible alias for registering a decision callback."""
+        self.on_decision(lambda _result: on_decision())
+
+    def _set_decision(self, decision: bool):
+        if not self._decision.done():
+            self._decision.set_result(decision)
 
 
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[None]]

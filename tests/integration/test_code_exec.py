@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import tempfile
 from pathlib import Path
@@ -94,6 +95,28 @@ for i in range(3):
         assert "chunk 2" in combined_text
         assert result is not None
 
+    @pytest.mark.asyncio
+    async def test_execution_continues_after_timeout(self, code_executor: CodeExecutor):
+        """Test that CodeExecutor is usable after a timeout."""
+        code = "import time; time.sleep(2)"
+        with pytest.raises(asyncio.TimeoutError):
+            async for _ in code_executor.stream(code, timeout=0.2):
+                pass
+
+        await asyncio.sleep(0.5)
+
+        result = await code_executor.execute("print('recovered')")
+        assert result.text == "recovered"
+
+    @pytest.mark.asyncio
+    async def test_timeout_message_includes_value(self, code_executor: CodeExecutor):
+        """Test timeout error includes configured timeout value."""
+        code = "import time; time.sleep(1)"
+        with pytest.raises(asyncio.TimeoutError) as exc_info:
+            await code_executor.execute(code, timeout=0.2)
+
+        assert "0.20s" in str(exc_info.value)
+
 
 class TestMcpToolExecution:
     """Core integration: kernel code calling MCP tools through approval."""
@@ -118,6 +141,81 @@ print(result)
         assert len(results) == 1
         assert results[0].text is not None
         assert "You passed to tool 2: hello" in results[0].text
+
+    @pytest.mark.asyncio
+    async def test_timeout_excludes_approval_wait(self, code_executor: CodeExecutor):
+        """Test that approval wait time does not consume execution timeout."""
+        warmup = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+print(run(Params(s="warmup")))
+"""
+        await code_executor.execute(warmup)
+
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+result = run(Params(s="hello"))
+print(result)
+"""
+
+        results = []
+        async for item in code_executor.stream(code, timeout=1.0):
+            match item:
+                case ApprovalRequest():
+                    await asyncio.sleep(1.5)
+                    await item.accept()
+                case CodeExecutionResult():
+                    results.append(item)
+
+        assert len(results) == 1
+        assert results[0].text is not None
+        assert "You passed to tool 2: hello" in results[0].text
+
+    @pytest.mark.asyncio
+    async def test_timeout_after_approval_still_applies(self, code_executor: CodeExecutor):
+        """Test that execution timeout still applies after approval."""
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+import time
+result = run(Params(s="hello"))
+time.sleep(0.5)
+print(result)
+"""
+
+        with pytest.raises(asyncio.TimeoutError):
+            async for item in code_executor.stream(code, timeout=0.2):
+                match item:
+                    case ApprovalRequest():
+                        await item.accept()
+
+    @pytest.mark.asyncio
+    async def test_timeout_after_long_approval_and_tool_work(self, code_executor: CodeExecutor):
+        """Test timeout still triggers when tool work exceeds budget after approval."""
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+import time
+result = run(Params(s="hello"))
+time.sleep(0.4)
+print(result)
+"""
+
+        with pytest.raises(asyncio.TimeoutError):
+            async for item in code_executor.stream(code, timeout=0.2):
+                match item:
+                    case ApprovalRequest():
+                        await asyncio.sleep(0.5)
+                        await item.accept()
+
+    @pytest.mark.asyncio
+    async def test_timeout_when_tool_execution_exceeds_budget(self, code_executor: CodeExecutor):
+        """Test timeout triggers when tool execution itself exceeds budget."""
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+result = run(Params(s="hello", delay=0.5))
+print(result)
+"""
+
+        with pytest.raises(asyncio.TimeoutError):
+            await code_executor.execute(code, timeout=0.2)
 
     @pytest.mark.asyncio
     async def test_run_auto_approves_tool_calls(self, code_executor: CodeExecutor):

@@ -55,7 +55,7 @@ Configure approval and execution timeouts:
 ```
 
 - `approval_timeout`: How long to wait for `accept()`/`reject()` (default: no timeout)
-- `timeout` in `stream()`: Maximum total execution time including approval waits (default: no timeout)
+- `timeout` in `stream()`: Maximum total execution time **excluding approval waits**. Tool execution time and kernel execution time still count toward this budget (default: no timeout).
 
 ## Kernel environment
 
