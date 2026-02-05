@@ -48,6 +48,23 @@ async def test_budget_resume_with_completed_queue_task():
 
 
 @pytest.mark.asyncio
+async def test_budget_resume_while_queue_task_pending():
+    queue: asyncio.Queue = asyncio.Queue()
+    budget = _TimedBudget(0.5, queue)
+    budget.pause()
+
+    next_task = asyncio.create_task(budget.next_item())
+    await asyncio.sleep(0.05)
+
+    budget.signal_resume(time.monotonic())
+    await asyncio.sleep(0.05)
+    await queue.put("later")
+
+    item = await asyncio.wait_for(next_task, timeout=1.0)
+    assert item == "later"
+
+
+@pytest.mark.asyncio
 async def test_budget_double_resume_is_idempotent():
     queue: asyncio.Queue = asyncio.Queue()
     budget = _TimedBudget(0.3, queue)
@@ -78,7 +95,7 @@ async def test_no_timeout_budget_passthrough():
     queue: asyncio.Queue = asyncio.Queue()
     budget = _NoTimeoutBudget(queue)
     budget.pause()
-    budget.on_decision()
+    budget.on_decision(True)
     await queue.put("ok")
 
     item = await asyncio.wait_for(budget.next_item(), timeout=1.0)

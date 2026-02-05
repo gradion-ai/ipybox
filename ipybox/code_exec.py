@@ -349,7 +349,7 @@ class _NoTimeoutBudget:
     def pause(self):
         return
 
-    def on_decision(self, _result: bool | None = None):
+    def on_decision(self, _result: bool):
         return
 
     async def next_item(self):
@@ -387,7 +387,7 @@ class _TimedBudget:
         self._resume_at = resume_at if resume_at is not None else time.monotonic()
         self._resume_event.set()
 
-    def on_decision(self, _result: bool | None = None):
+    def on_decision(self, _result: bool):
         self.signal_resume(time.monotonic())
 
     async def next_item(self):
