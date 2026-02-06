@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 import pytest
 
@@ -14,7 +13,7 @@ async def test_execution_budget_pause_excludes_time():
 
     async def resume_and_put():
         await asyncio.sleep(0.3)
-        budget.signal_resume(time.monotonic())
+        budget.on_decision(True)
         await asyncio.sleep(0.05)
         await queue.put("ok")
 
@@ -29,7 +28,7 @@ async def test_budget_resume_before_queue_task_exists():
     queue: asyncio.Queue = asyncio.Queue()
     budget = _TimedBudget(0.5, queue)
     budget.pause()
-    budget.signal_resume(time.monotonic())
+    budget.on_decision(True)
     await queue.put("ready")
 
     item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
@@ -56,7 +55,7 @@ async def test_budget_resume_while_queue_task_pending():
     next_task = asyncio.create_task(budget.next_item())
     await asyncio.sleep(0.05)
 
-    budget.signal_resume(time.monotonic())
+    budget.on_decision(True)
     await asyncio.sleep(0.05)
     await queue.put("later")
 
@@ -69,8 +68,8 @@ async def test_budget_double_resume_is_idempotent():
     queue: asyncio.Queue = asyncio.Queue()
     budget = _TimedBudget(0.3, queue)
     budget.pause()
-    budget.signal_resume(time.monotonic())
-    budget.signal_resume(time.monotonic())
+    budget.on_decision(True)
+    budget.on_decision(True)
     await queue.put("ok")
 
     item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
@@ -83,7 +82,7 @@ async def test_budget_pause_is_idempotent():
     budget = _TimedBudget(0.3, queue)
     budget.pause()
     budget.pause()
-    budget.signal_resume(time.monotonic())
+    budget.on_decision(True)
     await queue.put("ok")
 
     item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
@@ -111,6 +110,24 @@ async def test_execution_budget_timeout_message():
         await budget.next_item()
 
     assert "0.05s" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_budget_paused_wait_cleans_up_on_cancel():
+    queue: asyncio.Queue = asyncio.Queue()
+    budget = _TimedBudget(0.5, queue)
+    budget.pause()
+
+    task = asyncio.create_task(budget.next_item())
+    await asyncio.sleep(0.05)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    budget.on_decision(True)
+    await queue.put("ok")
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item == "ok"
 
 
 @pytest.mark.asyncio
