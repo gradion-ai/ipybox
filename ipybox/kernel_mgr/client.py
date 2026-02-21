@@ -349,7 +349,16 @@ class KernelClient:
         await self.drain(timeout=drain_timeout)
 
     async def _init_kernel(self):
-        await self.execute("%colors nocolor", timeout=10)
+        await self.execute(
+            "import os as _os\n"
+            "%colors nocolor\n"
+            "for _k in ('CLICOLOR', 'CLICOLOR_FORCE', 'FORCE_COLOR'):\n"
+            "    _os.environ.pop(_k, None)\n"
+            "_os.environ['TERM'] = 'dumb'\n"
+            "_os.environ['NO_COLOR'] = '1'\n"
+            "del _os, _k",
+            timeout=10,
+        )
 
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
