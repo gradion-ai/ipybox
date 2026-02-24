@@ -37,19 +37,23 @@ plugins:
   - llmstxt:
       markdown_description: |
         ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling.
-        It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and
-        remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel,
-        providing a stateful environment where variables and definitions persist across executions. The
-        generated API delegates MCP tool execution to a separate environment that enforces tool call
-        approval, requiring applications to explicitly accept or reject each tool call before it executes.
-        ipybox is designed for agents that interact with their environment through code actions rather
-        than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code.
+        It generates typed Python tool APIs from MCP server tool schemas, supporting both local stdio and
+        remote HTTP servers.
+
+        Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool
+        execution to a separate environment that enforces tool call approval, requiring applications to accept
+        or reject each tool call.
+
+        ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls.
+        This code action approach enables tool composition and intermediate result processing in a single
+        inference pass, keeping intermediate results out of the agent's context window.
       full_output: llms-full.txt
       sections:
         User Guide:
-          - index.md: Project overview and features
+          - index.md: Project overview and capabilities
           - installation.md: Installation and setup instructions
           - quickstart.md: Getting started guide
+          - architecture.md: Architecture overview
           - apigen.md: Generating typed Python API from MCP server schemas
           - codeexec.md: Stateful code execution in IPython kernels
           - sandbox.md: Lightweight sandboxing with Anthropic's sandbox-runtime
@@ -106,6 +110,7 @@ nav:
     - Overview: index.md
     - Installation: installation.md
     - Quickstart: quickstart.md
+    - Architecture: architecture.md
     - API generation: apigen.md
     - Code execution: codeexec.md
     - Sandboxing: sandbox.md

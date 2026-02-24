@@ -1,3 +1,7 @@
+<p align="left">
+    <img src="docs/images/ipybox-crop-nobg.png" alt="ipybox" width="300">
+</p>
+
 # ipybox
 
 mcp-name: io.github.gradion-ai/ipybox
@@ -10,41 +14,50 @@ mcp-name: io.github.gradion-ai/ipybox
     <a href="https://github.com/gradion-ai/ipybox/blob/main/LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/gradion-ai/ipybox?color=blueviolet"></a>
 </p>
 
+[ipybox](https://gradion-ai.github.io/ipybox/) is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates typed Python tool APIs from MCP server tool schemas, supporting both local stdio and remote HTTP servers.
+
+Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to accept or reject each tool call.
+
 > [!NOTE]
 > **Next generation ipybox**
 >
 > This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x) and can be obtained with `pip install ipybox<0.7`.
 
-[ipybox](https://gradion-ai.github.io/ipybox/) is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.
-
-![Architecture](docs/images/architecture-light-annotated.jpg)
-
-*`CodeExecutor` coordinates sandboxed code execution, tool execution, and tool call approval.*
-
 ## Documentation:
 
 - 📚 [Documentation](https://gradion-ai.github.io/ipybox/)
+- 🏗️ [Architecture](https://gradion-ai.github.io/ipybox/architecture/)
 - 🤖 [llms.txt](https://gradion-ai.github.io/ipybox/llms.txt)
 - 🤖 [llms-full.txt](https://gradion-ai.github.io/ipybox/llms-full.txt)
 
+## Capabilities
+
+| Capability | Description |
+| --- | --- |
+| **Stateful code execution** | State persists across executions in IPython kernels |
+| **Lightweight sandboxing** | Kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) |
+| **Programmatic MCP tool calling** | MCP tools called via Python code, not JSON directly |
+| **MCP tool call approval** | Every MCP tool call requires application-level approval |
+| **Python tool API generation** | Functions and models generated from MCP tool schemas |
+| **Any MCP server** | Supports stdio, Streamable HTTP, and SSE transports |
+| **Any Python package** | Install and use any Python package in IPython kernels |
+| **Local code execution** | No cloud dependencies, everything runs on your machine |
+
+## Usage
+
+| Component | Description |
+| --- | --- |
+| **[Python SDK](https://gradion-ai.github.io/ipybox/api/code_executor/)** | Python API for building applications on ipybox |
+| **[MCP server](https://gradion-ai.github.io/ipybox/mcpserver/)** | ipybox as MCP server for code actions and programmatic tool calling |
+| **[Claude Code plugin](https://gradion-ai.github.io/ipybox/ccplugin/)** | Plugin that bundles the ipybox MCP server and a code action skill |
+
 ## Agent integration
 
-ipybox is designed for agents that interact with their environment through [code actions](https://arxiv.org/abs/2402.01030) rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.
+ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls. This [code action](https://arxiv.org/abs/2402.01030) approach enables tool composition and intermediate result processing in a single inference pass, keeping intermediate results out of the agent's context window.
+
+Code actions are also key for agents to improve themselves and their tool libraries by capturing successful experience as executable knowledge. Agent-generated code cannot be trusted and requires sandboxed execution with application-level approval for every MCP tool call.
 
 > [!TIP]
 > **freeact**
 >
-> A code action agent built on ipybox is [freeact](https://github.com/gradion-ai/freeact). In addition to inheriting the [features](#features) of ipybox, it supports progressive loading of tools and [agent skills](https://agentskills.io), and can save successful code actions as tools, evolving its own tool library over time.
-
-## Features
-
-- **Stateful code execution** — state persists across executions in IPython kernels
-- **Lightweight sandboxing** — kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
-- **Generated Python tool API** — functions and models generated from MCP tool schemas
-- **Programmatic MCP tool calling** — MCP tools called via Python code, not JSON directly
-- **MCP tool call approval** — every MCP tool call requires application-level approval
-- **Any MCP server** — supports stdio, Streamable HTTP, and SSE transports
-- **Any Python package** — install and use any Python package in IPython kernels
-- **Local code execution** — no cloud dependencies, everything runs on your machine
-- **Python SDK and MCP server** — use ipybox programmatically or as an MCP server
-- **Claude Code plugin** — a plugin for [programmatic tool calling in Claude Code](https://gradion-ai.github.io/ipybox/ccplugin/)
+> A code action agent built on ipybox is [freeact](https://github.com/gradion-ai/freeact). In addition to inheriting the [capabilities](#capabilities) of ipybox, it supports progressive loading of tools and [agent skills](https://agentskills.io), and can save successful code actions as tools, evolving its own tool library over time.
