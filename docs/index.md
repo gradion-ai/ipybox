@@ -1,3 +1,5 @@
+![ipybox](images/ipybox-crop-nobg.png){ width="300" style="margin-bottom: 1.5em" }
+
 # ipybox
 
 ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates typed Python tool APIs from MCP server tool schemas, supporting both local stdio and remote HTTP servers. 

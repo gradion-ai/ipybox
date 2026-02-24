@@ -11,6 +11,7 @@ site/
 /mcpparse/
 /codeact/
 /examples_*/
+/drawings/
 /sandbox.*
 .freeact/
 .mcpregistry*

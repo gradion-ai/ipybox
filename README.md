@@ -1,9 +1,8 @@
-# ipybox
+<p align="left">
+    <img src="docs/images/ipybox-crop-nobg.png" alt="ipybox" width="300">
+</p>
 
-> [!NOTE]
-> **Next generation ipybox**
->
-> This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x) and can be obtained with `pip install ipybox<0.7`.
+# ipybox
 
 mcp-name: io.github.gradion-ai/ipybox
 
@@ -28,6 +27,11 @@ Code that calls the generated API executes in a sandboxed IPython kernel. The AP
 - 📚 [Documentation](https://gradion-ai.github.io/ipybox/)
 - 🤖 [llms.txt](https://gradion-ai.github.io/ipybox/llms.txt)
 - 🤖 [llms-full.txt](https://gradion-ai.github.io/ipybox/llms-full.txt)
+
+> [!NOTE]
+> **Next generation ipybox**
+>
+> This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the [0.6.x branch](https://github.com/gradion-ai/ipybox/tree/0.6.x) and can be obtained with `pip install ipybox<0.7`.
 
 ## Agent integration
 
