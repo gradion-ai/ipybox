@@ -10,7 +10,7 @@ site/
 /mcptools/
 /mcpparse/
 /codeact/
-/examples_draft/
+/examples_*/
 /sandbox.*
 .freeact/
 .mcpregistry*
