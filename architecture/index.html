@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://gradion-ai.github.io/ipybox/apigen/">
+        <link rel="canonical" href="https://gradion-ai.github.io/ipybox/architecture/">
       
       
-        <link rel="prev" href="../architecture/">
+        <link rel="prev" href="../quickstart/">
       
       
-        <link rel="next" href="../codeexec/">
+        <link rel="next" href="../apigen/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>API generation - ipybox</title>
+        <title>Architecture - ipybox</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#python-tool-api-generation" class="md-skip">
+        <a href="#architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -113,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API generation
+              Architecture
             
           </span>
         </div>
@@ -435,10 +435,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -454,6 +463,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -463,37 +473,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API generation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../apigen/" class="md-nav__link">
         
   
   
@@ -509,81 +492,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#stdio-servers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stdio servers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#http-servers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP servers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#environment-variable-substitution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment variable substitution
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generated-package-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generated package structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-the-generated-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using the generated API
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1173,69 +1081,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#stdio-servers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stdio servers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#http-servers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP servers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#environment-variable-substitution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment variable substitution
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#generated-package-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generated package structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-the-generated-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using the generated API
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1254,65 +1099,15 @@
   
 
 
-<h1 id="python-tool-api-generation">Python tool API generation</h1>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_mcp_sources</span>
-</code></pre></div>
-<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.generate_mcp_sources"><code>generate_mcp_sources()</code></a> generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic <code>Params</code> class, a <code>Result</code> class or <code>str</code> return type, and a <code>run()</code> function.</p>
-<h2 id="stdio-servers">Stdio servers</h2>
-<p>For MCP servers that run as local processes, specify <code>command</code>, <code>args</code>, and optional <code>env</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="n">brave_mcp_params</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;npx&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-y&quot;</span><span class="p">,</span> <span class="s2">&quot;@brave/brave-search-mcp-server&quot;</span><span class="p">,</span> <span class="s2">&quot;--transport&quot;</span><span class="p">,</span> <span class="s2">&quot;stdio&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BRAVE_API_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{BRAVE_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
-<span class="p">}</span>
-
-<span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
-    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
-    <span class="n">server_params</span><span class="o">=</span><span class="n">brave_mcp_params</span><span class="p">,</span>
-    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-<h2 id="http-servers">HTTP servers</h2>
-<p>For remote MCP servers over HTTP, specify <code>url</code> and optional <code>headers</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="n">github_mcp_params</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.githubcopilot.com/mcp/&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;headers&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer $</span><span class="si">{GITHUB_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
-<span class="p">}</span>
-
-<span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
-    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">,</span>
-    <span class="n">server_params</span><span class="o">=</span><span class="n">github_mcp_params</span><span class="p">,</span>
-    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>ipybox auto-detects the transport type from the URL. URLs containing <code>/mcp</code> use streamable HTTP, URLs containing <code>/sse</code> use SSE. You can also set <code>type</code> explicitly to <code>"streamable_http"</code> or <code>"sse"</code>.</p>
-<h2 id="environment-variable-substitution">Environment variable substitution</h2>
-<p>You can use <code>${VAR_NAME}</code> placeholders in <code>server_params</code> values. ipybox replaces them with the corresponding environment variable when connecting to the MCP server. This keeps secrets out of your code.</p>
-<h2 id="generated-package-structure">Generated package structure</h2>
-<p>The Brave Search MCP server <a href="#stdio-servers">example above</a> generates a package structure like this:</p>
-<div class="highlight"><pre><span></span><code>mcptools/
-└── brave_search/
-    ├── __init__.py
-    ├── brave_web_search.py
-    ├── brave_local_search.py
-    ├── brave_image_search.py
-    └── ...
-</code></pre></div>
-<p>For each MCP server tool, a separate Python module is generated, named after the tool.</p>
-<h2 id="using-the-generated-api">Using the generated API</h2>
-<p>Each module provides a typed interface for programmatic MCP tool calls:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">mcptools.brave_search.brave_image_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">Params</span><span class="p">,</span> <span class="n">Result</span><span class="p">,</span> <span class="n">run</span>
-
-<span class="c1"># Params validates input</span>
-<span class="n">params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="s2">&quot;neural topic models&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-
-<span class="c1"># run() calls the MCP tool and returns a Result (or str for untyped tools)</span>
-<span class="n">result</span><span class="p">:</span> <span class="n">Result</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-</code></pre></div>
-<p>The <code>Params</code> class is generated from the tool's input schema. Tools with an output schema get a typed <code>Result</code> class; others return <code>str</code>. The MCP tool itself is called via its <code>run()</code> function.</p>
+<h1 id="architecture">Architecture</h1>
+<p><code>CodeExecutor</code> coordinates three components: a Jupyter kernel for stateful Python execution, a tool server for MCP tool dispatch, and an approval channel for application-level tool call control. </p>
+<p>The application submits code to <code>CodeExecutor</code>, which forwards it to an IPython kernel running inside an optional sandbox. When that code calls a generated Python tool API function, the request routes to the tool server, which manages local (stdio) and remote (HTTP) MCP servers.</p>
+<p>Before executing any tool call, the tool server sends an approval request back through <code>CodeExecutor</code> to the application, blocking until it accepts or rejects. This separates code execution from tool execution, enforcing independent security boundaries: the kernel is network-isolated from MCP servers, and every tool call passes through the approval layer.</p>
+<figure>
+<p><img alt="Architecture" src="../images/architecture-dark.png" width="100%" />
+  </p>
+<figcaption><code>CodeExecutor</code> coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
+</figure>
 
 
 

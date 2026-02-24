@@ -412,10 +412,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#agent-integration" class="md-nav__link">
+  <a href="#capabilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Agent integration
+        Capabilities
       
     </span>
   </a>
@@ -423,10 +423,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Features
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent integration
       
     </span>
   </a>
@@ -485,6 +496,34 @@
     
   
     Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
   
 
     
@@ -605,10 +644,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
         
           
-          <label class="md-nav__link" for="__nav_1_7" id="__nav_1_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="">
             
   
   
@@ -626,8 +665,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -724,10 +763,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9" >
         
           
-          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_1_9" id="__nav_1_9_label" tabindex="">
             
   
   
@@ -745,8 +784,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_8">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1117,10 +1156,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#agent-integration" class="md-nav__link">
+  <a href="#capabilities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Agent integration
+        Capabilities
       
     </span>
   </a>
@@ -1128,10 +1167,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Features
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent integration
       
     </span>
   </a>
@@ -1158,36 +1208,83 @@
   
 
 
+<p><img alt="ipybox" src="images/ipybox-crop-nobg.png" style="margin-bottom: 1.5em" width="300" /></p>
 <h1 id="ipybox">ipybox</h1>
-<div class="admonition info">
-<p class="admonition-title">Next generation ipybox</p>
-<p>This is the next generation of ipybox, a complete rewrite. Older versions are maintained on the <a href="https://github.com/gradion-ai/ipybox/tree/0.6.x">0.6.x branch</a> and can be obtained with <code>pip install ipybox&lt;0.7</code>.</p>
-</div>
-<p>ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel, providing a stateful environment where variables and definitions persist across executions. The generated API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to explicitly accept or reject each tool call before it executes.</p>
-<figure>
-<p><img alt="Architecture" src="images/architecture-light-annotated.jpg" width="100%" />
-  </p>
-<figcaption><code>CodeExecutor</code> coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
-</figure>
+<p>ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates typed Python tool APIs from MCP server tool schemas, supporting both local stdio and remote HTTP servers. </p>
+<p>Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to accept or reject each tool call.</p>
+<h2 id="capabilities">Capabilities</h2>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stateful code execution</strong></td>
+<td>State persists across executions in IPython kernels</td>
+</tr>
+<tr>
+<td><strong>Lightweight sandboxing</strong></td>
+<td>Kernel isolation via Anthropic's <a href="https://github.com/anthropic-experimental/sandbox-runtime">sandbox-runtime</a></td>
+</tr>
+<tr>
+<td><strong>Programmatic MCP tool calling</strong></td>
+<td>MCP tools called via Python code, not JSON directly</td>
+</tr>
+<tr>
+<td><strong>MCP tool call approval</strong></td>
+<td>Every MCP tool call requires application-level approval</td>
+</tr>
+<tr>
+<td><strong>Python tool API generation</strong></td>
+<td>Functions and models generated from MCP tool schemas</td>
+</tr>
+<tr>
+<td><strong>Any MCP server</strong></td>
+<td>Supports stdio, Streamable HTTP, and SSE transports</td>
+</tr>
+<tr>
+<td><strong>Any Python package</strong></td>
+<td>Install and use any Python package in IPython kernels</td>
+</tr>
+<tr>
+<td><strong>Local code execution</strong></td>
+<td>No cloud dependencies, everything runs on your machine</td>
+</tr>
+</tbody>
+</table>
+<h2 id="usage">Usage</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><a href="api/code_executor/">Python SDK</a></strong></td>
+<td>Python API for building applications on ipybox</td>
+</tr>
+<tr>
+<td><strong><a href="mcpserver/">MCP server</a></strong></td>
+<td>ipybox as MCP server for code actions and programmatic tool calling</td>
+</tr>
+<tr>
+<td><strong><a href="ccplugin/">Claude Code plugin</a></strong></td>
+<td>Plugin that bundles the ipybox MCP server and a code action skill</td>
+</tr>
+</tbody>
+</table>
 <h2 id="agent-integration">Agent integration</h2>
-<p>ipybox is designed for agents that interact with their environment through <a href="https://arxiv.org/abs/2402.01030">code actions</a> rather than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code compared to JSON tool call post-training. Agents generate and execute Python code that composes multiple MCP tool calls into a single action, using loops, conditionals, and data transformations that keep intermediate results out of the agent's context window. Since agent-generated code cannot be trusted, it must run in a secure sandboxed environment, and all MCP tool calls must be approved by the application. ipybox supports both with minimal setup.</p>
+<p>ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls. This <a href="https://arxiv.org/abs/2402.01030">code action</a> approach enables tool composition and intermediate result processing in a single inference pass, keeping intermediate results out of the agent's context window.</p>
+<p>Code actions are also key for agents to improve themselves and their tool libraries by capturing successful experience as executable knowledge. Agent-generated code cannot be trusted and requires sandboxed execution with application-level approval for every MCP tool call.</p>
 <div class="admonition tip">
 <p class="admonition-title">freeact</p>
-<p>A code action agent built on ipybox is <a href="https://gradion-ai.github.io/freeact/">freeact</a>. In addition to inheriting the <a href="#features">features</a> of ipybox, it supports progressive loading of tools and <a href="https://agentskills.io">agent skills</a>, and can save successful code actions as tools, evolving its own tool library over time. </p>
+<p><a href="https://gradion-ai.github.io/freeact/">Freeact</a> is an agent harness and CLI tool built on ipybox.</p>
 </div>
-<h2 id="features">Features</h2>
-<ul>
-<li><strong>Stateful code execution</strong> — state persists across executions in IPython kernels</li>
-<li><strong>Lightweight sandboxing</strong> — kernel isolation via Anthropic's <a href="https://github.com/anthropic-experimental/sandbox-runtime">sandbox-runtime</a></li>
-<li><strong>Generated Python tool API</strong> — functions and models generated from MCP tool schemas</li>
-<li><strong>Programmatic MCP tool calling</strong> — MCP tools called via Python code, not JSON directly</li>
-<li><strong>MCP tool call approval</strong> — every MCP tool call requires application-level approval</li>
-<li><strong>Any MCP server</strong> — supports stdio, Streamable HTTP, and SSE transports</li>
-<li><strong>Any Python package</strong> — install and use any Python package in IPython kernels</li>
-<li><strong>Local code execution</strong> — no cloud dependencies, everything runs on your machine</li>
-<li><strong>Python SDK and MCP server</strong> — use ipybox programmatically or as an MCP server</li>
-<li><strong>Claude Code plugin</strong> — a plugin for <a href="ccplugin/">programmatic tool calling in Claude Code</a></li>
-</ul>
 
 
 

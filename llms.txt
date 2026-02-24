@@ -3,20 +3,24 @@
 > ipybox
 
 ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling.
-It generates a typed Python tool API from MCP server tool schemas, supporting both local stdio and
-remote HTTP servers. Code that calls the generated API executes in a sandboxed IPython kernel,
-providing a stateful environment where variables and definitions persist across executions. The
-generated API delegates MCP tool execution to a separate environment that enforces tool call
-approval, requiring applications to explicitly accept or reject each tool call before it executes.
-ipybox is designed for agents that interact with their environment through code actions rather
-than JSON tool calls, a more reliable approach since LLMs are heavily pretrained on Python code.
+It generates typed Python tool APIs from MCP server tool schemas, supporting both local stdio and
+remote HTTP servers.
+
+Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool
+execution to a separate environment that enforces tool call approval, requiring applications to accept
+or reject each tool call.
+
+ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls.
+This code action approach enables tool composition and intermediate result processing in a single
+inference pass, keeping intermediate results out of the agent's context window.
 
 
 ## User Guide
 
-- [Overview](https://gradion-ai.github.io/ipybox/index.md): Project overview and features
+- [Overview](https://gradion-ai.github.io/ipybox/index.md): Project overview and capabilities
 - [Installation](https://gradion-ai.github.io/ipybox/installation/index.md): Installation and setup instructions
 - [Quickstart](https://gradion-ai.github.io/ipybox/quickstart/index.md): Getting started guide
+- [Architecture](https://gradion-ai.github.io/ipybox/architecture/index.md): Architecture overview
 - [API generation](https://gradion-ai.github.io/ipybox/apigen/index.md): Generating typed Python API from MCP server schemas
 - [Code execution](https://gradion-ai.github.io/ipybox/codeexec/index.md): Stateful code execution in IPython kernels
 - [Sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md): Lightweight sandboxing with Anthropic's sandbox-runtime
