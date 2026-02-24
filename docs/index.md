@@ -6,16 +6,6 @@ ipybox is a Python code execution sandbox with first-class support for programma
 
 Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to accept or reject each tool call.
 
-## Agent integration
-
-ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls. This [code action](https://arxiv.org/abs/2402.01030) approach enables tool composition and intermediate result processing in a single inference pass, keeping intermediate results out of the agent's context window. 
-
-Code actions are also key for agents to improve themselves and their tool libraries by capturing successful experience as executable knowledge. Agent-generated code cannot be trusted and requires sandboxed execution with application-level approval for every MCP tool call.
-
-!!! tip "freeact"
-
-    [Freeact](https://gradion-ai.github.io/freeact/) is an agent harness and CLI tool built on ipybox.
-    
 ## Capabilities
 
 | Capability | Description |
@@ -36,3 +26,13 @@ Code actions are also key for agents to improve themselves and their tool librar
 | **[Python SDK](api/code_executor.md)** | Python API for building applications on ipybox |
 | **[MCP server](mcpserver.md)** | ipybox as MCP server for code actions and programmatic tool calling |
 | **[Claude Code plugin](ccplugin.md)** | Plugin that bundles the ipybox MCP server and a code action skill |
+
+## Agent integration
+
+ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls. This [code action](https://arxiv.org/abs/2402.01030) approach enables tool composition and intermediate result processing in a single inference pass, keeping intermediate results out of the agent's context window.
+
+Code actions are also key for agents to improve themselves and their tool libraries by capturing successful experience as executable knowledge. Agent-generated code cannot be trusted and requires sandboxed execution with application-level approval for every MCP tool call.
+
+!!! tip "freeact"
+
+    [Freeact](https://gradion-ai.github.io/freeact/) is an agent harness and CLI tool built on ipybox.
