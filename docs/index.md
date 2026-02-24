@@ -6,11 +6,6 @@ ipybox is a Python code execution sandbox with first-class support for programma
 
 Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to accept or reject each tool call.
 
-<figure markdown>
-  ![Architecture](images/architecture-dark.png){ width="100%" }
-  <figcaption><code>CodeExecutor</code> coordinates sandboxed code execution, tool execution, and tool call approval.</figcaption>
-</figure>
-
 ## Agent integration
 
 ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls. This [code action](https://arxiv.org/abs/2402.01030) approach enables tool composition and intermediate result processing in a single inference pass, keeping intermediate results out of the agent's context window. 

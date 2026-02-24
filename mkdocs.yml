@@ -53,6 +53,7 @@ plugins:
           - index.md: Project overview and capabilities
           - installation.md: Installation and setup instructions
           - quickstart.md: Getting started guide
+          - architecture.md: Architecture overview
           - apigen.md: Generating typed Python API from MCP server schemas
           - codeexec.md: Stateful code execution in IPython kernels
           - sandbox.md: Lightweight sandboxing with Anthropic's sandbox-runtime
@@ -109,6 +110,7 @@ nav:
     - Overview: index.md
     - Installation: installation.md
     - Quickstart: quickstart.md
+    - Architecture: architecture.md
     - API generation: apigen.md
     - Code execution: codeexec.md
     - Sandboxing: sandbox.md

@@ -18,13 +18,10 @@ mcp-name: io.github.gradion-ai/ipybox
 
 Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to accept or reject each tool call.
 
-![Architecture](docs/images/architecture-dark.png)
-
-*`CodeExecutor` coordinates sandboxed code execution, tool execution, and tool call approval.*
-
 ## Documentation:
 
 - 📚 [Documentation](https://gradion-ai.github.io/ipybox/)
+- 🏗️ [Architecture](https://gradion-ai.github.io/ipybox/architecture/)
 - 🤖 [llms.txt](https://gradion-ai.github.io/ipybox/llms.txt)
 - 🤖 [llms-full.txt](https://gradion-ai.github.io/ipybox/llms-full.txt)
 
