@@ -50,6 +50,7 @@ uv run pytest -xsv tests/integration/test_[name].py::test_name  # Single test
 - All function parameters and return types must have type hints
 - Modern union syntax: `str | None` instead of `Optional[str]`
 - Prefer `match`/`case` over `isinstance()` for type dispatch
+- Package `__init__.py` files are re-exports only; do not define functions or classes in them
 
 ## Commit & Pull Request Guidelines
 - Do not include test plan in PR messages
