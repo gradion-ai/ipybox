@@ -5,6 +5,7 @@
 - Project description: `docs/index.md`
 - Internal documentation:
   - Architecture: `docs/internal/architecture.md`
+  - Testing: `docs/internal/testing.md`
 - Source modules:
   - `ipybox/code_exec.py`: CodeExecutor, main API
   - `ipybox/kernel_mgr/`: KernelGateway and KernelClient
