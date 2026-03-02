@@ -5,6 +5,7 @@ __pycache__
 .mypy_cache/
 .vscode/
 .venv/
+.claude/worktrees/
 site/
 /images/
 /mcptools/
