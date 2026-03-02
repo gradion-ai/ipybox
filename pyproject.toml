@@ -13,6 +13,7 @@ dependencies = [
     "aiohttp>=3.13.2",
     "datamodel-code-generator>=0.49.0",
     "fastapi>=0.121.2",
+    "ipykernel>=7.1.0",
     "jupyter-kernel-gateway>=3.0.1",
     "mcp>=1.21.2",
     "psutil>=7.1.3",
