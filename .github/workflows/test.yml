@@ -42,6 +42,10 @@ jobs:
           uv sync --locked --all-extras --dev
           uv pip list
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
-          uv run pytest -s tests
+          uv run invoke ut
+
+      - name: Run integration tests
+        run: |
+          uv run invoke it --parallel
