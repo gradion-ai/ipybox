@@ -306,6 +306,8 @@ class CodeExecutor:
 
         Returns:
             The execution result containing output text and generated images.
+                If the execution was [cancelled][ipybox.code_exec.CodeExecutor.cancel],
+                returns a result with `text=None` and empty `images`.
 
         Raises:
             CodeExecutionError: If code execution raises an error.
