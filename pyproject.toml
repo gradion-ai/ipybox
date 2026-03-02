@@ -55,22 +55,15 @@ dev = [
 ipybox = "ipybox.mcp_server:cli"
 
 [build-system]
-requires = ["hatchling", "uv-dynamic-versioning"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=80.9.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.hatch.version]
-source = "uv-dynamic-versioning"
+[tool.setuptools.dynamic]
+version = {attr = "ipybox.__version__"}
 
-[tool.uv-dynamic-versioning]
-vcs = "git"
-pattern = "default-unprefixed"
-style = "pep440"
-
-[tool.hatch.build.targets.sdist]
-include = ["ipybox"]
-
-[tool.hatch.build.targets.wheel]
-include = ["ipybox"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ipybox*"]
 
 [tool.ruff]
 line-length = 120
