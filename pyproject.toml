@@ -59,7 +59,7 @@ requires = ["setuptools>=80.9.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-version = {attr = "ipybox.__version__"}
+version = {attr = "ipybox.__version__.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
