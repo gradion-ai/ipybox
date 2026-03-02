@@ -153,6 +153,7 @@ class CodeExecutor:
 
         self._exit_stack = AsyncExitStack()
         self._client: KernelClient
+        self._cancel_event: asyncio.Event | None = None
 
     async def __aenter__(self):
         await self.start()
@@ -189,8 +190,24 @@ class CodeExecutor:
         )
         await self._client.reset()
 
+    def cancel(self):
+        """Cancel the currently running execution.
+
+        Signals the active [`stream`][ipybox.code_exec.CodeExecutor.stream] or
+        [`execute`][ipybox.code_exec.CodeExecutor.execute] call to interrupt the
+        kernel and return cleanly without raising an exception. Safe to call
+        from any coroutine in the same event loop.
+
+        Has no effect if no execution is in progress.
+        """
+        if self._cancel_event is not None:
+            self._cancel_event.set()
+
     async def stream(
-        self, code: str, timeout: float | None = None, chunks: bool = False
+        self,
+        code: str,
+        timeout: float | None = None,
+        chunks: bool = False,
     ) -> AsyncIterator[ApprovalRequest | CodeExecutionChunk | CodeExecutionResult]:
         """Execute Python code in the IPython kernel with MCP tool call approval.
 
@@ -201,6 +218,9 @@ class CodeExecutor:
         If accepted, the tool executes on the
         [`ToolServer`][ipybox.tool_exec.server.ToolServer] and returns the
         result to the kernel. If rejected, the tool call fails with an error.
+
+        Use [`cancel`][ipybox.code_exec.CodeExecutor.cancel] to stop execution
+        and return cleanly from a concurrent coroutine.
 
         Args:
             code: Python code to execute.
@@ -230,8 +250,9 @@ class CodeExecutor:
             asyncio.TimeoutError: If code execution exceeds the timeout (excluding
                 approval wait time).
         """
+        self._cancel_event = asyncio.Event()
         worker = _StreamWorker(lambda: self._client.stream(code, timeout=None))
-        budget = _build_budget(timeout, worker.queue)
+        budget = _build_budget(timeout, worker.queue, cancel=self._cancel_event)
 
         async with ApprovalClient(
             callback=worker.queue.put,
@@ -244,6 +265,10 @@ class CodeExecutor:
                 while True:
                     item = await budget.next_item()
                     match item:
+                        case _Cancelled():
+                            finalize_timeout = 2.0
+                            await self._client.interrupt_and_drain()
+                            break
                         case ApprovalRequest():
                             budget.pause()
                             item.on_decision(budget.on_decision)
@@ -257,14 +282,12 @@ class CodeExecutor:
                         case ExecutionResult():
                             yield CodeExecutionResult(text=item.text, images=item.images)
                             break
-            except asyncio.TimeoutError:
+            except (asyncio.TimeoutError, asyncio.CancelledError):
                 finalize_timeout = 2.0
                 await self._client.interrupt_and_drain()
                 raise
-            except asyncio.CancelledError:
-                finalize_timeout = 2.0
-                raise
             finally:
+                self._cancel_event = None
                 await budget.cancel_pending()
                 await worker.finalize(timeout=finalize_timeout)
 
@@ -296,7 +319,8 @@ class CodeExecutor:
                 case CodeExecutionResult():
                     return item
 
-        raise RuntimeError("Code execution completed without result")
+        # Stream ended without a result (cancelled)
+        return CodeExecutionResult(text=None, images=[])
 
     @asynccontextmanager
     async def _executor(self) -> AsyncIterator[KernelClient]:
@@ -335,8 +359,13 @@ class _NoTimeoutBudget:
     uniform interface regardless of whether a timeout is configured.
     """
 
-    def __init__(self, queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]):
+    def __init__(
+        self,
+        queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception],
+        cancel: asyncio.Event | None = None,
+    ):
         self._queue = queue
+        self._cancel = cancel
 
     def pause(self):
         return
@@ -345,13 +374,59 @@ class _NoTimeoutBudget:
         return
 
     async def next_item(self):
-        return await self._queue.get()
+        if self._cancel is None:
+            return await self._queue.get()
+
+        if self._cancel.is_set():
+            return _CANCELLED
+
+        queue_getter = asyncio.create_task(self._queue.get())
+        cancel_waiter = asyncio.create_task(self._cancel.wait())
+        done = await _race(queue_getter, cancel_waiter)
+
+        if queue_getter in done and not queue_getter.cancelled():
+            return queue_getter.result()
+
+        return _CANCELLED
 
     async def cancel_pending(self):
         return
 
 
-_RESUMED = object()
+class _Resumed:
+    pass
+
+
+class _Cancelled:
+    pass
+
+
+_RESUMED = _Resumed()
+_CANCELLED = _Cancelled()
+
+
+async def _race(*tasks: asyncio.Task, timeout: float | None = None) -> set[asyncio.Task]:
+    """Race tasks, returning the done set. Cancels and awaits losers on completion."""
+    all_tasks = set(tasks)
+    try:
+        done, _ = await asyncio.wait(
+            all_tasks,
+            timeout=timeout,
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+    except BaseException:
+        for t in all_tasks:
+            t.cancel()
+        await asyncio.gather(*all_tasks, return_exceptions=True)
+        raise
+    for t in all_tasks:
+        if not t.done():
+            t.cancel()
+            try:
+                await t
+            except asyncio.CancelledError:
+                pass
+    return done
 
 
 class _TimedBudget:
@@ -361,9 +436,15 @@ class _TimedBudget:
     by approval decisions so only kernel/tool execution time counts.
     """
 
-    def __init__(self, timeout: float, queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]):
+    def __init__(
+        self,
+        timeout: float,
+        queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception],
+        cancel: asyncio.Event | None = None,
+    ):
         self.timeout = timeout
         self._queue = queue
+        self._cancel = cancel
         self._message = f"Code execution exceeded timeout of {timeout:.2f}s (approval wait excluded)."
         self._deadline = time.monotonic() + timeout
         self._paused = False
@@ -383,17 +464,36 @@ class _TimedBudget:
 
     async def next_item(self):
         while self._paused:
-            item = await self._wait_while_paused()
-            if item is not _RESUMED:
-                return item
+            match await self._wait_while_paused():
+                case _Resumed():
+                    continue
+                case item:
+                    return item
+
+        if self._cancel is not None and self._cancel.is_set():
+            return _CANCELLED
 
         remaining = self._deadline - time.monotonic()
         if remaining <= 0:
             raise asyncio.TimeoutError(self._message)
-        try:
-            return await asyncio.wait_for(self._queue.get(), timeout=remaining)
-        except asyncio.TimeoutError as exc:
-            raise asyncio.TimeoutError(self._message) from exc
+
+        if self._cancel is None:
+            try:
+                return await asyncio.wait_for(self._queue.get(), timeout=remaining)
+            except asyncio.TimeoutError as exc:
+                raise asyncio.TimeoutError(self._message) from exc
+
+        queue_getter = asyncio.create_task(self._queue.get())
+        cancel_waiter = asyncio.create_task(self._cancel.wait())
+        done = await _race(queue_getter, cancel_waiter, timeout=remaining)
+
+        if not done:
+            raise asyncio.TimeoutError(self._message)
+
+        if queue_getter in done and not queue_getter.cancelled():
+            return queue_getter.result()
+
+        return _CANCELLED
 
     async def cancel_pending(self):
         return
@@ -403,26 +503,25 @@ class _TimedBudget:
             self._apply_resume()
             return _RESUMED
 
+        if self._cancel is not None and self._cancel.is_set():
+            return _CANCELLED
+
         resume_waiter = asyncio.create_task(self._resume_event.wait())
         queue_getter = asyncio.create_task(self._queue.get())
-        try:
-            done, _ = await asyncio.wait(
-                {resume_waiter, queue_getter},
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-        except BaseException:
-            resume_waiter.cancel()
-            queue_getter.cancel()
-            await asyncio.gather(resume_waiter, queue_getter, return_exceptions=True)
-            raise
 
-        for task in (resume_waiter, queue_getter):
-            if not task.done():
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
+        cancel_waiter: asyncio.Task | None = None
+        if self._cancel is not None:
+            cancel_waiter = asyncio.create_task(self._cancel.wait())
+            done = await _race(resume_waiter, queue_getter, cancel_waiter)
+        else:
+            done = await _race(resume_waiter, queue_getter)
+
+        if cancel_waiter is not None and cancel_waiter in done:
+            # Re-enqueue any concurrently arrived item so it is not lost.
+            # Safe because this is a single-consumer queue.
+            if queue_getter.done() and not queue_getter.cancelled():
+                await self._queue.put(queue_getter.result())
+            return _CANCELLED
 
         if resume_waiter in done:
             self._apply_resume()
@@ -484,8 +583,12 @@ class _StreamWorker:
             await self.queue.put(exc)
 
 
-def _build_budget(timeout: float | None, queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception]):
+def _build_budget(
+    timeout: float | None,
+    queue: asyncio.Queue[ApprovalRequest | str | ExecutionResult | Exception],
+    cancel: asyncio.Event | None = None,
+):
     """Create the appropriate budget strategy for the given timeout."""
     if timeout is None:
-        return _NoTimeoutBudget(queue)
-    return _TimedBudget(timeout, queue)
+        return _NoTimeoutBudget(queue, cancel=cancel)
+    return _TimedBudget(timeout, queue, cancel=cancel)
