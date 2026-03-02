@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from ipybox.code_exec import _NoTimeoutBudget, _StreamWorker, _TimedBudget
+from ipybox.code_exec import _CANCELLED, _NoTimeoutBudget, _StreamWorker, _TimedBudget
 
 
 @pytest.mark.asyncio
@@ -128,6 +128,143 @@ async def test_budget_paused_wait_cleans_up_on_cancel():
     await queue.put("ok")
     item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
     assert item == "ok"
+
+
+@pytest.mark.asyncio
+async def test_no_timeout_budget_cancel_already_set():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    cancel.set()
+    budget = _NoTimeoutBudget(queue, cancel=cancel)
+
+    item = await budget.next_item()
+    assert item is _CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_no_timeout_budget_cancel_during_wait():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _NoTimeoutBudget(queue, cancel=cancel)
+
+    async def set_cancel():
+        await asyncio.sleep(0.05)
+        cancel.set()
+
+    task = asyncio.create_task(set_cancel())
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item is _CANCELLED
+    await task
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_cancel_already_set():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    cancel.set()
+    budget = _TimedBudget(1.0, queue, cancel=cancel)
+
+    item = await budget.next_item()
+    assert item is _CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_cancel_during_wait():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _TimedBudget(5.0, queue, cancel=cancel)
+
+    async def set_cancel():
+        await asyncio.sleep(0.05)
+        cancel.set()
+
+    task = asyncio.create_task(set_cancel())
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item is _CANCELLED
+    await task
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_timeout_still_works_with_cancel():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _TimedBudget(0.05, queue, cancel=cancel)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await budget.next_item()
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_cancel_while_paused():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _TimedBudget(5.0, queue, cancel=cancel)
+    budget.pause()
+
+    async def set_cancel():
+        await asyncio.sleep(0.05)
+        cancel.set()
+
+    task = asyncio.create_task(set_cancel())
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item is _CANCELLED
+    await task
+
+
+@pytest.mark.asyncio
+async def test_no_timeout_budget_queue_wins_over_cancel():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _NoTimeoutBudget(queue, cancel=cancel)
+    await queue.put("fast")
+
+    # Queue item is already available, cancel is not set
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item == "fast"
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_queue_wins_over_cancel():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _TimedBudget(5.0, queue, cancel=cancel)
+    await queue.put("fast")
+
+    # Queue item is already available, cancel is not set
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item == "fast"
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_cancel_already_set_while_paused():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _TimedBudget(5.0, queue, cancel=cancel)
+    budget.pause()
+    cancel.set()
+
+    # Cancel is already set when _wait_while_paused checks the fast-path
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item is _CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_timed_budget_cancel_while_paused_requeues_item():
+    queue: asyncio.Queue = asyncio.Queue()
+    cancel = asyncio.Event()
+    budget = _TimedBudget(5.0, queue, cancel=cancel)
+    budget.pause()
+
+    # Put an item and set cancel concurrently so both complete during the race
+    await queue.put("item")
+    cancel.set()
+
+    item = await asyncio.wait_for(budget.next_item(), timeout=1.0)
+    assert item is _CANCELLED
+
+    # The queue item should have been re-enqueued
+    assert not queue.empty()
+    assert queue.get_nowait() == "item"
 
 
 @pytest.mark.asyncio

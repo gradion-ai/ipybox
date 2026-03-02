@@ -397,6 +397,97 @@ class TestExecutorLifecycle:
         assert result.text == "after reset"
 
 
+class TestCancellation:
+    """Tests for cancel() and interrupt() support."""
+
+    @pytest.mark.asyncio
+    async def test_cancel_during_execution(self, code_executor: CodeExecutor):
+        """Test that cancel() stops execution without raising."""
+
+        async def do_cancel():
+            await asyncio.sleep(0.3)
+            code_executor.cancel()
+
+        task = asyncio.create_task(do_cancel())
+        results = []
+        async for item in code_executor.stream("import time; time.sleep(10)"):
+            match item:
+                case CodeExecutionResult():
+                    results.append(item)
+
+        await task
+        assert len(results) == 0
+
+    @pytest.mark.asyncio
+    async def test_executor_usable_after_cancel(self, code_executor: CodeExecutor):
+        """Test that the executor works normally after a cancellation."""
+
+        async def do_cancel():
+            await asyncio.sleep(0.3)
+            code_executor.cancel()
+
+        task = asyncio.create_task(do_cancel())
+        async for _ in code_executor.stream("import time; time.sleep(10)"):
+            pass
+        await task
+
+        await asyncio.sleep(0.5)
+
+        result = await code_executor.execute("print('recovered')")
+        assert result.text == "recovered"
+
+    @pytest.mark.asyncio
+    async def test_cancel_during_approval_wait(self, code_executor: CodeExecutor):
+        """Test that cancellation during an approval wait ends the stream cleanly."""
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+result = run(Params(s="hello"))
+print(result)
+"""
+        items = []
+        async for item in code_executor.stream(code):
+            match item:
+                case ApprovalRequest():
+                    code_executor.cancel()
+                case _:
+                    items.append(item)
+
+        assert not any(isinstance(i, CodeExecutionResult) for i in items)
+
+    @pytest.mark.asyncio
+    async def test_cancel_with_timeout(self, code_executor: CodeExecutor):
+        """Test that cancel fires before timeout, returning without TimeoutError."""
+
+        async def do_cancel():
+            await asyncio.sleep(0.3)
+            code_executor.cancel()
+
+        task = asyncio.create_task(do_cancel())
+        results = []
+        async for item in code_executor.stream("import time; time.sleep(10)", timeout=5.0):
+            match item:
+                case CodeExecutionResult():
+                    results.append(item)
+
+        await task
+        assert len(results) == 0
+
+    @pytest.mark.asyncio
+    async def test_cancel_execute(self, code_executor: CodeExecutor):
+        """Test that cancel() works with execute() returning empty result."""
+
+        async def do_cancel():
+            await asyncio.sleep(0.3)
+            code_executor.cancel()
+
+        task = asyncio.create_task(do_cancel())
+        result = await code_executor.execute("import time; time.sleep(10)")
+        await task
+
+        assert result.text is None
+        assert result.images == []
+
+
 @pytest.mark.skipif(sys.platform != "darwin", reason="Sandbox tests only run on macOS")
 class TestSandbox:
     """Tests for sandbox configuration."""
