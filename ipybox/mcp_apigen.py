@@ -15,57 +15,40 @@ from datamodel_code_generator.parser.jsonschema import JsonSchemaParser
 
 from ipybox.mcp_client import MCPClient
 
-INIT_TEMPLATE = """
+
+def generate_init_definition(server_name: str, server_params: dict[str, Any]) -> str:
+    return f"""\
 import os
 from ipybox.tool_exec.client import ToolRunner
 
 CLIENT = ToolRunner(
-    server_name="{server_name}",
-    server_params={server_params},
+    server_name={repr(server_name)},
+    server_params={repr(server_params)},
     host=os.environ.get("TOOL_SERVER_HOST", "localhost"),
     port=int(os.environ.get("TOOL_SERVER_PORT", "8900")),
 )
 """
 
-FUNCTION_TEMPLATE_UNSTRUCTURED = '''
-from . import CLIENT
 
-def run(params: Params) -> str:
-    """{description}
-    """
-    return CLIENT.run_sync(tool_name="{original_name}", tool_args=params.model_dump(exclude_none=True))
-'''
-
-FUNCTION_TEMPLATE_STRUCTURED = '''
+def generate_function_definition(original_name: str, description: str, structured_output: bool) -> str:
+    name = repr(original_name)
+    desc = repr(description)
+    if structured_output:
+        return f"""\
 from . import CLIENT
 
 def run(params: Params) -> Result:
-    """{description}
-    """
-    result = CLIENT.run_sync(tool_name="{original_name}", tool_args=params.model_dump(exclude_none=True))
+    {desc}
+    result = CLIENT.run_sync(tool_name={name}, tool_args=params.model_dump(exclude_none=True))
     return Result.model_validate(result)
-'''
+"""
+    return f"""\
+from . import CLIENT
 
-
-def generate_init_definition(server_name: str, server_params: dict[str, Any]):
-    return INIT_TEMPLATE.format(server_name=server_name, server_params=server_params)
-
-
-def indent_description(description: str, indent: str = "    ") -> str:
-    """Indent all lines of a description after the first line."""
-    lines = description.split("\n")
-    if len(lines) <= 1:
-        return description
-    return lines[0] + "\n" + "\n".join(indent + line if line else line for line in lines[1:])
-
-
-def generate_function_definition(original_name: str, description: str, structured_output: bool) -> str:
-    template = FUNCTION_TEMPLATE_STRUCTURED if structured_output else FUNCTION_TEMPLATE_UNSTRUCTURED
-    indented_description = indent_description(description)
-    return template.format(
-        original_name=original_name,
-        description=indented_description.replace('"""', '\\"\\"\\"'),
-    )
+def run(params: Params) -> str:
+    {desc}
+    return CLIENT.run_sync(tool_name={name}, tool_args=params.model_dump(exclude_none=True))
+"""
 
 
 def generate_input_model_code(schema: dict[str, Any]) -> str:
