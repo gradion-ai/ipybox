@@ -61,7 +61,6 @@ plugins:
           - ccplugin.md: a plugin for programmatic tool calling in Claude Code
         API Reference:
           - api/code_executor.md: CodeExecutor high-level API
-          - api/tool_executor.md: ToolRunner and ToolServer low-level API
           - api/kernel_manager.md: KernelGateway and KernelClient low-level API
   - mkdocstrings:
       default_handler: python
@@ -106,7 +105,7 @@ extra_css:
   - stylesheets/extra.css
 
 nav:
-  - User Guide:
+  - Documentation:
     - Overview: index.md
     - Installation: installation.md
     - Quickstart: quickstart.md
@@ -124,5 +123,4 @@ nav:
     - High-level API:
       - Code Executor: api/code_executor.md
     - Low-level API:
-      - Tool Executor: api/tool_executor.md
       - Kernel Manager: api/kernel_manager.md

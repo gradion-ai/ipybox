@@ -8,13 +8,18 @@ The published architecture overview is in `docs/architecture.md`.
 - `ipybox/code_exec.py`: `CodeExecutor` - main API, orchestrates kernel and tool execution
 - `ipybox/kernel_mgr/server.py`: `KernelGateway` - manages Jupyter Kernel Gateway subprocess
 - `ipybox/kernel_mgr/client.py`: `KernelClient` - WebSocket client for kernel communication
-- `ipybox/tool_exec/server.py`: `ToolServer` - FastAPI server managing MCP servers and tool calls
-- `ipybox/tool_exec/client.py`: `ToolRunner` - client for executing MCP tools on ToolServer
-- `ipybox/tool_exec/approval/server.py`: `ApprovalChannel` - server-side approval request workflow
-- `ipybox/tool_exec/approval/client.py`: `ApprovalClient` - client-side approval handling
-- `ipybox/mcp_apigen.py`: `generate_mcp_sources()` - generates typed Python wrappers from MCP schemas
 - `ipybox/mcp_server.py`: `IpyboxMCPServer` - MCP server exposing ipybox capabilities
-- `ipybox/mcp_client.py`: `MCPClient` - generic MCP client (stdio, SSE, streamable HTTP)
+
+## mcpygen Dependency
+
+The following modules have been extracted to the [mcpygen](https://github.com/gradion-ai/mcpygen) package:
+
+- `mcpygen.tool_exec.server`: `ToolServer` - FastAPI server managing MCP servers and tool calls
+- `mcpygen.tool_exec.client`: `ToolRunner` - client for executing MCP tools on ToolServer
+- `mcpygen.tool_exec.approval.server`: `ApprovalChannel` - server-side approval request workflow
+- `mcpygen.tool_exec.approval.client`: `ApprovalClient` - client-side approval handling
+- `mcpygen.apigen`: `generate_mcp_sources()` - generates typed Python wrappers from MCP schemas
+- `mcpygen.client`: `MCPClient` - generic MCP client (stdio, SSE, streamable HTTP)
 
 ## Execution Flow
 
