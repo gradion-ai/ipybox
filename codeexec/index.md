@@ -25,7 +25,7 @@ For application-level approval control, use `stream()` instead.
 
 ## Tool call approval
 
-When code calls the [generated Python tool API](https://gradion-ai.github.io/ipybox/apigen/index.md), ipybox suspends execution and yields an ApprovalRequest. You must call `accept()` to continue execution:
+When code calls the [generated Python tool API](https://gradion-ai.github.io/ipybox/apigen/index.md), ipybox suspends execution and yields an `ApprovalRequest`. You must call `accept()` to continue execution:
 
 ```
 code = """

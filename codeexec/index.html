@@ -208,7 +208,7 @@
           
   
   
-  User Guide
+  Documentation
 
         </a>
       </li>
@@ -325,7 +325,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
+    Documentation
   
 
     
@@ -341,7 +341,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    User Guide
+    Documentation
   
 
           </label>
@@ -1122,34 +1122,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/tool_executor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../api/kernel_manager/" class="md-nav__link">
         
   
@@ -1337,7 +1309,7 @@
 </code></pre></div>
 <p>For application-level approval control, use <code>stream()</code> instead.</p>
 <h2 id="tool-call-approval">Tool call approval</h2>
-<p>When code calls the <a href="../apigen/">generated Python tool API</a>, ipybox suspends execution and yields an <a class="autorefs autorefs-internal" href="../api/tool_executor/#ipybox.tool_exec.approval.client.ApprovalRequest"><code>ApprovalRequest</code></a>. You must call <code>accept()</code> to continue execution:</p>
+<p>When code calls the <a href="../apigen/">generated Python tool API</a>, ipybox suspends execution and yields an <code>ApprovalRequest</code>. You must call <code>accept()</code> to continue execution:</p>
 <div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>
 

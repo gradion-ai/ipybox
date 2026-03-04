@@ -30,6 +30,5 @@ inference pass, keeping intermediate results out of the agent's context window.
 ## API Reference
 
 - [Code Executor](https://gradion-ai.github.io/ipybox/api/code_executor/index.md): CodeExecutor high-level API
-- [Tool Executor](https://gradion-ai.github.io/ipybox/api/tool_executor/index.md): ToolRunner and ToolServer low-level API
 - [Kernel Manager](https://gradion-ai.github.io/ipybox/api/kernel_manager/index.md): KernelGateway and KernelClient low-level API
 

@@ -202,7 +202,7 @@
           
   
   
-  User Guide
+  Documentation
 
         </a>
       </li>
@@ -314,7 +314,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
+    Documentation
   
 
     
@@ -330,7 +330,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    User Guide
+    Documentation
   
 
           </label>
@@ -970,34 +970,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/tool_executor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../api/kernel_manager/" class="md-nav__link">
         
   
@@ -1083,17 +1055,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#integration-test-fixtures-testsintegrationconftestpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration test fixtures (tests/integration/conftest.py)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#test-mcp-server-testsintegrationmcp_serverpy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1135,13 +1096,6 @@
 <ul>
 <li>Unit tests (<code>tests/unit/</code>): no external dependencies, no real servers</li>
 <li>Integration tests (<code>tests/integration/</code>): real Jupyter kernels, MCP servers, network</li>
-</ul>
-<h2 id="integration-test-fixtures-testsintegrationconftestpy">Integration test fixtures (<code>tests/integration/conftest.py</code>)</h2>
-<ul>
-<li><code>ip_address</code> (package-scoped): primary non-loopback IP address for server binding</li>
-<li><code>stdio_server_params</code>: params dict for stdio MCP server (uses <code>STDIO_SERVER_PATH</code>)</li>
-<li><code>http_server_params</code>: params dict for streamable HTTP MCP server (starts real uvicorn)</li>
-<li><code>sse_server_params</code>: params dict for SSE MCP server (starts real uvicorn)</li>
 </ul>
 <h2 id="test-mcp-server-testsintegrationmcp_serverpy">Test MCP server (<code>tests/integration/mcp_server.py</code>)</h2>
 <ul>

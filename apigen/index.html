@@ -208,7 +208,7 @@
           
   
   
-  User Guide
+  Documentation
 
         </a>
       </li>
@@ -325,7 +325,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
+    Documentation
   
 
     
@@ -341,7 +341,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    User Guide
+    Documentation
   
 
           </label>
@@ -1089,34 +1089,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/tool_executor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../api/kernel_manager/" class="md-nav__link">
         
   
@@ -1257,7 +1229,7 @@
 <h1 id="python-tool-api-generation">Python tool API generation</h1>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_mcp_sources</span>
 </code></pre></div>
-<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.generate_mcp_sources"><code>generate_mcp_sources()</code></a> generates a typed Python tool API from MCP server tool schemas. Each tool becomes a module with a Pydantic <code>Params</code> class, a <code>Result</code> class or <code>str</code> return type, and a <code>run()</code> function.</p>
+<p><code>generate_mcp_sources()</code> generates a typed Python tool API from MCP server tool schemas. API generation is provided by <a href="https://gradion-ai.github.io/mcpygen/">mcpygen</a> and re-exported by ipybox. Each tool becomes a module with a Pydantic <code>Params</code> class, a <code>Result</code> class or <code>str</code> return type, and a <code>run()</code> function.</p>
 <h2 id="stdio-servers">Stdio servers</h2>
 <p>For MCP servers that run as local processes, specify <code>command</code>, <code>args</code>, and optional <code>env</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="n">brave_mcp_params</span> <span class="o">=</span> <span class="p">{</span>

@@ -1,6 +1,6 @@
 import os
 
-from ipybox.tool_exec.client import ToolRunner
+from mcpygen.tool_exec.client import ToolRunner
 
 CLIENT = ToolRunner(
     server_name="github",

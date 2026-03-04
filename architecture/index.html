@@ -208,7 +208,7 @@
           
   
   
-  User Guide
+  Documentation
 
         </a>
       </li>
@@ -325,7 +325,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
+    Documentation
   
 
     
@@ -341,7 +341,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    User Guide
+    Documentation
   
 
           </label>
@@ -997,34 +997,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/tool_executor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../api/kernel_manager/" class="md-nav__link">
         
   
@@ -1103,6 +1075,10 @@
 <p><code>CodeExecutor</code> coordinates three components: a Jupyter kernel for stateful Python execution, a tool server for MCP tool dispatch, and an approval channel for application-level tool call control. </p>
 <p>The application submits code to <code>CodeExecutor</code>, which forwards it to an IPython kernel running inside an optional sandbox. When that code calls a generated Python tool API function, the request routes to the tool server, which manages local (stdio) and remote (HTTP) MCP servers.</p>
 <p>Before executing any tool call, the tool server sends an approval request back through <code>CodeExecutor</code> to the application, blocking until it accepts or rejects. This separates code execution from tool execution, enforcing independent security boundaries: the kernel is network-isolated from MCP servers, and every tool call passes through the approval layer.</p>
+<div class="admonition info">
+<p class="admonition-title">mcpygen</p>
+<p>The code generation and tool execution infrastructure is provided by <a href="https://gradion-ai.github.io/mcpygen/">mcpygen</a> and re-exported by ipybox.</p>
+</div>
 <figure>
 <p><img alt="Architecture" src="../images/architecture-dark.png" width="100%" />
   </p>

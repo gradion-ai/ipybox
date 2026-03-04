@@ -208,7 +208,7 @@
           
   
   
-  User Guide
+  Documentation
 
         </a>
       </li>
@@ -325,7 +325,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
+    Documentation
   
 
     
@@ -341,7 +341,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    User Guide
+    Documentation
   
 
           </label>
@@ -1139,34 +1139,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/tool_executor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../api/kernel_manager/" class="md-nav__link">
         
   
@@ -1443,7 +1415,7 @@
 </code></pre></div>
 <p>The <code>${BRAVE_API_KEY}</code> placeholder is replaced with the actual value from your environment when ipybox starts the MCP server.</p>
 <h3 id="generating-a-python-tool-api">Generating a Python tool API</h3>
-<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.generate_mcp_sources"><code>generate_mcp_sources()</code></a> connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:</p>
+<p><code>generate_mcp_sources()</code> connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:</p>
 <div class="highlight"><pre><span></span><code><span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
     <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
     <span class="n">server_params</span><span class="o">=</span><span class="n">SERVER_PARAMS</span><span class="p">,</span>
@@ -1465,16 +1437,16 @@
     <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">CODE</span><span class="p">):</span>
         <span class="o">...</span>
 </code></pre></div>
-<p>The <code>stream()</code> method yields events as execution progresses. You'll receive <a class="autorefs autorefs-internal" href="../api/tool_executor/#ipybox.tool_exec.approval.client.ApprovalRequest"><code>ApprovalRequest</code></a> events when the code calls an MCP tool, and a final <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> with the output.</p>
+<p>The <code>stream()</code> method yields events as execution progresses. You'll receive <code>ApprovalRequest</code> events when the code calls an MCP tool, and a final <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> with the output.</p>
 <h3 id="tool-call-approval">Tool call approval</h3>
-<p>When an MCP tool is called during code execution, ipybox pauses execution and sends an <a class="autorefs autorefs-internal" href="../api/tool_executor/#ipybox.tool_exec.approval.client.ApprovalRequest"><code>ApprovalRequest</code></a> to your application. You must explicitly approve or reject each tool call:</p>
+<p>When an MCP tool is called during code execution, ipybox pauses execution and sends an <code>ApprovalRequest</code> to your application. You must explicitly approve or reject each tool call:</p>
 <div class="highlight"><pre><span></span><code><span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">()</span> <span class="k">as</span> <span class="n">req</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">user_approves</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">reject</span><span class="p">()</span>
 </code></pre></div>
-<p>The <a class="autorefs autorefs-internal" href="../api/tool_executor/#ipybox.tool_exec.approval.client.ApprovalRequest"><code>ApprovalRequest</code></a> includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.</p>
+<p>The <code>ApprovalRequest</code> includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.</p>
 <h2 id="next-steps">Next steps</h2>
 <ul>
 <li><a href="../apigen/">API Generation</a> - Generating typed Python APIs from MCP tools</li>

@@ -202,7 +202,7 @@
           
   
   
-  User Guide
+  Documentation
 
         </a>
       </li>
@@ -314,7 +314,7 @@
   <span class="md-ellipsis">
     
   
-    User Guide
+    Documentation
   
 
     
@@ -330,7 +330,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    User Guide
+    Documentation
   
 
           </label>
@@ -970,34 +970,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/tool_executor/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Executor
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../api/kernel_manager/" class="md-nav__link">
         
   
@@ -1072,6 +1044,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mcpygen-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mcpygen Dependency
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#execution-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1121,13 +1104,17 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <li><code>ipybox/code_exec.py</code>: <code>CodeExecutor</code> - main API, orchestrates kernel and tool execution</li>
 <li><code>ipybox/kernel_mgr/server.py</code>: <code>KernelGateway</code> - manages Jupyter Kernel Gateway subprocess</li>
 <li><code>ipybox/kernel_mgr/client.py</code>: <code>KernelClient</code> - WebSocket client for kernel communication</li>
-<li><code>ipybox/tool_exec/server.py</code>: <code>ToolServer</code> - FastAPI server managing MCP servers and tool calls</li>
-<li><code>ipybox/tool_exec/client.py</code>: <code>ToolRunner</code> - client for executing MCP tools on ToolServer</li>
-<li><code>ipybox/tool_exec/approval/server.py</code>: <code>ApprovalChannel</code> - server-side approval request workflow</li>
-<li><code>ipybox/tool_exec/approval/client.py</code>: <code>ApprovalClient</code> - client-side approval handling</li>
-<li><code>ipybox/mcp_apigen.py</code>: <code>generate_mcp_sources()</code> - generates typed Python wrappers from MCP schemas</li>
 <li><code>ipybox/mcp_server.py</code>: <code>IpyboxMCPServer</code> - MCP server exposing ipybox capabilities</li>
-<li><code>ipybox/mcp_client.py</code>: <code>MCPClient</code> - generic MCP client (stdio, SSE, streamable HTTP)</li>
+</ul>
+<h2 id="mcpygen-dependency">mcpygen Dependency</h2>
+<p>The following modules have been extracted to the <a href="https://github.com/gradion-ai/mcpygen">mcpygen</a> package:</p>
+<ul>
+<li><code>mcpygen.tool_exec.server</code>: <code>ToolServer</code> - FastAPI server managing MCP servers and tool calls</li>
+<li><code>mcpygen.tool_exec.client</code>: <code>ToolRunner</code> - client for executing MCP tools on ToolServer</li>
+<li><code>mcpygen.tool_exec.approval.server</code>: <code>ApprovalChannel</code> - server-side approval request workflow</li>
+<li><code>mcpygen.tool_exec.approval.client</code>: <code>ApprovalClient</code> - client-side approval handling</li>
+<li><code>mcpygen.apigen</code>: <code>generate_mcp_sources()</code> - generates typed Python wrappers from MCP schemas</li>
+<li><code>mcpygen.client</code>: <code>MCPClient</code> - generic MCP client (stdio, SSE, streamable HTTP)</li>
 </ul>
 <h2 id="execution-flow">Execution Flow</h2>
 <ol>

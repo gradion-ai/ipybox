@@ -6,4 +6,8 @@ The application submits code to `CodeExecutor`, which forwards it to an IPython 
 
 Before executing any tool call, the tool server sends an approval request back through `CodeExecutor` to the application, blocking until it accepts or rejects. This separates code execution from tool execution, enforcing independent security boundaries: the kernel is network-isolated from MCP servers, and every tool call passes through the approval layer.
 
+mcpygen
+
+The code generation and tool execution infrastructure is provided by [mcpygen](https://gradion-ai.github.io/mcpygen/) and re-exported by ipybox.
+
 `CodeExecutor` coordinates sandboxed code execution, tool execution, and tool call approval.
