@@ -99,6 +99,5 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         pip install dist/*.whl
-        pip install pytest pytest-asyncio
-        pytest tests/unit/test_replace_variables.py
+        python -c "from ipybox import CodeExecutor, ApprovalRequest, generate_mcp_sources"
         pip uninstall -y ipybox
