@@ -9,13 +9,12 @@ from typing import Annotated, Any
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from mcpygen import ToolServer, generate_mcp_sources
+from mcpygen.tool_exec.client import reset
 from pydantic import Field
 
 from ipybox.kernel_mgr.client import KernelClient
 from ipybox.kernel_mgr.server import KernelGateway
-from ipybox.mcp_apigen import generate_mcp_sources
-from ipybox.tool_exec.client import reset
-from ipybox.tool_exec.server import ToolServer
 from ipybox.utils import find_free_port
 
 logger = logging.getLogger(__name__)

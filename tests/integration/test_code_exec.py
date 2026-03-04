@@ -6,8 +6,14 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from ipybox import ApprovalRequest, CodeExecutionChunk, CodeExecutionError, CodeExecutionResult, CodeExecutor
-from ipybox.mcp_apigen import generate_mcp_sources
+from ipybox import (
+    ApprovalRequest,
+    CodeExecutionChunk,
+    CodeExecutionError,
+    CodeExecutionResult,
+    CodeExecutor,
+    generate_mcp_sources,
+)
 from tests.integration.mcp_server import STDIO_SERVER_PATH
 
 MCP_SERVER_NAME = "test_mcp"

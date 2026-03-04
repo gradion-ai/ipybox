@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
+from mcpygen import MCPClient
 
-from ipybox.mcp_client import MCPClient
 from tests.integration.mcp_server import STDIO_SERVER_PATH
 
 MCP_SERVER_NAME = "test_mcp"
