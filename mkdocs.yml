@@ -49,7 +49,7 @@ plugins:
         inference pass, keeping intermediate results out of the agent's context window.
       full_output: llms-full.txt
       sections:
-        User Guide:
+        Documentation:
           - index.md: Project overview and capabilities
           - installation.md: Installation and setup instructions
           - quickstart.md: Getting started guide
