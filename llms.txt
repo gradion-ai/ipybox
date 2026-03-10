@@ -15,7 +15,7 @@ This code action approach enables tool composition and intermediate result proce
 inference pass, keeping intermediate results out of the agent's context window.
 
 
-## User Guide
+## Documentation
 
 - [Overview](https://gradion-ai.github.io/ipybox/index.md): Project overview and capabilities
 - [Installation](https://gradion-ai.github.io/ipybox/installation/index.md): Installation and setup instructions

@@ -15,7 +15,7 @@ This code action approach enables tool composition and intermediate result proce
 inference pass, keeping intermediate results out of the agent's context window.
 
 
-# User Guide
+# Documentation
 
 # ipybox
 
