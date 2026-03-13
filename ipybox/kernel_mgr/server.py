@@ -103,7 +103,8 @@ class KernelGateway:
         self._process = await asyncio.create_subprocess_exec(
             *cmd,
             env=process_env,
-            stdout=sys.stderr if self.log_to_stderr else None,
+            stdout=sys.stderr if self.log_to_stderr else asyncio.subprocess.DEVNULL,
+            stderr=sys.stderr if self.log_to_stderr else asyncio.subprocess.DEVNULL,
         )
 
     async def stop(self, timeout: float = 10):

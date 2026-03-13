@@ -1258,7 +1258,7 @@ docs = [
 requires-dist = [
     { name = "ipykernel", specifier = ">=7.1.0" },
     { name = "jupyter-kernel-gateway", specifier = ">=3.0.1" },
-    { name = "mcpygen", specifier = ">=0.1.0" },
+    { name = "mcpygen", specifier = ">=0.1.3" },
     { name = "psutil", specifier = ">=7.1.3" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
 ]
@@ -1864,7 +1864,7 @@ wheels = [
 
 [[package]]
 name = "mcpygen"
-version = "0.1.0"
+version = "0.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1877,9 +1877,9 @@ dependencies = [
     { name = "websockets" },
     { name = "wsproto" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/eb/7c0e00b1fb673492008d5289e059c387c26aed4ed34655e14254f68a25d6/mcpygen-0.1.0.tar.gz", hash = "sha256:0793cc453e55ccc1a0d0fe99f7fd5bc59e6cfedbb387a76261e966bc4862a5a2", size = 15646, upload-time = "2026-03-03T18:11:33.59Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/e5/f9e4180bf54adedae404920bbcdb4e1553f017f7634c323668c7f04cf54f/mcpygen-0.1.3.tar.gz", hash = "sha256:dc3e4087bc88a4831707c74d817b157a028d16598eda0f4066c6267932af539f", size = 15980, upload-time = "2026-03-13T08:26:23.305Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/db/afda933c67812497e92c831e1a19f2362257d19a37f02bbf7dfe7f6cbc10/mcpygen-0.1.0-py3-none-any.whl", hash = "sha256:c04ea32337bc09d435dbbe451c72e1812f0411eadef3c54159f0bff9f1e412a1", size = 20458, upload-time = "2026-03-03T18:11:32.172Z" },
+    { url = "https://files.pythonhosted.org/packages/be/7c/9dd9efa9c007914b1d3486d756ab77ef7a25e9904f12777d01d9ff4918e4/mcpygen-0.1.3-py3-none-any.whl", hash = "sha256:9b7d013c45b6c9c35b93ce93790681a85bb4698ea15c32671dc72ff4f1102c2f", size = 20756, upload-time = "2026-03-13T08:26:22.177Z" },
 ]
 
 [[package]]
