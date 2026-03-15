@@ -268,6 +268,51 @@ class TestStatePersistence:
         assert "NameError" in str(exc_info.value)
 
 
+class TestWorkingDirectory:
+    """Tests for working directory behavior across executions."""
+
+    @pytest.mark.asyncio
+    async def test_os_chdir_persists_without_working_dir(self, kernel_client: KernelClient, tmp_path: Path):
+        """Test os.chdir changes persist when no working_dir is configured."""
+        await kernel_client.execute(f"import os; os.chdir({str(tmp_path)!r})")
+
+        result = await kernel_client.execute("import os; print(os.getcwd())")
+        assert result.text == str(tmp_path.resolve())
+
+    @pytest.mark.asyncio
+    async def test_cd_magic_persists_without_working_dir(self, kernel_client: KernelClient, tmp_path: Path):
+        """Test %cd changes persist when no working_dir is configured."""
+        await kernel_client.execute(f"%cd {tmp_path}")
+
+        result = await kernel_client.execute("import os; print(os.getcwd())")
+        assert result.text == str(tmp_path.resolve())
+
+    @pytest.mark.asyncio
+    async def test_explicit_working_dir_overrides_gateway_start_dir(self, kernel_gateway, tmp_path: Path):
+        """Test KernelClient can enforce an explicit working directory."""
+        async with KernelClient(
+            host=kernel_gateway.host,
+            port=kernel_gateway.port,
+            working_dir=tmp_path,
+        ) as client:
+            result = await client.execute("import os; print(os.getcwd())")
+            assert result.text == str(tmp_path.resolve())
+
+    @pytest.mark.asyncio
+    async def test_explicit_working_dir_resets_and_prints_message(self, kernel_gateway, tmp_path: Path):
+        """Test explicit working_dir restores cwd and prints the reset message."""
+        async with KernelClient(
+            host=kernel_gateway.host,
+            port=kernel_gateway.port,
+            working_dir=tmp_path,
+        ) as client:
+            result = await client.execute("import os; os.chdir('/')")
+            assert result.text == f"[ipybox] cwd reset to {tmp_path.resolve()}"
+
+            result = await client.execute("import os; print(os.getcwd())")
+            assert result.text == str(tmp_path.resolve())
+
+
 class TestImageGeneration:
     """Tests for matplotlib image generation."""
 

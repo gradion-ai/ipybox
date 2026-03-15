@@ -1,4 +1,4 @@
-"""Test that _init_kernel suppresses colored output."""
+"""Tests for kernel initialization behavior."""
 
 import re
 
@@ -31,7 +31,7 @@ async def client(gateway, tmp_path):
         yield c
 
 
-class TestNoColorOutput:
+class TestKernelInitialization:
     @pytest.mark.asyncio
     async def test_traceback_no_ansi(self, client: KernelClient):
         with pytest.raises(ExecutionError) as exc_info:
@@ -54,10 +54,7 @@ class TestNoColorOutput:
 
     @pytest.mark.asyncio
     async def test_init_does_not_leak_variables(self, client: KernelClient):
-        with pytest.raises(ExecutionError) as exc_info:
-            await client.execute("print(_os)")
-        assert "NameError" in str(exc_info.value)
-
-        with pytest.raises(ExecutionError) as exc_info:
-            await client.execute("print(_k)")
-        assert "NameError" in str(exc_info.value)
+        for name in ("_os", "_k", "_ipybox_cwd", "_ipybox_restore_cwd"):
+            with pytest.raises(ExecutionError) as exc_info:
+                await client.execute(f"print({name})")
+            assert "NameError" in str(exc_info.value)

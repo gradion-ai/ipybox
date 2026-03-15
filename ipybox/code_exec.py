@@ -99,6 +99,7 @@ class CodeExecutor:
         kernel_gateway_host: str = "localhost",
         kernel_gateway_port: int | None = None,
         kernel_env: dict[str, str] | None = None,
+        working_dir: Path | None = None,
         images_dir: Path | None = None,
         approval_timeout: float | None = None,
         connect_timeout: float = 30,
@@ -119,6 +120,10 @@ class CodeExecutor:
             kernel_env: Environment variables to set for the IPython kernel.
                 Kernels do not inherit environment variables from the parent
                 process.
+            working_dir: Working directory for the kernel gateway and IPython
+                kernel. If set, ipybox restores the kernel to this directory
+                after each execution. If `None`, cwd changes persist until code
+                changes them again or the kernel is reset.
             images_dir: Directory for saving images generated during code
                 execution. Defaults to `images` in the current directory.
             approval_timeout: Timeout in seconds for approval requests. If an
@@ -140,6 +145,7 @@ class CodeExecutor:
 
         self.kernel_gateway_host = kernel_gateway_host
         self.kernel_gateway_port = kernel_gateway_port or find_free_port()
+        self.working_dir = working_dir.resolve() if working_dir is not None else None
         self.kernel_env = kernel_env or {}
         self.images_dir = images_dir
 
@@ -332,6 +338,7 @@ class CodeExecutor:
             async with KernelGateway(
                 host=self.kernel_gateway_host,
                 port=self.kernel_gateway_port,
+                working_dir=self.working_dir,
                 sandbox=self.sandbox,
                 sandbox_config=self.sandbox_config,
                 log_level=self.log_level,
@@ -344,6 +351,7 @@ class CodeExecutor:
                 async with KernelClient(
                     host=self.kernel_gateway_host,
                     port=self.kernel_gateway_port,
+                    working_dir=self.working_dir,
                     images_dir=self.images_dir,
                 ) as client:
                     yield client

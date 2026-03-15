@@ -116,14 +116,29 @@ async def kernel_reset():
     # --8<-- [end:kernel_reset]
 
 
-async def working_directory():
-    # --8<-- [start:working_directory]
-    async with CodeExecutor() as executor:
-        import os
+async def working_directory_reset():
+    # --8<-- [start:working_directory_reset]
+    base_dir = Path.cwd()
 
-        result = await executor.execute("import os; print(os.getcwd())")
-        assert result.text == os.getcwd()
-    # --8<-- [end:working_directory]
+    with tempfile.TemporaryDirectory() as changed_dir:
+        async with CodeExecutor(working_dir=base_dir) as executor:
+            result = await executor.execute(f"import os; os.chdir({changed_dir!r})")
+            assert result.text == f"[ipybox] cwd reset to {base_dir}"
+
+            result = await executor.execute("import os; print(os.getcwd())")
+            assert result.text == str(base_dir)
+    # --8<-- [end:working_directory_reset]
+
+
+async def working_directory_persistent():
+    # --8<-- [start:working_directory_persistent]
+    with tempfile.TemporaryDirectory() as changed_dir:
+        async with CodeExecutor() as executor:
+            await executor.execute(f"import os; os.chdir({changed_dir!r})")
+
+            result = await executor.execute("import os; print(os.getcwd())")
+            assert result.text == changed_dir
+    # --8<-- [end:working_directory_persistent]
 
 
 async def main():
@@ -134,7 +149,8 @@ async def main():
     await custom_timeouts()
     await kernel_environment()
     await kernel_reset()
-    await working_directory()
+    await working_directory_reset()
+    await working_directory_persistent()
 
 
 if __name__ == "__main__":

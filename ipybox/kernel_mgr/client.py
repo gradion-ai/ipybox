@@ -3,6 +3,7 @@ import logging
 import time
 from base64 import b64decode
 from dataclasses import dataclass
+from inspect import cleandoc
 from pathlib import Path
 from typing import AsyncIterator
 from uuid import uuid4
@@ -64,6 +65,7 @@ class KernelClient:
         self,
         host: str = "localhost",
         port: int = 8888,
+        working_dir: Path | None = None,
         images_dir: Path | None = None,
         ping_interval: float = 10,
     ):
@@ -71,6 +73,9 @@ class KernelClient:
         Args:
             host: Hostname or IP address of the kernel gateway.
             port: Port number of the kernel gateway.
+            working_dir: Working directory to set in the IPython kernel and
+                restore after each cell execution. If `None`, ipybox leaves the
+                kernel working directory unchanged between executions.
             images_dir: Directory for saving images generated during code
                 execution. Defaults to `images` in the current directory.
             ping_interval: Interval in seconds for WebSocket pings that
@@ -78,6 +83,7 @@ class KernelClient:
         """
         self.host = host
         self.port = port
+        self.working_dir = working_dir.resolve() if working_dir is not None else None
 
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
@@ -349,14 +355,44 @@ class KernelClient:
         await self.drain(timeout=drain_timeout)
 
     async def _init_kernel(self):
+        init_parts = [
+            cleandoc("""
+                import os as _os
+                %colors nocolor
+                for _k in ('CLICOLOR', 'CLICOLOR_FORCE', 'FORCE_COLOR'):
+                    _os.environ.pop(_k, None)
+            """)
+        ]
+
+        if self.working_dir is not None:
+            working_dir = str(self.working_dir)
+            init_parts.append(
+                cleandoc(f"""
+                    _ipybox_cwd = {working_dir!r}
+                    _os.chdir(_ipybox_cwd)
+                    def _ipybox_restore_cwd(_result=None, _cwd=_ipybox_cwd, _os=_os):
+                        try:
+                            _current_cwd = _os.getcwd()
+                        except FileNotFoundError:
+                            _current_cwd = None
+                        if _current_cwd != _cwd:
+                            _os.chdir(_cwd)
+                            print(f'[ipybox] cwd reset to {{_cwd}}')
+                    get_ipython().events.register('post_run_cell', _ipybox_restore_cwd)
+                    del _ipybox_cwd, _ipybox_restore_cwd
+                """)
+            )
+
+        init_parts.append(
+            cleandoc("""
+                _os.environ['TERM'] = 'dumb'
+                _os.environ['NO_COLOR'] = '1'
+                del _os, _k
+            """)
+        )
+
         await self.execute(
-            "import os as _os\n"
-            "%colors nocolor\n"
-            "for _k in ('CLICOLOR', 'CLICOLOR_FORCE', 'FORCE_COLOR'):\n"
-            "    _os.environ.pop(_k, None)\n"
-            "_os.environ['TERM'] = 'dumb'\n"
-            "_os.environ['NO_COLOR'] = '1'\n"
-            "del _os, _k",
+            "\n".join(init_parts),
             timeout=10,
         )
 
