@@ -3,6 +3,7 @@ import asyncio
 import os
 import sys
 from pathlib import Path
+from typing import IO, Any
 
 import psutil
 
@@ -31,6 +32,7 @@ class KernelGateway:
         self,
         host: str = "localhost",
         port: int = 8888,
+        working_dir: Path | None = None,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
         log_level: str = "INFO",
@@ -41,6 +43,8 @@ class KernelGateway:
         Args:
             host: Hostname or IP address to bind the gateway to.
             port: Port number the gateway listens on.
+            working_dir: Working directory for the kernel gateway process.
+                If `None`, inherit the current process working directory.
             sandbox: Whether to run the gateway inside the sandbox-runtime.
             sandbox_config: Path to a JSON file with sandbox configuration.
                 See the Configuration section of the
@@ -54,6 +58,7 @@ class KernelGateway:
         """
         self.host = host
         self.port = port
+        self.working_dir = working_dir.resolve() if working_dir is not None else None
 
         self.sandbox = sandbox
         self.sandbox_config = sandbox_config
@@ -100,12 +105,24 @@ class KernelGateway:
         process_env = {"PATH": os.environ.get("PATH", "")}
         process_env.update(self.env)
 
-        self._process = await asyncio.create_subprocess_exec(
-            *cmd,
-            env=process_env,
-            stdout=sys.stderr if self.log_to_stderr else asyncio.subprocess.DEVNULL,
-            stderr=sys.stderr if self.log_to_stderr else asyncio.subprocess.DEVNULL,
-        )
+        stdout: int | IO[Any] | None = sys.stderr if self.log_to_stderr else asyncio.subprocess.DEVNULL
+        stderr: int | IO[Any] | None = sys.stderr if self.log_to_stderr else asyncio.subprocess.DEVNULL
+
+        if self.working_dir is not None:
+            self._process = await asyncio.create_subprocess_exec(
+                *cmd,
+                cwd=self.working_dir,
+                env=process_env,
+                stdout=stdout,
+                stderr=stderr,
+            )
+        else:
+            self._process = await asyncio.create_subprocess_exec(
+                *cmd,
+                env=process_env,
+                stdout=stdout,
+                stderr=stderr,
+            )
 
     async def stop(self, timeout: float = 10):
         """Stops the kernel gateway process.

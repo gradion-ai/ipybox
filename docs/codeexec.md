@@ -81,8 +81,18 @@ This also stops any MCP servers started during execution. They restart lazily on
 
 ## Working directory
 
-The kernel shares the working directory with the parent process:
+If `working_dir` is set, the kernel starts there and ipybox restores that
+directory after each execution. When a reset happens, ipybox prints a message
+in the cell output.
 
 ```python
---8<-- "examples/codexec.py:working_directory"
+--8<-- "examples/codexec.py:working_directory_reset"
+```
+
+If `working_dir` is not set, ipybox preserves the default IPython behavior:
+code can change the current working directory and that change persists until
+code changes it again or the kernel is reset.
+
+```python
+--8<-- "examples/codexec.py:working_directory_persistent"
 ```

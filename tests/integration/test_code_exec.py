@@ -123,6 +123,33 @@ for i in range(3):
 
         assert "0.20s" in str(exc_info.value)
 
+    @pytest.mark.asyncio
+    async def test_explicit_working_dir(self, tmp_path: Path):
+        """Test CodeExecutor starts and restores the kernel in working_dir."""
+        async with CodeExecutor(
+            kernel_env={"PYTHONPATH": str(tmp_path)},
+            working_dir=tmp_path,
+            log_level="ERROR",
+        ) as executor:
+            result = await executor.execute("import os; print(os.getcwd())")
+            assert result.text == str(tmp_path.resolve())
+
+            await executor.execute("import os; os.chdir('/')")
+
+            result = await executor.execute("import os; print(os.getcwd())")
+            assert result.text == str(tmp_path.resolve())
+
+    @pytest.mark.asyncio
+    async def test_explicit_working_dir_prints_reset_message(self, tmp_path: Path):
+        """Test CodeExecutor prints the reset message when working_dir is set."""
+        async with CodeExecutor(
+            kernel_env={"PYTHONPATH": str(tmp_path)},
+            working_dir=tmp_path,
+            log_level="ERROR",
+        ) as executor:
+            result = await executor.execute("import os; os.chdir('/')")
+            assert result.text == f"[ipybox] cwd reset to {tmp_path.resolve()}"
+
 
 class TestMcpToolExecution:
     """Core integration: kernel code calling MCP tools through approval."""
