@@ -147,12 +147,27 @@ This also stops any MCP servers started during execution. They restart lazily on
 
 ## Working directory
 
-The kernel shares the working directory with the parent process:
+If `working_dir` is set, the kernel starts there and ipybox restores that directory after each execution. When a reset happens, ipybox prints a message in the cell output.
 
 ```
-async with CodeExecutor() as executor:
-    import os
+base_dir = Path.cwd()
 
-    result = await executor.execute("import os; print(os.getcwd())")
-    assert result.text == os.getcwd()
+with tempfile.TemporaryDirectory() as changed_dir:
+    async with CodeExecutor(working_dir=base_dir) as executor:
+        result = await executor.execute(f"import os; os.chdir({changed_dir!r})")
+        assert result.text == f"[ipybox] cwd reset to {base_dir}"
+
+        result = await executor.execute("import os; print(os.getcwd())")
+        assert result.text == str(base_dir)
+```
+
+If `working_dir` is not set, ipybox preserves the default IPython behavior: code can change the current working directory and that change persists until code changes it again or the kernel is reset.
+
+```
+with tempfile.TemporaryDirectory() as changed_dir:
+    async with CodeExecutor() as executor:
+        await executor.execute(f"import os; os.chdir({changed_dir!r})")
+
+        result = await executor.execute("import os; print(os.getcwd())")
+        assert result.text == changed_dir
 ```

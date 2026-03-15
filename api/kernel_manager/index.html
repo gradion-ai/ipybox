@@ -1502,6 +1502,7 @@
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">KernelGateway</span><span class="p">(</span>
     <span class="n">host</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
     <span class="n">port</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">8888</span><span class="p">,</span>
+    <span class="n">working_dir</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">sandbox</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">sandbox_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">log_level</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
@@ -1574,6 +1575,23 @@ providing secure isolation for code execution.</p>
             </td>
             <td>
                   <code>8888</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>working_dir</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Working directory for the kernel gateway process.
+If <code>None</code>, inherit the current process working directory.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -1833,6 +1851,7 @@ stop within the timeout, it is forcefully killed.</p>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">KernelClient</span><span class="p">(</span>
     <span class="n">host</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
     <span class="n">port</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">8888</span><span class="p">,</span>
+    <span class="n">working_dir</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">images_dir</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ping_interval</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1908,6 +1927,24 @@ subsequent executions.</p>
             </td>
             <td>
                   <code>8888</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>working_dir</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Working directory to set in the IPython kernel and
+restore after each cell execution. If <code>None</code>, ipybox leaves the
+kernel working directory unchanged between executions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">

@@ -1404,12 +1404,28 @@
 </code></pre></div>
 <p>This also stops any MCP servers started during execution. They restart lazily on their next tool call.</p>
 <h2 id="working-directory">Working directory</h2>
-<p>The kernel shares the working directory with the parent process:</p>
-<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<p>If <code>working_dir</code> is set, the kernel starts there and ipybox restores that
+directory after each execution. When a reset happens, ipybox prints a message
+in the cell output.</p>
+<div class="highlight"><pre><span></span><code><span class="n">base_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
 
-    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.getcwd())&quot;</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">changed_dir</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="n">base_dir</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;import os; os.chdir(</span><span class="si">{</span><span class="n">changed_dir</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="sa">f</span><span class="s2">&quot;[ipybox] cwd reset to </span><span class="si">{</span><span class="n">base_dir</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.getcwd())&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
+</code></pre></div>
+<p>If <code>working_dir</code> is not set, ipybox preserves the default IPython behavior:
+code can change the current working directory and that change persists until
+code changes it again or the kernel is reset.</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">changed_dir</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;import os; os.chdir(</span><span class="si">{</span><span class="n">changed_dir</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;import os; print(os.getcwd())&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="n">changed_dir</span>
 </code></pre></div>
 
 

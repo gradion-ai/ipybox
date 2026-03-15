@@ -4,6 +4,7 @@
 KernelGateway(
     host: str = "localhost",
     port: int = 8888,
+    working_dir: Path | None = None,
     sandbox: bool = False,
     sandbox_config: Path | None = None,
     log_level: str = "INFO",
@@ -32,6 +33,7 @@ Parameters:
 | ---------------- | ---------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `host`           | `str`            | Hostname or IP address to bind the gateway to.         | `'localhost'`                                                                                                                                                                                 |
 | `port`           | `int`            | Port number the gateway listens on.                    | `8888`                                                                                                                                                                                        |
+| `working_dir`    | \`Path           | None\`                                                 | Working directory for the kernel gateway process. If None, inherit the current process working directory.                                                                                     |
 | `sandbox`        | `bool`           | Whether to run the gateway inside the sandbox-runtime. | `False`                                                                                                                                                                                       |
 | `sandbox_config` | \`Path           | None\`                                                 | Path to a JSON file with sandbox configuration. See the Configuration section of the sandbox-runtime README for available options.                                                            |
 | `log_level`      | `str`            | Logging level for the gateway process.                 | `'INFO'`                                                                                                                                                                                      |
@@ -82,6 +84,7 @@ Parameters:
 KernelClient(
     host: str = "localhost",
     port: int = 8888,
+    working_dir: Path | None = None,
     images_dir: Path | None = None,
     ping_interval: float = 10,
 )
@@ -110,12 +113,13 @@ async with KernelClient(host="localhost", port=8888) as client:
 
 Parameters:
 
-| Name            | Type    | Description                                                                                   | Default                                                                                                   |
-| --------------- | ------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `host`          | `str`   | Hostname or IP address of the kernel gateway.                                                 | `'localhost'`                                                                                             |
-| `port`          | `int`   | Port number of the kernel gateway.                                                            | `8888`                                                                                                    |
-| `images_dir`    | \`Path  | None\`                                                                                        | Directory for saving images generated during code execution. Defaults to images in the current directory. |
-| `ping_interval` | `float` | Interval in seconds for WebSocket pings that keep the connection to the IPython kernel alive. | `10`                                                                                                      |
+| Name            | Type    | Description                                                                                   | Default                                                                                                                                                                 |
+| --------------- | ------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `host`          | `str`   | Hostname or IP address of the kernel gateway.                                                 | `'localhost'`                                                                                                                                                           |
+| `port`          | `int`   | Port number of the kernel gateway.                                                            | `8888`                                                                                                                                                                  |
+| `working_dir`   | \`Path  | None\`                                                                                        | Working directory to set in the IPython kernel and restore after each cell execution. If None, ipybox leaves the kernel working directory unchanged between executions. |
+| `images_dir`    | \`Path  | None\`                                                                                        | Directory for saving images generated during code execution. Defaults to images in the current directory.                                                               |
+| `ping_interval` | `float` | Interval in seconds for WebSocket pings that keep the connection to the IPython kernel alive. | `10`                                                                                                                                                                    |
 
 ### kernel_id
 
