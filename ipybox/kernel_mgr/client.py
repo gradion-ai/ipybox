@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import re
+import textwrap
 import time
 from base64 import b64decode
 from dataclasses import dataclass
@@ -68,6 +70,7 @@ class KernelClient:
         working_dir: Path | None = None,
         images_dir: Path | None = None,
         ping_interval: float = 10,
+        shell_cmd_handler: str | None = None,
     ):
         """
         Args:
@@ -80,6 +83,10 @@ class KernelClient:
                 execution. Defaults to `images` in the current directory.
             ping_interval: Interval in seconds for WebSocket pings that
                 keep the connection to the IPython kernel alive.
+            shell_cmd_handler: Python code string that overrides IPython's
+                `!` shell command handler. The code is the body of a function
+                receiving `cmd` (the shell command string) and `_run` (the
+                original handler). Call `_run(cmd)` to execute the command.
         """
         self.host = host
         self.port = port
@@ -87,6 +94,7 @@ class KernelClient:
 
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
+        self.shell_cmd_handler = shell_cmd_handler
 
         self._kernel_id: str | None = None
         self._session_id: str | None = None
@@ -383,6 +391,17 @@ class KernelClient:
                 """)
             )
 
+        if self.shell_cmd_handler is not None:
+            handler_body = textwrap.indent(textwrap.dedent(self.shell_cmd_handler).strip(), "    ")
+            init_parts.append(
+                "_ip = get_ipython()\n"
+                "def _ipybox_shell_handler(cmd, _run=_ip.system):\n" + handler_body + "\n"
+                "def _ipybox_getoutput_handler(cmd, _run=_ip.getoutput):\n" + handler_body + "\n"
+                "_ip.system = _ipybox_shell_handler\n"
+                "_ip.getoutput = _ipybox_getoutput_handler\n"
+                "del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler"
+            )
+
         init_parts.append(
             cleandoc("""
                 _os.environ['TERM'] = 'dumb'
@@ -399,5 +418,22 @@ class KernelClient:
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
         error_value = msg_dict["content"].get("evalue", "")
-        error_trace = "\n".join(msg_dict["content"].get("traceback", []))
+        traceback_lines = msg_dict["content"].get("traceback", [])
+        error_trace = "\n".join(self._rewrite_traceback(traceback_lines))
         raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")
+
+    @staticmethod
+    def _rewrite_traceback(entries: list[str]) -> list[str]:
+        """Rewrite traceback to hide ipybox internals.
+
+        Drops entries from ``_ipybox_``-prefixed functions and replaces
+        ``get_ipython().system(...)`` / ``get_ipython().getoutput(...)``
+        with the ``!...`` shorthand.
+        """
+        result: list[str] = []
+        for entry in entries:
+            if "_ipybox_" in entry:
+                continue
+            entry = re.sub(r"get_ipython\(\)\.(?:system|getoutput)\(['\"](.+?)['\"]\)", r"!\1", entry)
+            result.append(entry)
+        return result
