@@ -108,6 +108,7 @@ class CodeExecutor:
         log_level: str = "WARNING",
         shell_cmd_handler: str | None = None,
         approve_shell_cmds: bool = False,
+        block_direct_shell: bool = False,
     ):
         """Configure a code executor with optional sandboxing.
 
@@ -148,6 +149,10 @@ class CodeExecutor:
             approve_shell_cmds: Whether to require approval for `!` shell
                 commands. When enabled, each shell command triggers an
                 `ApprovalRequest` before execution.
+            block_direct_shell: Whether to block direct ``subprocess`` and
+                ``os.system`` calls, forcing shell commands through the
+                ``!`` handler. Requires ``shell_cmd_handler`` or
+                ``approve_shell_cmds`` to be set.
         """
         self.tool_server_host = tool_server_host
         self.tool_server_port = tool_server_port or find_free_port()
@@ -159,6 +164,7 @@ class CodeExecutor:
         self.images_dir = images_dir
         self.shell_cmd_handler = shell_cmd_handler
         self.approve_shell_cmds = approve_shell_cmds
+        self.block_direct_shell = block_direct_shell
 
         self.approval_timeout = approval_timeout
         self.connect_timeout = connect_timeout
@@ -341,6 +347,15 @@ class CodeExecutor:
         shell_cmd_handler = self.shell_cmd_handler
         if self.approve_shell_cmds and shell_cmd_handler is None:
             approve_url = f"http://{self.tool_server_host}:{self.tool_server_port}/approve"
+            run_cmd = "return _run(cmd)\n"
+            if self.block_direct_shell:
+                run_cmd = (
+                    "_ipybox_shell_allowed.set(True)\n"
+                    "try:\n"
+                    "    return _run(cmd)\n"
+                    "finally:\n"
+                    "    _ipybox_shell_allowed.set(False)\n"
+                )
             shell_cmd_handler = (
                 "import requests as _rq\n"
                 "from mcpygen.tool_exec.client import _make_error as _mkerr\n"
@@ -351,8 +366,7 @@ class CodeExecutor:
                 ")\n"
                 "_data = _resp.json()\n"
                 'if "error" in _data:\n'
-                "    raise _mkerr(_data)\n"
-                "return _run(cmd)\n"
+                "    raise _mkerr(_data)\n" + run_cmd
             )
 
         async with ToolServer(
@@ -382,6 +396,7 @@ class CodeExecutor:
                     working_dir=self.working_dir,
                     images_dir=self.images_dir,
                     shell_cmd_handler=shell_cmd_handler,
+                    block_direct_shell=self.block_direct_shell,
                 ) as client:
                     yield client
 

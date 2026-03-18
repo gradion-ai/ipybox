@@ -1,6 +1,12 @@
 import asyncio
 
-from ipybox import ApprovalRequest, CodeExecutionChunk, CodeExecutionResult, CodeExecutor
+from ipybox import (
+    ApprovalRequest,
+    CodeExecutionChunk,
+    CodeExecutionError,
+    CodeExecutionResult,
+    CodeExecutor,
+)
 
 
 async def intercept():
@@ -47,12 +53,29 @@ print(f"result = {result}")
                     pass
 
 
+async def blocked():
+    """Direct subprocess/os.system calls are blocked when block_direct_shell is enabled."""
+    async with CodeExecutor(approve_shell_cmds=True, block_direct_shell=True) as executor:
+        for code in [
+            'import subprocess; subprocess.run(["echo", "bypassed"])',
+            'import os; os.system("echo bypassed")',
+        ]:
+            try:
+                result = await executor.execute(code)
+                print(f"[default] {result.text}")
+            except CodeExecutionError as e:
+                print(f"[blocked] {e.args[0].splitlines()[0]}")
+
+
 async def main():
     # print("--- intercept ---")
     # await intercept()
     # print()
     print("--- approve ---")
     await approve()
+    print()
+    print("--- blocked ---")
+    await blocked()
 
 
 if __name__ == "__main__":

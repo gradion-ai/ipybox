@@ -71,6 +71,7 @@ class KernelClient:
         images_dir: Path | None = None,
         ping_interval: float = 10,
         shell_cmd_handler: str | None = None,
+        block_direct_shell: bool = False,
     ):
         """
         Args:
@@ -87,6 +88,9 @@ class KernelClient:
                 `!` shell command handler. The code is the body of a function
                 receiving `cmd` (the shell command string) and `_run` (the
                 original handler). Call `_run(cmd)` to execute the command.
+            block_direct_shell: Whether to block direct ``subprocess`` and
+                ``os.system`` calls, forcing shell commands through the
+                ``!`` handler. Requires ``shell_cmd_handler`` to be set.
         """
         self.host = host
         self.port = port
@@ -95,6 +99,7 @@ class KernelClient:
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
         self.shell_cmd_handler = shell_cmd_handler
+        self.block_direct_shell = block_direct_shell
 
         self._kernel_id: str | None = None
         self._session_id: str | None = None
@@ -393,7 +398,7 @@ class KernelClient:
 
         if self.shell_cmd_handler is not None:
             handler_body = textwrap.indent(textwrap.dedent(self.shell_cmd_handler).strip(), "    ")
-            init_parts.append(
+            handler_code = (
                 "_ip = get_ipython()\n"
                 "def _ipybox_shell_handler(cmd, _run=_ip.system):\n" + handler_body + "\n"
                 "def _ipybox_getoutput_handler(cmd, _run=_ip.getoutput):\n" + handler_body + "\n"
@@ -401,6 +406,31 @@ class KernelClient:
                 "_ip.getoutput = _ipybox_getoutput_handler\n"
                 "del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler"
             )
+
+            if self.block_direct_shell:
+                handler_code = (
+                    "from contextvars import ContextVar as _ContextVar\n"
+                    "_ipybox_shell_allowed = _ContextVar('_ipybox_shell_allowed', default=False)\n"
+                    "del _ContextVar\n" + handler_code + "\n"
+                    "import subprocess as _subprocess\n"
+                    "_ipybox_orig_popen = _subprocess.Popen\n"
+                    "class _ipybox_guarded_popen(_ipybox_orig_popen):\n"
+                    "    def __init__(self, *args, **kwargs):\n"
+                    "        if not _ipybox_shell_allowed.get():\n"
+                    "            raise RuntimeError('Direct subprocess calls are not allowed. Use ! syntax.')\n"
+                    "        super().__init__(*args, **kwargs)\n"
+                    "_subprocess.Popen = _ipybox_guarded_popen\n"
+                    "_ipybox_orig_os_system = _os.system\n"
+                    "def _ipybox_guarded_os_system(cmd):\n"
+                    "    if not _ipybox_shell_allowed.get():\n"
+                    "        raise RuntimeError('Direct os.system() calls are not allowed. Use ! syntax.')\n"
+                    "    return _ipybox_orig_os_system(cmd)\n"
+                    "_os.system = _ipybox_guarded_os_system\n"
+                    "del _subprocess, _ipybox_orig_popen, _ipybox_guarded_popen\n"
+                    "del _ipybox_orig_os_system, _ipybox_guarded_os_system"
+                )
+
+            init_parts.append(handler_code)
 
         init_parts.append(
             cleandoc("""
