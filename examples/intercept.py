@@ -9,29 +9,6 @@ from ipybox import (
 )
 
 
-async def intercept():
-    """Intercept shell commands with a custom handler."""
-    handler = """\
-print(f"[intercepted] {cmd}")
-return _run(cmd)
-"""
-
-    code = """\
-for i in range(3):
-    !echo {i}
-result = !echo captured
-print(f"result = {result}")
-"""
-
-    async with CodeExecutor(shell_cmd_handler=handler) as executor:
-        async for item in executor.stream(code, chunks=True):
-            match item:
-                case CodeExecutionChunk():
-                    print(item.text, end="")
-                case CodeExecutionResult():
-                    pass
-
-
 async def approve():
     """Require approval for shell commands."""
     code = """\
@@ -54,8 +31,8 @@ print(f"result = {result}")
 
 
 async def blocked():
-    """Direct subprocess/os.system calls are blocked when block_direct_shell is enabled."""
-    async with CodeExecutor(approve_shell_cmds=True, block_direct_shell=True) as executor:
+    """Direct subprocess/os.system calls are blocked when require_shell_escape is enabled."""
+    async with CodeExecutor(approve_shell_cmds=True, require_shell_escape=True) as executor:
         for code in [
             'import subprocess; subprocess.run(["echo", "bypassed"])',
             'import os; os.system("echo bypassed")',
@@ -68,9 +45,6 @@ async def blocked():
 
 
 async def main():
-    # print("--- intercept ---")
-    # await intercept()
-    # print()
     print("--- approve ---")
     await approve()
     print()

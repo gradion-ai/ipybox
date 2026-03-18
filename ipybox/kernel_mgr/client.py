@@ -1,11 +1,9 @@
 import asyncio
 import logging
 import re
-import textwrap
 import time
 from base64 import b64decode
 from dataclasses import dataclass
-from inspect import cleandoc
 from pathlib import Path
 from typing import AsyncIterator
 from uuid import uuid4
@@ -15,6 +13,8 @@ import aiohttp
 from tornado.escape import json_decode, json_encode
 from tornado.httpclient import HTTPRequest
 from tornado.websocket import WebSocketClientConnection, websocket_connect
+
+from ipybox.kernel_mgr.init import build_init_code
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +70,10 @@ class KernelClient:
         working_dir: Path | None = None,
         images_dir: Path | None = None,
         ping_interval: float = 10,
-        shell_cmd_handler: str | None = None,
-        block_direct_shell: bool = False,
+        approve_shell_cmds: bool = False,
+        require_shell_escape: bool = False,
+        tool_server_host: str = "localhost",
+        tool_server_port: int = 0,
     ):
         """
         Args:
@@ -84,13 +86,16 @@ class KernelClient:
                 execution. Defaults to `images` in the current directory.
             ping_interval: Interval in seconds for WebSocket pings that
                 keep the connection to the IPython kernel alive.
-            shell_cmd_handler: Python code string that overrides IPython's
-                `!` shell command handler. The code is the body of a function
-                receiving `cmd` (the shell command string) and `_run` (the
-                original handler). Call `_run(cmd)` to execute the command.
-            block_direct_shell: Whether to block direct ``subprocess`` and
-                ``os.system`` calls, forcing shell commands through the
-                ``!`` handler. Requires ``shell_cmd_handler`` to be set.
+            approve_shell_cmds: Whether to require approval for `!` shell
+                commands. When enabled, each shell command triggers an
+                approval request before execution.
+            require_shell_escape: Whether to block direct `subprocess` and
+                `os.system` calls, forcing shell commands through the
+                `!` handler. Requires `approve_shell_cmds` to be set.
+            tool_server_host: Hostname of the tool server (used when
+                `approve_shell_cmds` is `True`).
+            tool_server_port: Port of the tool server (used when
+                `approve_shell_cmds` is `True`).
         """
         self.host = host
         self.port = port
@@ -98,8 +103,10 @@ class KernelClient:
 
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
-        self.shell_cmd_handler = shell_cmd_handler
-        self.block_direct_shell = block_direct_shell
+        self.approve_shell_cmds = approve_shell_cmds
+        self.require_shell_escape = require_shell_escape
+        self.tool_server_host = tool_server_host
+        self.tool_server_port = tool_server_port
 
         self._kernel_id: str | None = None
         self._session_id: str | None = None
@@ -368,82 +375,14 @@ class KernelClient:
         await self.drain(timeout=drain_timeout)
 
     async def _init_kernel(self):
-        init_parts = [
-            cleandoc("""
-                import os as _os
-                %colors nocolor
-                for _k in ('CLICOLOR', 'CLICOLOR_FORCE', 'FORCE_COLOR'):
-                    _os.environ.pop(_k, None)
-            """)
-        ]
-
-        if self.working_dir is not None:
-            working_dir = str(self.working_dir)
-            init_parts.append(
-                cleandoc(f"""
-                    _ipybox_cwd = {working_dir!r}
-                    _os.chdir(_ipybox_cwd)
-                    def _ipybox_restore_cwd(_result=None, _cwd=_ipybox_cwd, _os=_os):
-                        try:
-                            _current_cwd = _os.getcwd()
-                        except FileNotFoundError:
-                            _current_cwd = None
-                        if _current_cwd != _cwd:
-                            _os.chdir(_cwd)
-                            print(f'[ipybox] cwd reset to {{_cwd}}')
-                    get_ipython().events.register('post_run_cell', _ipybox_restore_cwd)
-                    del _ipybox_cwd, _ipybox_restore_cwd
-                """)
-            )
-
-        if self.shell_cmd_handler is not None:
-            handler_body = textwrap.indent(textwrap.dedent(self.shell_cmd_handler).strip(), "    ")
-            handler_code = (
-                "_ip = get_ipython()\n"
-                "def _ipybox_shell_handler(cmd, _run=_ip.system):\n" + handler_body + "\n"
-                "def _ipybox_getoutput_handler(cmd, _run=_ip.getoutput):\n" + handler_body + "\n"
-                "_ip.system = _ipybox_shell_handler\n"
-                "_ip.getoutput = _ipybox_getoutput_handler\n"
-                "del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler"
-            )
-
-            if self.block_direct_shell:
-                handler_code = (
-                    "from contextvars import ContextVar as _ContextVar\n"
-                    "_ipybox_shell_allowed = _ContextVar('_ipybox_shell_allowed', default=False)\n"
-                    "del _ContextVar\n" + handler_code + "\n"
-                    "import subprocess as _subprocess\n"
-                    "_ipybox_orig_popen = _subprocess.Popen\n"
-                    "class _ipybox_guarded_popen(_ipybox_orig_popen):\n"
-                    "    def __init__(self, *args, **kwargs):\n"
-                    "        if not _ipybox_shell_allowed.get():\n"
-                    "            raise RuntimeError('Direct subprocess calls are not allowed. Use ! syntax.')\n"
-                    "        super().__init__(*args, **kwargs)\n"
-                    "_subprocess.Popen = _ipybox_guarded_popen\n"
-                    "_ipybox_orig_os_system = _os.system\n"
-                    "def _ipybox_guarded_os_system(cmd):\n"
-                    "    if not _ipybox_shell_allowed.get():\n"
-                    "        raise RuntimeError('Direct os.system() calls are not allowed. Use ! syntax.')\n"
-                    "    return _ipybox_orig_os_system(cmd)\n"
-                    "_os.system = _ipybox_guarded_os_system\n"
-                    "del _subprocess, _ipybox_orig_popen, _ipybox_guarded_popen\n"
-                    "del _ipybox_orig_os_system, _ipybox_guarded_os_system"
-                )
-
-            init_parts.append(handler_code)
-
-        init_parts.append(
-            cleandoc("""
-                _os.environ['TERM'] = 'dumb'
-                _os.environ['NO_COLOR'] = '1'
-                del _os, _k
-            """)
+        code = build_init_code(
+            working_dir=self.working_dir,
+            approve_shell_cmds=self.approve_shell_cmds,
+            require_shell_escape=self.require_shell_escape,
+            tool_server_host=self.tool_server_host,
+            tool_server_port=self.tool_server_port,
         )
-
-        await self.execute(
-            "\n".join(init_parts),
-            timeout=10,
-        )
+        await self.execute(code, timeout=10)
 
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
@@ -456,9 +395,9 @@ class KernelClient:
     def _rewrite_traceback(entries: list[str]) -> list[str]:
         """Rewrite traceback to hide ipybox internals.
 
-        Drops entries from ``_ipybox_``-prefixed functions and replaces
-        ``get_ipython().system(...)`` / ``get_ipython().getoutput(...)``
-        with the ``!...`` shorthand.
+        Drops entries from `_ipybox_`-prefixed functions and replaces
+        `get_ipython().system(...)` / `get_ipython().getoutput(...)`
+        with the `!...` shorthand.
         """
         result: list[str] = []
         for entry in entries:
