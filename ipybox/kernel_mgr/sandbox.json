@@ -1,4 +1,5 @@
 {
+  "allowPty": true,
   "enableWeakerNestedSandbox": false,
   "filesystem": {
     "denyRead": [".env"],

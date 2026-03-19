@@ -1,6 +1,6 @@
 # MCP server
 
-[ipybox](index.md) is a Python code execution sandbox with first-class support for programmatic MCP tool calling. Code executes in a sandboxed IPython Kernel, providing a stateful environment where variables and definitions persist across executions. 
+[ipybox](index.md) is a local, sandboxed execution environment for running Python code, shell commands and programmatic MCP tool calls. Code executes in a stateful IPython kernel where variables and definitions persist across executions.
 
 When run as an MCP server, it exposes these capabilities to MCP clients like Claude Code or Claude Desktop. Agents can register MCP servers, then execute Python code that uses them programmatically:
 
@@ -47,7 +47,7 @@ These variables are available to MCP servers registered with ipybox but are not 
 
 ## Usage example
 
-This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a [BRAVE_API_KEY](quickstart.md#get-a-brave-api-key):
+This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a [BRAVE_API_KEY](quickstart.md#programmatic-mcp-tool-calling):
 
 ```json
 {

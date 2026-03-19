@@ -11,6 +11,7 @@ from ipybox import (
 
 async def approve():
     """Require approval for shell commands."""
+    # --8<-- [start:approve]
     code = """\
 for i in range(3):
     !echo {i}
@@ -28,10 +29,12 @@ print(f"result = {result}")
                     print(item.text, end="")
                 case CodeExecutionResult():
                     pass
+    # --8<-- [end:approve]
 
 
 async def blocked():
     """Direct subprocess/os.system calls are blocked when require_shell_escape is enabled."""
+    # --8<-- [start:blocked]
     async with CodeExecutor(approve_shell_cmds=True, require_shell_escape=True) as executor:
         for code in [
             'import subprocess; subprocess.run(["echo", "bypassed"])',
@@ -42,6 +45,7 @@ async def blocked():
                 print(f"[default] {result.text}")
             except CodeExecutionError as e:
                 print(f"[blocked] {e.args[0].splitlines()[0]}")
+    # --8<-- [end:blocked]
 
 
 async def main():

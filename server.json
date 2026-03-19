@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.gradion-ai/ipybox",
-  "description": "Python code execution sandbox with first-class support for programmatic MCP tool calling.",
+  "description": "Local, sandboxed execution environment for running Python code, shell commands and programmatic MCP tool calls with a unified execution model.",
   "repository": {
     "url": "https://github.com/gradion-ai/ipybox",
     "source": "github"

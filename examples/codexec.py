@@ -29,13 +29,13 @@ async def basic_approval():
     result: Result = run(Params(query="neural topic models", count=3))
     print(f"num results = {len(result.items)}")
     """
-    async with CodeExecutor() as executor:
+    async with CodeExecutor(approve_tool_calls=True) as executor:  # default
         async for item in executor.stream(code):
             match item:
-                case ApprovalRequest():
-                    assert item.tool_name == "brave_image_search"
-                    assert item.tool_args["query"] == "neural topic models"
-                    assert item.tool_args["count"] == 3
+                case ApprovalRequest(tool_name=name, tool_args=args):
+                    assert name == "brave_image_search"
+                    assert args["query"] == "neural topic models"
+                    assert args["count"] == 3
                     await item.accept()
                 case CodeExecutionResult():
                     assert item.text == "num results = 3"
@@ -141,6 +141,67 @@ async def working_directory_persistent():
     # --8<-- [end:working_directory_persistent]
 
 
+async def shell_commands():
+    # --8<-- [start:shell_commands]
+    async with CodeExecutor() as executor:
+        # Run a shell command
+        result = await executor.execute("!echo hello from shell")
+        assert result.text == "hello from shell"
+
+        # Capture shell output into a Python variable
+        code = """
+        files = !ls /tmp
+        print(f"found {len(files)} entries")
+        """
+        result = await executor.execute(code)
+
+        # Variable interpolation in shell commands
+        code = """
+        name = "world"
+        !echo hello {name}
+        """
+        result = await executor.execute(code)
+        assert result.text == "hello world"
+    # --8<-- [end:shell_commands]
+
+
+async def shell_approval():
+    # --8<-- [start:shell_approval]
+    code = """
+    name = "world"
+    !echo hello {name}
+    """
+    async with CodeExecutor(approve_shell_cmds=True) as executor:
+        async for item in executor.stream(code):
+            match item:
+                case ApprovalRequest():
+                    assert item.tool_name == "shell"
+                    assert item.tool_args == {"cmd": "echo hello world"}
+                    await item.accept()
+                case CodeExecutionResult():
+                    assert item.text == "hello world"
+    # --8<-- [end:shell_approval]
+
+
+async def subprocess_blocking():
+    # --8<-- [start:subprocess_blocking]
+    async with CodeExecutor(approve_shell_cmds=True, require_shell_escape=True) as executor:
+        # Direct subprocess calls are blocked to prevent bypassing approval
+        try:
+            await executor.execute('import subprocess; subprocess.run(["echo", "hi"])')
+        except Exception as e:
+            assert "RuntimeError" in str(e)
+
+        # Shell commands via !cmd still work and go through approval
+        async for item in executor.stream("!echo hello"):
+            match item:
+                case ApprovalRequest():
+                    await item.accept()
+                case CodeExecutionResult():
+                    assert item.text == "hello"
+    # --8<-- [end:subprocess_blocking]
+
+
 async def main():
     await basic_execution()
     await basic_approval()
@@ -151,6 +212,9 @@ async def main():
     await kernel_reset()
     await working_directory_reset()
     await working_directory_persistent()
+    await shell_commands()
+    await shell_approval()
+    await subprocess_blocking()
 
 
 if __name__ == "__main__":

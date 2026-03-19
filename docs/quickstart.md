@@ -1,6 +1,6 @@
 # Quickstart
 
-This guide walks through a complete example: generating a Python tool API for the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server), executing code that calls it, and handling tool call approvals.
+This guide walks through Python code execution, shell commands, programmatic MCP tool calling, and application-level approval with ipybox.
 
 ## Installation
 
@@ -8,49 +8,27 @@ This guide walks through a complete example: generating a Python tool API for th
 pip install ipybox
 ```
 
-## Get a Brave API key
+## Basic execution
 
-Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com). Once you have your key, set it as an environment variable:
+[`CodeExecutor`][ipybox.CodeExecutor] runs Python code and shell commands in an IPython kernel:
+
+```python
+--8<-- "examples/quickstart.py:basic_execution"
+```
+
+Shell commands use IPython's `!` syntax and mix freely with Python code. `result = !cmd` captures shell output into a Python variable. Python variables are interpolated into shell commands via `{variable}` syntax.
+
+## Programmatic MCP tool calling
+
+ipybox can generate typed Python APIs from MCP server tool schemas via [mcpygen](https://gradion-ai.github.io/mcpygen/). The generated APIs are available to code that executes in the IPython kernel.
+
+This example uses the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server). Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com) and set it as an environment variable:
 
 ```bash
 export BRAVE_API_KEY=your_api_key_here
 ```
 
-Or create a `.env` file in your project root (ipybox loads it automatically):
-
-```env
-BRAVE_API_KEY=your_api_key_here
-```
-
-## Complete example
-
-```python
---8<-- "examples/quickstart.py"
-```
-
-## How it works
-
-### Server parameters
-
-The `server_params` dict defines how to connect to an MCP server. For stdio servers (local processes), you specify:
-
-- `command`: The executable to run
-- `args`: Command-line arguments
-- `env`: Environment variables to pass
-
-```python
-SERVER_PARAMS = {
-    "command": "npx",
-    "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
-    "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
-}
-```
-
-The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your environment when ipybox starts the MCP server.
-
-### Generating a Python tool API
-
-`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:
+`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates a typed Python package:
 
 ```python
 await generate_mcp_sources(
@@ -60,47 +38,44 @@ await generate_mcp_sources(
 )
 ```
 
-This creates an `mcptools/brave_search` package with a Python module for each MCP server tool:
+See [API Generation](apigen.md) for details on server parameters, generated package structure, and supported transports.
 
-```
-mcptools/brave_search/
-├── __init__.py
-├── brave_web_search.py
-├── brave_local_search.py
-├── brave_image_search.py
-└── ...
-```
-
-Each module contains a Pydantic `Params` class for input validation, a `Result` class or `str` return type, and a `run()` function that executes the MCP tool.
-
-### Code execution
-
-[`CodeExecutor`][ipybox.CodeExecutor] runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.
+When executing code via `execute()`, tool calls are auto-approved:
 
 ```python
-async with CodeExecutor() as executor:
-    async for item in executor.stream(CODE):
-        ...
+--8<-- "examples/quickstart.py:tool_call_code"
 ```
-
-The `stream()` method yields events as execution progresses. You'll receive `ApprovalRequest` events when the code calls an MCP tool, and a final [`CodeExecutionResult`][ipybox.CodeExecutionResult] with the output.
-
-### Tool call approval
-
-When an MCP tool is called during code execution, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
 
 ```python
-case ApprovalRequest() as req:
-    if user_approves:
-        await req.accept()
-    else:
-        await req.reject()
+--8<-- "examples/quickstart.py:tool_call_execute"
 ```
 
-The `ApprovalRequest` includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.
+## Streaming vs execute
+
+`execute()` runs code to completion and auto-approves any tool calls and shell commands. For incremental output and control over approvals, use `stream()` instead. `stream()` yields events as execution progresses:
+
+- `ApprovalRequest` when code triggers a tool call or shell command that requires approval
+- [`CodeExecutionChunk`][ipybox.CodeExecutionChunk] for incremental output (when `chunks=True`)
+- [`CodeExecutionResult`][ipybox.CodeExecutionResult] with the final output
+
+## Approval
+
+Both MCP tool calls and shell commands can require application-level approval before execution. `approve_tool_calls` (default `True`) requires approval for MCP tool calls. `approve_shell_cmds` (default `False`) requires approval for shell commands.
+
+The following example executes a code block that calls an MCP tool and runs a shell command, both requiring approval:
+
+```python
+--8<-- "examples/quickstart.py:approval_code"
+```
+
+```python
+--8<-- "examples/quickstart.py:approval"
+```
+
+Both approval types yield an `ApprovalRequest`. The `tool_name` field distinguishes them: `"shell"` for shell commands, the MCP tool name for tool calls. Call `accept()` to continue or `reject()` to block execution.
 
 ## Next steps
 
+- [Code Execution](codeexec.md) - Shell commands, mixing, approval, and streaming
 - [API Generation](apigen.md) - Generating typed Python APIs from MCP tools
-- [Code Execution](codeexec.md) - Running code and handling tool approvals
-- [Sandboxing](sandbox.md) - Secure execution with network and filesystem isolation
+- [Sandboxing](sandbox.md) - Kernel isolation with filesystem and network restrictions
