@@ -9,7 +9,7 @@
 - Source modules:
   - `ipybox/code_exec.py`: CodeExecutor, main API
   - `ipybox/kernel_mgr/`: KernelGateway and KernelClient
-  - `ipybox/mcp_server.py`: IpyboxMCPServer
+  - `ipybox/mcp_server.py`: MCPServer
   - `ipybox/utils.py`: shared utilities
 - Tests:
   - `tests/unit/`: unit tests
