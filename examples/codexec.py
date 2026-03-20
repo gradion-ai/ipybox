@@ -174,9 +174,8 @@ async def shell_approval():
     async with CodeExecutor(approve_shell_cmds=True) as executor:
         async for item in executor.stream(code):
             match item:
-                case ApprovalRequest():
-                    assert item.tool_name == "shell"
-                    assert item.tool_args == {"cmd": "echo hello world"}
+                case ApprovalRequest(tool_name="shell", tool_args=args):
+                    assert args == {"cmd": "echo hello world"}
                     await item.accept()
                 case CodeExecutionResult():
                     assert item.text == "hello world"

@@ -1,6 +1,6 @@
 # Architecture
 
-`CodeExecutor` coordinates three components: an IPython kernel for stateful execution of Python code and shell commands, a tool server for MCP tool dispatch, and an approval channel for application-level approval of tool calls and shell commands.
+[`CodeExecutor`][ipybox.CodeExecutor] coordinates three components: an IPython kernel for stateful execution of Python code and shell commands, a tool server for MCP tool dispatch, and an approval channel for application-level approval of tool calls and shell commands.
 
 The application submits code to `CodeExecutor`, which forwards it to an IPython kernel running inside an optional sandbox. Shell commands use IPython's `!` syntax and mix freely with Python code in a single block. When code calls a [generated](apigen.md) Python tool API function, the request routes to the tool server, which manages local (stdio) MCP servers and connections to remote (HTTP) MCP servers.
 

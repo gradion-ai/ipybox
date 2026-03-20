@@ -9,7 +9,22 @@
 ## Test organization
 
 - Unit tests (`tests/unit/`): no external dependencies, no real servers
-- Integration tests (`tests/integration/`): real Jupyter kernels, MCP servers, network
+- Integration tests (`tests/integration/`): real IPython kernels, MCP servers, network
+
+## Unit tests
+
+- `test_code_exec_helpers.py`: execution budget, stream worker
+- `test_kernel_gateway.py`: KernelGateway subprocess configuration
+- `test_kernel_init.py`: `build_init_code()` output sections and variable cleanup
+- `test_rewrite_traceback.py`: `_ipybox_` filtering, `get_ipython().system()` rewriting
+
+## Integration tests
+
+- `test_code_exec.py`: CodeExecutor end-to-end (execution, streaming, approval, rejection, timeouts)
+- `test_kernel_init.py`: ANSI stripping, variable cleanup
+- `test_kernel_mgr.py`: KernelClient and KernelGateway integration
+- `test_shell_cmds.py`: shell command approval and subprocess blocking
+- `test_mcp_server.py`: MCPServer functionality
 
 ## Test MCP server (`tests/integration/mcp_server.py`)
 

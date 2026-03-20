@@ -37,12 +37,15 @@ plugins:
   - llmstxt:
       markdown_description: |
         ipybox is a local, sandboxed execution environment for running Python code, shell commands
-        and programmatic MCP tool calls with a unified execution model. It executes code and shell commands in a
-        stateful IPython kernel, with optional sandboxing via sandbox-runtime.
+        and programmatic MCP tool calls through a unified execution interface.
 
-        ipybox generates Python APIs for MCP server tools via mcpygen, and supports application-level
-        approval of both MCP tool calls and shell commands during execution. Python code, shell commands,
-        and programmatic MCP tool calls can be combined in a single execution.
+        ipybox executes Python code and shell commands in a stateful IPython kernel. Definitions and
+        variables persist across executions, and kernels can be sandboxed with sandbox-runtime,
+        enforcing filesystem and network restrictions at OS level.
+
+        It can generate Python APIs for MCP server tools via mcpygen, and supports application-level
+        approval of programmatic MCP tool calls and shell commands during execution. ipybox runs
+        locally on your computer, enabling protected access to your local data and tools.
       full_output: llms-full.txt
       sections:
         Documentation:

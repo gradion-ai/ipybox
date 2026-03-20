@@ -20,7 +20,7 @@ Shell commands use IPython's `!` syntax and mix freely with Python code. `result
 
 ## Programmatic MCP tool calling
 
-ipybox can generate typed Python APIs from MCP server tool schemas via [mcpygen](https://gradion-ai.github.io/mcpygen/). The generated APIs are available to code that executes in the IPython kernel.
+ipybox can generate typed Python APIs from MCP server tool schemas via [mcpygen](https://gradion-ai.github.io/mcpygen/). The generated APIs can be imported and called like regular Python functions.
 
 This example uses the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server). Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com) and set it as an environment variable:
 
@@ -40,7 +40,7 @@ await generate_mcp_sources(
 
 See [API Generation](apigen.md) for details on server parameters, generated package structure, and supported transports.
 
-When executing code via `execute()`, tool calls are auto-approved:
+The generated API can then be imported and called in code submitted to `execute()`, which auto-approves all tool calls:
 
 ```python
 --8<-- "examples/quickstart.py:tool_call_code"
@@ -52,9 +52,9 @@ When executing code via `execute()`, tool calls are auto-approved:
 
 ## Streaming vs execute
 
-`execute()` runs code to completion and auto-approves any tool calls and shell commands. For incremental output and control over approvals, use `stream()` instead. `stream()` yields events as execution progresses:
+`execute()` runs code to completion and auto-approves any tool calls and shell commands. For incremental output and control over [approvals](#approval), use `stream()` instead. `stream()` yields events as execution progresses:
 
-- `ApprovalRequest` when code triggers a tool call or shell command that requires approval
+- `ApprovalRequest` when code triggers a programmatic MCP tool call or a shell command
 - [`CodeExecutionChunk`][ipybox.CodeExecutionChunk] for incremental output (when `chunks=True`)
 - [`CodeExecutionResult`][ipybox.CodeExecutionResult] with the final output
 

@@ -1,10 +1,10 @@
 # Code execution
 
+[`CodeExecutor`][ipybox.CodeExecutor] runs Python code, shell commands, and programmatic MCP tool calls in a stateful IPython kernel through a unified execution interface: all three can be combined in a single code block. Both tool calls and shell commands support application-level approval before execution.
+
 ```python
 --8<-- "examples/codexec.py:imports"
 ```
-
-[`CodeExecutor`][ipybox.CodeExecutor] runs Python code and shell commands in an IPython kernel where variables and definitions persist across executions.
 
 ## Basic execution
 
@@ -26,9 +26,15 @@ Shell commands use IPython's `!` syntax:
 
 `!cmd` runs a shell command and prints its output. `result = !cmd` captures the output as a list of lines. Python variables are interpolated into shell commands via `{variable}` syntax. Shell commands and Python code mix freely in a single code block, for example to install packages with `!pip install` and use them immediately.
 
-## Tool call approval
+## Tool calls
 
-When code calls the [generated Python tool API](apigen.md), ipybox suspends execution and yields an `ApprovalRequest`. Call `accept()` to continue:
+ipybox can [generate typed Python APIs](apigen.md) from MCP server tool schemas. The generated code executes within the kernel, while MCP servers run on a separate [tool server](architecture.md).
+
+## Approval
+
+### Tool calls
+
+When code calls a generated tool API, ipybox suspends execution and yields an `ApprovalRequest`. Call `accept()` to continue:
 
 ```python
 --8<-- "examples/codexec.py:basic_approval"
@@ -38,7 +44,7 @@ When code calls the [generated Python tool API](apigen.md), ipybox suspends exec
 
 `approve_tool_calls` (default `True`) is set explicitly in the example above. Set it to `False` to skip approval and execute tool calls directly when using `stream()`. The `execute()` method always auto-approves tool calls regardless of this setting.
 
-## Shell command approval
+### Shell commands
 
 Enable `approve_shell_cmds=True` to require application-level approval for shell commands:
 
@@ -46,9 +52,9 @@ Enable `approve_shell_cmds=True` to require application-level approval for shell
 --8<-- "examples/codexec.py:shell_approval"
 ```
 
-Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_args={"cmd": "..."}`, using the same approval interface as MCP tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.
+Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_args={"cmd": "..."}`, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.
 
-## Preventing approval bypass
+#### Preventing bypass
 
 Code can bypass shell command approval by calling `subprocess.run()`, `subprocess.Popen()`, or `os.system()` directly. Set `require_shell_escape=True` to prevent this, forcing all shell execution through the `!` shell escape syntax:
 
@@ -113,9 +119,9 @@ This also stops any MCP servers started during execution. They restart lazily on
 
 ## Resetting working directory
 
-If `working_dir` is set, the kernel starts there and ipybox restores that
-directory after each execution. When a reset happens, ipybox prints a message
-in the cell output.
+If `working_dir` is set, the kernel starts in that directory and ipybox resets
+it back after each execution if code changed it. When a reset happens, ipybox
+prints a message in the cell output.
 
 ```python
 --8<-- "examples/codexec.py:working_directory_reset"
