@@ -481,10 +481,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#get-a-brave-api-key" class="md-nav__link">
+  <a href="#basic-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Get a Brave API key
+        Basic execution
       
     </span>
   </a>
@@ -492,10 +492,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#complete-example" class="md-nav__link">
+  <a href="#programmatic-mcp-tool-calling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Complete example
+        Programmatic MCP tool calling
       
     </span>
   </a>
@@ -503,63 +503,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+  <a href="#streaming-vs-execute" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How it works
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How it works">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#server-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Server parameters
+        Streaming vs execute
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#generating-a-python-tool-api" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#approval" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generating a Python tool API
+        Approval
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#code-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tool-call-approval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tool call approval
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1213,10 +1174,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#get-a-brave-api-key" class="md-nav__link">
+  <a href="#basic-execution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Get a Brave API key
+        Basic execution
       
     </span>
   </a>
@@ -1224,10 +1185,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#complete-example" class="md-nav__link">
+  <a href="#programmatic-mcp-tool-calling" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Complete example
+        Programmatic MCP tool calling
       
     </span>
   </a>
@@ -1235,63 +1196,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+  <a href="#streaming-vs-execute" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How it works
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How it works">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#server-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Server parameters
+        Streaming vs execute
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#generating-a-python-tool-api" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#approval" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generating a Python tool API
+        Approval
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#code-execution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code execution
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tool-call-approval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tool call approval
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1327,38 +1249,49 @@
 
 
 <h1 id="quickstart">Quickstart</h1>
-<p>This guide walks through a complete example: generating a Python tool API for the <a href="https://github.com/brave/brave-search-mcp-server">Brave Search MCP server</a>, executing code that calls it, and handling tool call approvals.</p>
+<p>This guide walks through Python code execution, shell commands, programmatic MCP tool calling, and application-level approval with ipybox.</p>
 <h2 id="installation">Installation</h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>ipybox
 </code></pre></div>
-<h2 id="get-a-brave-api-key">Get a Brave API key</h2>
-<p>Sign up for a free API key at <a href="https://api.search.brave.com">api.search.brave.com</a>. Once you have your key, set it as an environment variable:</p>
+<h2 id="basic-execution">Basic execution</h2>
+<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutor"><code>CodeExecutor</code></a> runs Python code and shell commands in an IPython kernel:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="c1"># Execute Python code</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(&#39;hello from Python&#39;)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># Execute a shell command</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;!echo hello from shell&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># Mix Python and shell in one block</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    name = &quot;ipybox&quot;</span>
+<span class="s2">    !echo hello from </span><span class="si">{name}</span>
+
+<span class="s2">    # Capture shell output into a Python variable</span>
+<span class="s2">    files = !ls /tmp</span>
+<span class="s2">    print(f&quot;found {len(files)} entries in /tmp&quot;)</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div>
+<p>Shell commands use IPython's <code>!</code> syntax and mix freely with Python code. <code>result = !cmd</code> captures shell output into a Python variable. Python variables are interpolated into shell commands via <code>{variable}</code> syntax.</p>
+<h2 id="programmatic-mcp-tool-calling">Programmatic MCP tool calling</h2>
+<p>ipybox can generate typed Python APIs from MCP server tool schemas via <a href="https://gradion-ai.github.io/mcpygen/">mcpygen</a>. The generated APIs can be imported and called like regular Python functions.</p>
+<p>This example uses the <a href="https://github.com/brave/brave-search-mcp-server">Brave Search MCP server</a>. Sign up for a free API key at <a href="https://api.search.brave.com">api.search.brave.com</a> and set it as an environment variable:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">BRAVE_API_KEY</span><span class="o">=</span>your_api_key_here
 </code></pre></div>
-<p>Or create a <code>.env</code> file in your project root (ipybox loads it automatically):</p>
-<div class="highlight"><pre><span></span><code>BRAVE_API_KEY=your_api_key_here
+<p><code>generate_mcp_sources()</code> connects to the MCP server, discovers its tools, and generates a typed Python package:</p>
+<div class="highlight"><pre><span></span><code><span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
+    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
+    <span class="n">server_params</span><span class="o">=</span><span class="n">SERVER_PARAMS</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
+<span class="p">)</span>
 </code></pre></div>
-<h2 id="complete-example">Complete example</h2>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="n">ApprovalRequest</span><span class="p">,</span> <span class="n">CodeExecutionResult</span><span class="p">,</span> <span class="n">CodeExecutor</span><span class="p">,</span> <span class="n">generate_mcp_sources</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ipybox.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">arun</span>
-
-<span class="n">SERVER_PARAMS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;npx&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;-y&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;@brave/brave-search-mcp-server&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--transport&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stdio&quot;</span><span class="p">,</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;BRAVE_API_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{BRAVE_API_KEY}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">}</span>
-
-<span class="n">CODE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<p>See <a href="../apigen/">API Generation</a> for details on server parameters, generated package structure, and supported transports.</p>
+<p>The generated API can then be imported and called in code submitted to <code>execute()</code>, which auto-approves all tool calls:</p>
+<div class="highlight"><pre><span></span><code><span class="n">CODE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>
 
 <span class="s2">result: Result = run(Params(query=&quot;neural topic models&quot;, count=3))</span>
@@ -1366,92 +1299,49 @@
 <span class="s2">for image in result.items:</span>
 <span class="s2">    print(f&quot;- [</span><span class="si">{image.title}</span><span class="s2">](</span><span class="si">{image.properties.url}</span><span class="s2">)&quot;)</span>
 <span class="s2">&quot;&quot;&quot;</span>
-
-
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-    <span class="c1"># Generate a Python tool API</span>
-    <span class="c1"># for the Brave Search MCP server</span>
-    <span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
-        <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
-        <span class="n">server_params</span><span class="o">=</span><span class="n">SERVER_PARAMS</span><span class="p">,</span>
-        <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Launch ipybox code executor</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-        <span class="c1"># Execute code that calls an MCP tool</span>
-        <span class="c1"># programmatically in an IPython kernel</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">CODE</span><span class="p">):</span>
-            <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
-                <span class="c1"># Handle approval requests</span>
-                <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">()</span> <span class="k">as</span> <span class="n">req</span><span class="p">:</span>
-                    <span class="c1"># Prompt user to approve or reject MCP tool call</span>
-                    <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Tool call: [</span><span class="si">{</span><span class="n">req</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">Approve? (Y/n): &quot;</span>
-                    <span class="k">if</span> <span class="k">await</span> <span class="n">arun</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">prompt</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]:</span>
-                        <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">reject</span><span class="p">()</span>
-                <span class="c1"># Handle final execution result</span>
-                <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">):</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="how-it-works">How it works</h2>
-<h3 id="server-parameters">Server parameters</h3>
-<p>The <code>server_params</code> dict defines how to connect to an MCP server. For stdio servers (local processes), you specify:</p>
-<ul>
-<li><code>command</code>: The executable to run</li>
-<li><code>args</code>: Command-line arguments</li>
-<li><code>env</code>: Environment variables to pass</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="n">SERVER_PARAMS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;npx&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-y&quot;</span><span class="p">,</span> <span class="s2">&quot;@brave/brave-search-mcp-server&quot;</span><span class="p">,</span> <span class="s2">&quot;--transport&quot;</span><span class="p">,</span> <span class="s2">&quot;stdio&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;BRAVE_API_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{BRAVE_API_KEY}</span><span class="s2">&quot;</span><span class="p">},</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>The <code>${BRAVE_API_KEY}</code> placeholder is replaced with the actual value from your environment when ipybox starts the MCP server.</p>
-<h3 id="generating-a-python-tool-api">Generating a Python tool API</h3>
-<p><code>generate_mcp_sources()</code> connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:</p>
-<div class="highlight"><pre><span></span><code><span class="k">await</span> <span class="n">generate_mcp_sources</span><span class="p">(</span>
-    <span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;brave_search&quot;</span><span class="p">,</span>
-    <span class="n">server_params</span><span class="o">=</span><span class="n">SERVER_PARAMS</span><span class="p">,</span>
-    <span class="n">root_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;mcptools&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>This creates an <code>mcptools/brave_search</code> package with a Python module for each MCP server tool:</p>
-<div class="highlight"><pre><span></span><code>mcptools/brave_search/
-├── __init__.py
-├── brave_web_search.py
-├── brave_local_search.py
-├── brave_image_search.py
-└── ...
-</code></pre></div>
-<p>Each module contains a Pydantic <code>Params</code> class for input validation, a <code>Result</code> class or <code>str</code> return type, and a <code>run()</code> function that executes the MCP tool.</p>
-<h3 id="code-execution">Code execution</h3>
-<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutor"><code>CodeExecutor</code></a> runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.</p>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">CODE</span><span class="p">):</span>
-        <span class="o">...</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">CODE</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </code></pre></div>
-<p>The <code>stream()</code> method yields events as execution progresses. You'll receive <code>ApprovalRequest</code> events when the code calls an MCP tool, and a final <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> with the output.</p>
-<h3 id="tool-call-approval">Tool call approval</h3>
-<p>When an MCP tool is called during code execution, ipybox pauses execution and sends an <code>ApprovalRequest</code> to your application. You must explicitly approve or reject each tool call:</p>
-<div class="highlight"><pre><span></span><code><span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">()</span> <span class="k">as</span> <span class="n">req</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">user_approves</span><span class="p">:</span>
-        <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">reject</span><span class="p">()</span>
+<h2 id="streaming-vs-execute">Streaming vs execute</h2>
+<p><code>execute()</code> runs code to completion and auto-approves any tool calls and shell commands. For incremental output and control over <a href="#approval">approvals</a>, use <code>stream()</code> instead. <code>stream()</code> yields events as execution progresses:</p>
+<ul>
+<li><code>ApprovalRequest</code> when code triggers a programmatic MCP tool call or a shell command</li>
+<li><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionChunk"><code>CodeExecutionChunk</code></a> for incremental output (when <code>chunks=True</code>)</li>
+<li><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> with the final output</li>
+</ul>
+<h2 id="approval">Approval</h2>
+<p>Both MCP tool calls and shell commands can require application-level approval before execution. <code>approve_tool_calls</code> (default <code>True</code>) requires approval for MCP tool calls. <code>approve_shell_cmds</code> (default <code>False</code>) requires approval for shell commands.</p>
+<p>The following example executes a code block that calls an MCP tool and runs a shell command, both requiring approval:</p>
+<div class="highlight"><pre><span></span><code><span class="n">SEARCH_AND_ECHO</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>
+
+<span class="s2">result: Result = run(Params(query=&quot;neural topic models&quot;, count=3))</span>
+<span class="s2">!echo &quot;Found {len(result.items)} images&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span>
 </code></pre></div>
-<p>The <code>ApprovalRequest</code> includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span>
+    <span class="n">approve_tool_calls</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># default</span>
+    <span class="n">approve_shell_cmds</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">SEARCH_AND_ECHO</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shell: </span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;cmd&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tool call: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div>
+<p>Both approval types yield an <code>ApprovalRequest</code>. The <code>tool_name</code> field distinguishes them: <code>"shell"</code> for shell commands, the MCP tool name for tool calls. Call <code>accept()</code> to continue or <code>reject()</code> to block execution.</p>
 <h2 id="next-steps">Next steps</h2>
 <ul>
+<li><a href="../codeexec/">Code Execution</a> - Shell commands, mixing, approval, and streaming</li>
 <li><a href="../apigen/">API Generation</a> - Generating typed Python APIs from MCP tools</li>
-<li><a href="../codeexec/">Code Execution</a> - Running code and handling tool approvals</li>
-<li><a href="../sandbox/">Sandboxing</a> - Secure execution with network and filesystem isolation</li>
+<li><a href="../sandbox/">Sandboxing</a> - Kernel isolation with filesystem and network restrictions</li>
 </ul>
 
 

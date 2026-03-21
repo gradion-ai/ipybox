@@ -1044,6 +1044,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#codeexecutor-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CodeExecutor Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mcpygen-dependency" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1059,6 +1070,45 @@
     <span class="md-ellipsis">
       
         Execution Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mcp-tool-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP tool calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shell commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernel-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel Initialization
       
     </span>
   </a>
@@ -1104,7 +1154,14 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <li><code>ipybox/code_exec.py</code>: <code>CodeExecutor</code> - main API, orchestrates kernel and tool execution</li>
 <li><code>ipybox/kernel_mgr/server.py</code>: <code>KernelGateway</code> - manages Jupyter Kernel Gateway subprocess</li>
 <li><code>ipybox/kernel_mgr/client.py</code>: <code>KernelClient</code> - WebSocket client for kernel communication</li>
-<li><code>ipybox/mcp_server.py</code>: <code>IpyboxMCPServer</code> - MCP server exposing ipybox capabilities</li>
+<li><code>ipybox/kernel_mgr/init.py</code>: <code>build_init_code()</code> - generates kernel initialization code</li>
+<li><code>ipybox/mcp_server.py</code>: <code>MCPServer</code> - MCP server exposing ipybox capabilities</li>
+</ul>
+<h2 id="codeexecutor-parameters">CodeExecutor Parameters</h2>
+<ul>
+<li><code>approve_tool_calls</code> (default <code>True</code>): requires approval for MCP tool calls via <code>stream()</code></li>
+<li><code>approve_shell_cmds</code> (default <code>False</code>): requires approval for <code>!cmd</code> shell commands</li>
+<li><code>require_shell_escape</code> (default <code>False</code>): blocks direct <code>subprocess</code>/<code>os.system()</code> calls, forcing through <code>!</code> approval; requires <code>approve_shell_cmds=True</code></li>
 </ul>
 <h2 id="mcpygen-dependency">mcpygen Dependency</h2>
 <p>The following modules have been extracted to the <a href="https://github.com/gradion-ai/mcpygen">mcpygen</a> package:</p>
@@ -1117,6 +1174,7 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <li><code>mcpygen.client</code>: <code>MCPClient</code> - generic MCP client (stdio, SSE, streamable HTTP)</li>
 </ul>
 <h2 id="execution-flow">Execution Flow</h2>
+<h3 id="mcp-tool-calls">MCP tool calls</h3>
 <ol>
 <li>User code calls a generated MCP wrapper function</li>
 <li>Wrapper -&gt; <code>ToolRunner.run_sync()</code> -&gt; HTTP POST to ToolServer <code>/run</code></li>
@@ -1125,6 +1183,16 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <li>If accepted: ToolServer executes the MCP tool on the MCP server</li>
 <li>Result returned by generated wrapper function</li>
 </ol>
+<h3 id="shell-commands">Shell commands</h3>
+<ol>
+<li><code>!cmd</code> in IPython triggers custom handler installed by <code>build_init_code()</code></li>
+<li>Handler -&gt; <code>ApprovalRequestor</code> -&gt; ToolServer -&gt; <code>ApprovalClient</code></li>
+<li>Application receives <code>ApprovalRequest(tool_name="shell", tool_args={"cmd": "..."})</code></li>
+<li>If accepted: handler executes original shell command</li>
+<li><code>require_shell_escape=True</code>: <code>ContextVar</code> guard blocks direct process-creation calls (<code>subprocess.Popen</code>, <code>os.system</code>, <code>os.exec*</code>, <code>os.spawn*</code>, <code>os.posix_spawn*</code>, <code>pty.spawn</code>), temporarily lifted during handler execution</li>
+</ol>
+<h2 id="kernel-initialization">Kernel Initialization</h2>
+<p><code>build_init_code()</code> composes optional init sections: env setup, cwd restore hook, shell approval handlers, subprocess guards. All internals use <code>_ipybox_</code> prefix, cleaned up after init. <code>KernelClient._rewrite_traceback()</code> hides these from error output.</p>
 <h2 id="code-generation">Code Generation</h2>
 <p><code>generate_mcp_sources()</code> connects to an MCP server, discovers tools, and generates:
 - One module per tool with <code>Params</code> (Pydantic), optional <code>Result</code>, and <code>run()</code> function

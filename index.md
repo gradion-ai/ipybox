@@ -1,21 +1,25 @@
 # ipybox
 
-ipybox is a Python code execution sandbox with first-class support for programmatic MCP tool calling. It generates typed Python tool APIs from MCP server tool schemas, supporting both local stdio and remote HTTP servers.
+Unified execution environment for Python code, shell commands, and programmatic MCP tool calls.
 
-Code that calls the generated API executes in a sandboxed IPython kernel. The API delegates MCP tool execution to a separate environment that enforces tool call approval, requiring applications to accept or reject each tool call.
+## Overview
+
+ipybox executes code blocks in a stateful IPython kernel. A code block can contain any combination of Python code, shell commands, and programmatic MCP tool calls. Kernels can be sandboxed with [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime), enforcing filesystem and network restrictions at OS level.
+
+It generates Python APIs for MCP server tools via [mcpygen](https://gradion-ai.github.io/mcpygen/), and supports application-level approval of individual tool calls and shell commands during code execution. ipybox runs locally on your computer, enabling protected access to your local data and tools.
 
 ## Capabilities
 
-| Capability                        | Description                                                                                                   |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Stateful code execution**       | State persists across executions in IPython kernels                                                           |
-| **Lightweight sandboxing**        | Kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) |
-| **Programmatic MCP tool calling** | MCP tools called via Python code, not JSON directly                                                           |
-| **MCP tool call approval**        | Every MCP tool call requires application-level approval                                                       |
-| **Python tool API generation**    | Functions and models generated from MCP tool schemas                                                          |
-| **Any MCP server**                | Supports stdio, Streamable HTTP, and SSE transports                                                           |
-| **Any Python package**            | Install and use any Python package in IPython kernels                                                         |
-| **Local code execution**          | No cloud dependencies, everything runs on your machine                                                        |
+| Capability                      | Description                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Stateful execution**          | Definitions and variables persist across executions in IPython kernels                                                   |
+| **Unified execution**           | Combine Python code, shell commands, and programmatic MCP tool calls in a code block                                     |
+| **Shell command execution**     | Run shell commands via `!cmd` syntax, capture output into Python variables                                               |
+| **Programmatic MCP tool calls** | MCP tools called via generated Python APIs ("code mode"), not JSON directly                                              |
+| **Python tool API generation**  | Typed functions and Pydantic models generated from MCP tool schemas via [mcpygen](https://gradion-ai.github.io/mcpygen/) |
+| **Application-level approval**  | Individual approval of tool calls and shell commands during code execution                                               |
+| **Lightweight sandboxing**      | Optional kernel isolation via Anthropic's [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)   |
+| **Local execution**             | No cloud dependencies, everything runs locally on your machine                                                           |
 
 ## Usage
 
@@ -25,12 +29,6 @@ Code that calls the generated API executes in a sandboxed IPython kernel. The AP
 | **[MCP server](https://gradion-ai.github.io/ipybox/mcpserver/index.md)**         | ipybox as MCP server for code actions and programmatic tool calling |
 | **[Claude Code plugin](https://gradion-ai.github.io/ipybox/ccplugin/index.md)**  | Plugin that bundles the ipybox MCP server and a code action skill   |
 
-## Agent integration
+Freeact agent
 
-ipybox is designed for agents that act by executing Python code rather than issuing JSON tool calls. This [code action](https://arxiv.org/abs/2402.01030) approach enables tool composition and intermediate result processing in a single inference pass, keeping intermediate results out of the agent's context window.
-
-Code actions are also key for agents to improve themselves and their tool libraries by capturing successful experience as executable knowledge. Agent-generated code cannot be trusted and requires sandboxed execution with application-level approval for every MCP tool call.
-
-freeact
-
-[Freeact](https://gradion-ai.github.io/freeact/) is an agent harness and CLI tool built on ipybox.
+[Freeact](https://gradion-ai.github.io/freeact/) is a general-purpose agent built on ipybox.

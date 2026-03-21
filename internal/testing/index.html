@@ -1055,6 +1055,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#test-mcp-server-testsintegrationmcp_serverpy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1095,7 +1117,22 @@
 <h2 id="test-organization">Test organization</h2>
 <ul>
 <li>Unit tests (<code>tests/unit/</code>): no external dependencies, no real servers</li>
-<li>Integration tests (<code>tests/integration/</code>): real Jupyter kernels, MCP servers, network</li>
+<li>Integration tests (<code>tests/integration/</code>): real IPython kernels, MCP servers, network</li>
+</ul>
+<h2 id="unit-tests">Unit tests</h2>
+<ul>
+<li><code>test_code_exec_helpers.py</code>: execution budget, stream worker</li>
+<li><code>test_kernel_gateway.py</code>: KernelGateway subprocess configuration</li>
+<li><code>test_kernel_init.py</code>: <code>build_init_code()</code> output sections and variable cleanup</li>
+<li><code>test_rewrite_traceback.py</code>: <code>_ipybox_</code> filtering, <code>get_ipython().system()</code> rewriting</li>
+</ul>
+<h2 id="integration-tests">Integration tests</h2>
+<ul>
+<li><code>test_code_exec.py</code>: CodeExecutor end-to-end (execution, streaming, approval, rejection, timeouts)</li>
+<li><code>test_kernel_init.py</code>: ANSI stripping, variable cleanup</li>
+<li><code>test_kernel_mgr.py</code>: KernelClient and KernelGateway integration</li>
+<li><code>test_shell_cmds.py</code>: shell command approval and subprocess blocking</li>
+<li><code>test_mcp_server.py</code>: MCPServer functionality</li>
 </ul>
 <h2 id="test-mcp-server-testsintegrationmcp_serverpy">Test MCP server (<code>tests/integration/mcp_server.py</code>)</h2>
 <ul>

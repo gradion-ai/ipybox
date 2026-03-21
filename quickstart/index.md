@@ -1,6 +1,6 @@
 # Quickstart
 
-This guide walks through a complete example: generating a Python tool API for the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server), executing code that calls it, and handling tool call approvals.
+This guide walks through Python code execution, shell commands, programmatic MCP tool calling, and application-level approval with ipybox.
 
 ## Installation
 
@@ -8,107 +8,46 @@ This guide walks through a complete example: generating a Python tool API for th
 pip install ipybox
 ```
 
-## Get a Brave API key
+## Basic execution
 
-Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com). Once you have your key, set it as an environment variable:
+CodeExecutor runs Python code and shell commands in an IPython kernel:
+
+```
+async with CodeExecutor() as executor:
+    # Execute Python code
+    result = await executor.execute("print('hello from Python')")
+    print(result.text)
+
+    # Execute a shell command
+    result = await executor.execute("!echo hello from shell")
+    print(result.text)
+
+    # Mix Python and shell in one block
+    code = """
+    name = "ipybox"
+    !echo hello from {name}
+
+    # Capture shell output into a Python variable
+    files = !ls /tmp
+    print(f"found {len(files)} entries in /tmp")
+    """
+    result = await executor.execute(code)
+    print(result.text)
+```
+
+Shell commands use IPython's `!` syntax and mix freely with Python code. `result = !cmd` captures shell output into a Python variable. Python variables are interpolated into shell commands via `{variable}` syntax.
+
+## Programmatic MCP tool calling
+
+ipybox can generate typed Python APIs from MCP server tool schemas via [mcpygen](https://gradion-ai.github.io/mcpygen/). The generated APIs can be imported and called like regular Python functions.
+
+This example uses the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server). Sign up for a free API key at [api.search.brave.com](https://api.search.brave.com) and set it as an environment variable:
 
 ```
 export BRAVE_API_KEY=your_api_key_here
 ```
 
-Or create a `.env` file in your project root (ipybox loads it automatically):
-
-```
-BRAVE_API_KEY=your_api_key_here
-```
-
-## Complete example
-
-```
-import asyncio
-from pathlib import Path
-
-from ipybox import ApprovalRequest, CodeExecutionResult, CodeExecutor, generate_mcp_sources
-from ipybox.utils import arun
-
-SERVER_PARAMS = {
-    "command": "npx",
-    "args": [
-        "-y",
-        "@brave/brave-search-mcp-server",
-        "--transport",
-        "stdio",
-    ],
-    "env": {
-        "BRAVE_API_KEY": "${BRAVE_API_KEY}",
-    },
-}
-
-CODE = """
-from mcptools.brave_search.brave_image_search import Params, Result, run
-
-result: Result = run(Params(query="neural topic models", count=3))
-
-for image in result.items:
-    print(f"- [{image.title}]({image.properties.url})")
-"""
-
-
-async def main():
-    # Generate a Python tool API
-    # for the Brave Search MCP server
-    await generate_mcp_sources(
-        server_name="brave_search",
-        server_params=SERVER_PARAMS,
-        root_dir=Path("mcptools"),
-    )
-
-    # Launch ipybox code executor
-    async with CodeExecutor() as executor:
-        # Execute code that calls an MCP tool
-        # programmatically in an IPython kernel
-        async for item in executor.stream(CODE):
-            match item:
-                # Handle approval requests
-                case ApprovalRequest() as req:
-                    # Prompt user to approve or reject MCP tool call
-                    prompt = f"Tool call: [{req}]\nApprove? (Y/n): "
-                    if await arun(input, prompt) in ["y", ""]:
-                        await req.accept()
-                    else:
-                        await req.reject()
-                # Handle final execution result
-                case CodeExecutionResult(text=text):
-                    print(text)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-## How it works
-
-### Server parameters
-
-The `server_params` dict defines how to connect to an MCP server. For stdio servers (local processes), you specify:
-
-- `command`: The executable to run
-- `args`: Command-line arguments
-- `env`: Environment variables to pass
-
-```
-SERVER_PARAMS = {
-    "command": "npx",
-    "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
-    "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"},
-}
-```
-
-The `${BRAVE_API_KEY}` placeholder is replaced with the actual value from your environment when ipybox starts the MCP server.
-
-### Generating a Python tool API
-
-`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates a typed Python API from their schema:
+`generate_mcp_sources()` connects to the MCP server, discovers its tools, and generates a typed Python package:
 
 ```
 await generate_mcp_sources(
@@ -118,47 +57,71 @@ await generate_mcp_sources(
 )
 ```
 
-This creates an `mcptools/brave_search` package with a Python module for each MCP server tool:
+See [API Generation](https://gradion-ai.github.io/ipybox/apigen/index.md) for details on server parameters, generated package structure, and supported transports.
+
+The generated API can then be imported and called in code submitted to `execute()`, which auto-approves all tool calls:
 
 ```
-mcptools/brave_search/
-├── __init__.py
-├── brave_web_search.py
-├── brave_local_search.py
-├── brave_image_search.py
-└── ...
+CODE = """
+from mcptools.brave_search.brave_image_search import Params, Result, run
+
+result: Result = run(Params(query="neural topic models", count=3))
+
+for image in result.items:
+    print(f"- [{image.title}]({image.properties.url})")
+"""
 ```
-
-Each module contains a Pydantic `Params` class for input validation, a `Result` class or `str` return type, and a `run()` function that executes the MCP tool.
-
-### Code execution
-
-CodeExecutor runs Python code in an IPython kernel. Variables and definitions persist across executions, enabling stateful workflows.
 
 ```
 async with CodeExecutor() as executor:
-    async for item in executor.stream(CODE):
-        ...
+    result = await executor.execute(CODE)
+    print(result.text)
 ```
 
-The `stream()` method yields events as execution progresses. You'll receive `ApprovalRequest` events when the code calls an MCP tool, and a final CodeExecutionResult with the output.
+## Streaming vs execute
 
-### Tool call approval
+`execute()` runs code to completion and auto-approves any tool calls and shell commands. For incremental output and control over [approvals](#approval), use `stream()` instead. `stream()` yields events as execution progresses:
 
-When an MCP tool is called during code execution, ipybox pauses execution and sends an `ApprovalRequest` to your application. You must explicitly approve or reject each tool call:
+- `ApprovalRequest` when code triggers a programmatic MCP tool call or a shell command
+- CodeExecutionChunk for incremental output (when `chunks=True`)
+- CodeExecutionResult with the final output
+
+## Approval
+
+Both MCP tool calls and shell commands can require application-level approval before execution. `approve_tool_calls` (default `True`) requires approval for MCP tool calls. `approve_shell_cmds` (default `False`) requires approval for shell commands.
+
+The following example executes a code block that calls an MCP tool and runs a shell command, both requiring approval:
 
 ```
-case ApprovalRequest() as req:
-    if user_approves:
-        await req.accept()
-    else:
-        await req.reject()
+SEARCH_AND_ECHO = """
+from mcptools.brave_search.brave_image_search import Params, Result, run
+
+result: Result = run(Params(query="neural topic models", count=3))
+!echo "Found {len(result.items)} images"
+"""
 ```
 
-The `ApprovalRequest` includes the server name, tool name, and arguments, so you can make informed decisions or implement custom approval logic.
+```
+async with CodeExecutor(
+    approve_tool_calls=True,  # default
+    approve_shell_cmds=True,
+) as executor:
+    async for item in executor.stream(SEARCH_AND_ECHO):
+        match item:
+            case ApprovalRequest(tool_name="shell", tool_args=args):
+                print(f"Shell: {args['cmd']}")
+                await item.accept()
+            case ApprovalRequest(tool_name=name, tool_args=args):
+                print(f"Tool call: {name}({args})")
+                await item.accept()
+            case CodeExecutionResult(text=text):
+                print(text)
+```
+
+Both approval types yield an `ApprovalRequest`. The `tool_name` field distinguishes them: `"shell"` for shell commands, the MCP tool name for tool calls. Call `accept()` to continue or `reject()` to block execution.
 
 ## Next steps
 
+- [Code Execution](https://gradion-ai.github.io/ipybox/codeexec/index.md) - Shell commands, mixing, approval, and streaming
 - [API Generation](https://gradion-ai.github.io/ipybox/apigen/index.md) - Generating typed Python APIs from MCP tools
-- [Code Execution](https://gradion-ai.github.io/ipybox/codeexec/index.md) - Running code and handling tool approvals
-- [Sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md) - Secure execution with network and filesystem isolation
+- [Sandboxing](https://gradion-ai.github.io/ipybox/sandbox/index.md) - Kernel isolation with filesystem and network restrictions

@@ -565,13 +565,80 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tool-call-approval" class="md-nav__link">
+  <a href="#shell-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tool call approval
+        Shell commands
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool calls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approval
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Approval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tool-calls_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell-commands_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shell commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shell commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preventing-bypass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preventing bypass
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -631,10 +698,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#working-directory" class="md-nav__link">
+  <a href="#resetting-working-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Working directory
+        Resetting working directory
       
     </span>
   </a>
@@ -1196,13 +1263,80 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tool-call-approval" class="md-nav__link">
+  <a href="#shell-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tool call approval
+        Shell commands
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool calls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approval
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Approval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tool-calls_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shell-commands_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shell commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shell commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preventing-bypass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preventing bypass
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1262,10 +1396,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#working-directory" class="md-nav__link">
+  <a href="#resetting-working-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Working directory
+        Resetting working directory
       
     </span>
   </a>
@@ -1293,6 +1427,7 @@
 
 
 <h1 id="code-execution">Code execution</h1>
+<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutor"><code>CodeExecutor</code></a> runs Python code, shell commands, and programmatic MCP tool calls in a stateful IPython kernel through a unified execution interface: all three can be combined in a single code block. Both tool calls and shell commands support application-level approval before execution.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ipybox</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ApprovalRequest</span><span class="p">,</span>
     <span class="n">CodeExecutionChunk</span><span class="p">,</span>
@@ -1300,34 +1435,98 @@
     <span class="n">CodeExecutor</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutor"><code>CodeExecutor</code></a> runs Python code in an IPython kernel where variables and definitions persist across executions.</p>
 <h2 id="basic-execution">Basic execution</h2>
-<p>Use <code>execute()</code> for non-interactive execution where MCP tool calls, if any, are auto-approved:</p>
+<p>Use <code>execute()</code> for non-interactive execution where MCP tool calls and shell commands, if any, are auto-approved:</p>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(&#39;hello world&#39;)&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
 </code></pre></div>
-<p>For application-level approval control, use <code>stream()</code> instead.</p>
-<h2 id="tool-call-approval">Tool call approval</h2>
-<p>When code calls the <a href="../apigen/">generated Python tool API</a>, ipybox suspends execution and yields an <code>ApprovalRequest</code>. You must call <code>accept()</code> to continue execution:</p>
+<p>For streaming output or application-level approval control, use <code>stream()</code> instead.</p>
+<h2 id="shell-commands">Shell commands</h2>
+<p>Shell commands use IPython's <code>!</code> syntax:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="c1"># Run a shell command</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;!echo hello from shell&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello from shell&quot;</span>
+
+    <span class="c1"># Capture shell output into a Python variable</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    files = !ls /tmp</span>
+<span class="s2">    print(f&quot;found {len(files)} entries&quot;)</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
+    <span class="c1"># Variable interpolation in shell commands</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    name = &quot;world&quot;</span>
+<span class="s2">    !echo hello </span><span class="si">{name}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
+</code></pre></div>
+<p><code>!cmd</code> runs a shell command and prints its output. <code>result = !cmd</code> captures the output as a list of lines. Python variables are interpolated into shell commands via <code>{variable}</code> syntax. Shell commands and Python code mix freely in a single code block, for example to install packages with <code>!pip install</code> and use them immediately.</p>
+<h2 id="tool-calls">Tool calls</h2>
+<p>ipybox can <a href="../apigen/">generate typed Python APIs</a> from MCP server tool schemas. The generated code executes within the kernel, while MCP servers run on a separate <a href="../architecture/">tool server</a>.</p>
+<h2 id="approval">Approval</h2>
+<h3 id="tool-calls_1">Tool calls</h3>
+<p>When code calls a generated tool API, ipybox suspends execution and yields an <code>ApprovalRequest</code>. Call <code>accept()</code> to continue:</p>
 <div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>
 
 <span class="s2">result: Result = run(Params(query=&quot;neural topic models&quot;, count=3))</span>
 <span class="s2">print(f&quot;num results = {len(result.items)}&quot;)</span>
 <span class="s2">&quot;&quot;&quot;</span>
-<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approve_tool_calls</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>  <span class="c1"># default</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
         <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
-            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">():</span>
-                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;brave_image_search&quot;</span>
-                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_args</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;neural topic models&quot;</span>
-                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">tool_args</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;brave_image_search&quot;</span>
+                <span class="k">assert</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;neural topic models&quot;</span>
+                <span class="k">assert</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
                 <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
             <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
                 <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;num results = 3&quot;</span>
 </code></pre></div>
-<p>The approval request includes <code>tool_name</code> and <code>tool_args</code> so you can inspect what's being called. Calling <code>reject()</code> raises a <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionError"><code>CodeExecutionError</code></a>.</p>
+<p><code>ApprovalRequest</code> includes <code>tool_name</code> and <code>tool_args</code> for inspection. Calling <code>reject()</code> raises a <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionError"><code>CodeExecutionError</code></a> containing an <code>ApprovalRejectedError</code> traceback from the kernel.</p>
+<p><code>approve_tool_calls</code> (default <code>True</code>) is set explicitly in the example above. Set it to <code>False</code> to skip approval and execute tool calls directly when using <code>stream()</code>. The <code>execute()</code> method always auto-approves tool calls regardless of this setting.</p>
+<h3 id="shell-commands_1">Shell commands</h3>
+<p>Enable <code>approve_shell_cmds=True</code> to require application-level approval for shell commands:</p>
+<div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">name = &quot;world&quot;</span>
+<span class="s2">!echo hello </span><span class="si">{name}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approve_shell_cmds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="n">args</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;echo hello world&quot;</span><span class="p">}</span>
+                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
+</code></pre></div>
+<p>Each <code>!cmd</code> triggers an <code>ApprovalRequest</code> with <code>tool_name="shell"</code> and <code>tool_args={"cmd": "..."}</code>, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.</p>
+<h4 id="preventing-bypass">Preventing bypass</h4>
+<p>Code could bypass shell command approval through various process-creation APIs (<code>subprocess</code>, <code>os.system()</code>, <code>os.exec*()</code>, <code>os.spawn*()</code>, <code>os.posix_spawn()</code>, <code>pty.spawn()</code>). Set <code>require_shell_escape=True</code> to guard these, forcing all shell execution through the <code>!</code> syntax where it triggers the approval flow:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approve_shell_cmds</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">require_shell_escape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="c1"># Direct subprocess calls are blocked to prevent bypassing approval</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;import subprocess; subprocess.run([&quot;echo&quot;, &quot;hi&quot;])&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="s2">&quot;RuntimeError&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="c1"># Shell commands via !cmd still work and go through approval</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="s2">&quot;!echo hello&quot;</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">():</span>
+                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello&quot;</span>
+</code></pre></div>
+<p>With <code>require_shell_escape=True</code>, direct process-creation calls raise a <code>RuntimeError</code>. Shell commands via <code>!cmd</code> still work and go through the approval channel. Requires <code>approve_shell_cmds=True</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These guards are Python-level guards that close the most obvious gaps. They catch accidental bypass (e.g., an LLM agent reaching for <code>subprocess.run</code>) but are not a security boundary: code running in the kernel can undo guards, call C functions via <code>ctypes</code>, or use CPython internal modules. These bypasses can be prevented at the OS level. A future version will add <a href="../sandbox/">sandbox</a>-level enforcement for shell command approval.</p>
+</div>
 <h2 id="stream-output-chunks">Stream output chunks</h2>
 <p>Enable <code>chunks=True</code> to receive output incrementally as it's produced:</p>
 <div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
@@ -1344,9 +1543,9 @@
             <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
                 <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;chunk 1</span><span class="se">\n</span><span class="s2">chunk 2&quot;</span>
 </code></pre></div>
-<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionChunk"><code>CodeExecutionChunk</code></a> events contain partial output. The final <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> still contains the complete output.</p>
+<p><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionChunk"><code>CodeExecutionChunk</code></a> events contain partial output. The final <a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> contains the complete, aggregated output.</p>
 <h2 id="capturing-plots">Capturing plots</h2>
-<p>Plots are automatically captured as PNG files in the <code>images</code> directory. Use <code>images_dir</code> to customize the location:</p>
+<p>Plots are automatically captured as PNG files. Set <code>images_dir</code> to specify the output directory:</p>
 <div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">import matplotlib.pyplot as plt</span>
 <span class="s2">plt.plot([1, 2, 3], [1, 4, 9])</span>
@@ -1373,7 +1572,7 @@
 <li><code>timeout</code> in <code>stream()</code>: Maximum total execution time <strong>excluding approval waits</strong>. Tool execution time and kernel execution time still count toward this budget (default: no timeout).</li>
 </ul>
 <h2 id="kernel-environment">Kernel environment</h2>
-<p>The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with <code>kernel_env</code>:</p>
+<p>The IPython kernel does not inherit environment variables from the parent process. Pass them with <code>kernel_env</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># IPython kernel does not inherit environment variables from parent process</span>
 <span class="c1"># Kernel environment must be explicitly set using the kernel_env parameter</span>
 <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">kernel_env</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TEST_VAR&quot;</span><span class="p">:</span> <span class="s2">&quot;test_val&quot;</span><span class="p">})</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
@@ -1385,7 +1584,7 @@
 <p>Environment variables referenced in <code>server_params</code> via <code>${VAR_NAME}</code> are taken from the parent process and do not need to be passed to <code>kernel_env</code>.</p>
 </div>
 <h2 id="kernel-reset">Kernel reset</h2>
-<p>Clear all variables and definitions by resetting the IPython kernel with <code>reset()</code>:</p>
+<p><code>reset()</code> clears all variables and definitions:</p>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
     <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;x = 42&quot;</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;print(x)&quot;</span><span class="p">)</span>
@@ -1403,10 +1602,10 @@
     <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;x not defined&quot;</span>
 </code></pre></div>
 <p>This also stops any MCP servers started during execution. They restart lazily on their next tool call.</p>
-<h2 id="working-directory">Working directory</h2>
-<p>If <code>working_dir</code> is set, the kernel starts there and ipybox restores that
-directory after each execution. When a reset happens, ipybox prints a message
-in the cell output.</p>
+<h2 id="resetting-working-directory">Resetting working directory</h2>
+<p>If <code>working_dir</code> is set, the kernel starts in that directory and ipybox resets
+it back after each execution if code changed it. When a reset happens, ipybox
+prints a message in the cell output.</p>
 <div class="highlight"><pre><span></span><code><span class="n">base_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">changed_dir</span><span class="p">:</span>

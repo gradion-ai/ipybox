@@ -38,6 +38,7 @@ Default sandbox configuration
 
 ```
 {
+  "allowPty": true,
   "enableWeakerNestedSandbox": false,
   "filesystem": {
     "denyRead": [".env"],
