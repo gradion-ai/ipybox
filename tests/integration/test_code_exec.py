@@ -361,6 +361,39 @@ print(f"after tool call: {{result}}", flush=True)
         assert result is not None
 
 
+class TestApproveToolCalls:
+    """Tests for approve_tool_calls parameter."""
+
+    @pytest.mark.asyncio
+    async def test_tool_call_without_approval(self, generated_mcp_package: dict):
+        """Test that tool calls execute directly when approve_tool_calls=False."""
+        root_dir = generated_mcp_package["root_dir"]
+        code = f"""
+from {MCP_SERVER_NAME}.tool_2 import run, Params
+result = run(Params(s="hello"))
+print(result)
+"""
+
+        async with CodeExecutor(
+            kernel_env={"PYTHONPATH": str(root_dir)},
+            approve_tool_calls=False,
+            log_level="ERROR",
+        ) as executor:
+            approvals = []
+            result = None
+            async for item in executor.stream(code):
+                match item:
+                    case ApprovalRequest():
+                        approvals.append(item)
+                    case CodeExecutionResult():
+                        result = item
+
+            assert len(approvals) == 0
+            assert result is not None
+            assert result.text is not None
+            assert "You passed to tool 2: hello" in result.text
+
+
 class TestApprovalFlow:
     """Detailed approval behavior tests."""
 

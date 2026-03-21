@@ -1,6 +1,6 @@
 # MCP server
 
-[ipybox](index.md) is a Python code execution sandbox with first-class support for programmatic MCP tool calling. Code executes in a sandboxed IPython Kernel, providing a stateful environment where variables and definitions persist across executions. 
+[ipybox](index.md) is a local, sandboxed execution environment for running Python code, shell commands and programmatic MCP tool calls. Code executes in a stateful IPython kernel where variables and definitions persist across executions.
 
 When run as an MCP server, it exposes these capabilities to MCP clients like Claude Code or Claude Desktop. Agents can register MCP servers, then execute Python code that uses them programmatically:
 
@@ -30,7 +30,7 @@ When run as an MCP server, it exposes these capabilities to MCP clients like Cla
 
 ## Workspace
 
-The `--workspace` option specifies the ipybox working directory, default is `"."`. Generated [Python tool APIs](apigen.md) are written to `mcptools/` in the workspace, and [code execution](#execute_ipython_cell) use the workspace as working directory.
+The `--workspace` option specifies the ipybox working directory, default is `"."`. Generated [Python tool APIs](apigen.md) are written to `mcptools/` in the workspace, and [code execution](#execute_ipython_cell) uses the workspace as working directory.
 
 ## Environment variables
 
@@ -47,7 +47,7 @@ These variables are available to MCP servers registered with ipybox but are not 
 
 ## Usage example
 
-This example shows a typical workflow using the [Brave Search MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search). First, configure the ipybox MCP server with a [BRAVE_API_KEY](quickstart.md#get-a-brave-api-key):
+This example shows a typical workflow using the [Brave Search MCP server](https://github.com/brave/brave-search-mcp-server). First, configure the ipybox MCP server with a [BRAVE_API_KEY](quickstart.md#programmatic-mcp-tool-calling):
 
 ```json
 {
@@ -76,7 +76,7 @@ An agent then registers the Brave Search MCP server by calling `register_mcp_ser
   "server_name": "brave_search",
   "server_params": {
     "command": "npx",
-    "args": ["-y", "@anthropic/mcp-server-brave-search"],
+    "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
     "env": {"BRAVE_API_KEY": "${BRAVE_API_KEY}"}
   }
 }
@@ -115,7 +115,7 @@ Executes Python code in a stateful IPython kernel. Executed code can use the gen
 Parameters:
 
 - `code` — Python code to execute
-- `timeout` — Maximum execution time in seconds (default: no timeout)
+- `timeout` — Maximum execution time in seconds (default: 120)
 - `max_output_chars` — Output character limit (default: 5000)
 
 Returns the execution output.

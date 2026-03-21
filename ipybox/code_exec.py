@@ -106,6 +106,9 @@ class CodeExecutor:
         sandbox: bool = False,
         sandbox_config: Path | None = None,
         log_level: str = "WARNING",
+        approve_tool_calls: bool = True,
+        approve_shell_cmds: bool = False,
+        require_shell_escape: bool = False,
     ):
         """Configure a code executor with optional sandboxing.
 
@@ -139,7 +142,20 @@ class CodeExecutor:
                 [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime)
                 README for available options.
             log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+            approve_tool_calls: Whether MCP tool calls require approval
+                before execution. When `True`, each tool call yields an
+                `ApprovalRequest` that must be accepted or rejected.
+            approve_shell_cmds: Whether to require approval for `!` shell
+                commands. When enabled, each shell command triggers an
+                `ApprovalRequest` before execution.
+            require_shell_escape: Whether to block direct process-creation
+                calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
+                `os.posix_spawn*`, `pty.spawn`), forcing shell commands
+                through the `!` handler. Requires `approve_shell_cmds=True`.
         """
+        if require_shell_escape and not approve_shell_cmds:
+            raise ValueError("require_shell_escape=True requires approve_shell_cmds=True")
+
         self.tool_server_host = tool_server_host
         self.tool_server_port = tool_server_port or find_free_port()
 
@@ -148,6 +164,9 @@ class CodeExecutor:
         self.working_dir = working_dir.resolve() if working_dir is not None else None
         self.kernel_env = kernel_env or {}
         self.images_dir = images_dir
+        self.approve_tool_calls = approve_tool_calls
+        self.approve_shell_cmds = approve_shell_cmds
+        self.require_shell_escape = require_shell_escape
 
         self.approval_timeout = approval_timeout
         self.connect_timeout = connect_timeout
@@ -330,7 +349,7 @@ class CodeExecutor:
         async with ToolServer(
             host=self.tool_server_host,
             port=self.tool_server_port,
-            approval_required=True,
+            approval_required=self.approve_tool_calls,
             approval_timeout=self.approval_timeout,
             connect_timeout=self.connect_timeout,
             log_level=self.log_level,
@@ -353,6 +372,10 @@ class CodeExecutor:
                     port=self.kernel_gateway_port,
                     working_dir=self.working_dir,
                     images_dir=self.images_dir,
+                    approve_shell_cmds=self.approve_shell_cmds,
+                    require_shell_escape=self.require_shell_escape,
+                    tool_server_host=self.tool_server_host,
+                    tool_server_port=self.tool_server_port,
                 ) as client:
                     yield client
 

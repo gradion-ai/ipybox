@@ -1,9 +1,9 @@
 import asyncio
 import logging
+import re
 import time
 from base64 import b64decode
 from dataclasses import dataclass
-from inspect import cleandoc
 from pathlib import Path
 from typing import AsyncIterator
 from uuid import uuid4
@@ -13,6 +13,8 @@ import aiohttp
 from tornado.escape import json_decode, json_encode
 from tornado.httpclient import HTTPRequest
 from tornado.websocket import WebSocketClientConnection, websocket_connect
+
+from ipybox.kernel_mgr.init import build_init_code
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,10 @@ class KernelClient:
         working_dir: Path | None = None,
         images_dir: Path | None = None,
         ping_interval: float = 10,
+        approve_shell_cmds: bool = False,
+        require_shell_escape: bool = False,
+        tool_server_host: str = "localhost",
+        tool_server_port: int = 0,
     ):
         """
         Args:
@@ -80,6 +86,17 @@ class KernelClient:
                 execution. Defaults to `images` in the current directory.
             ping_interval: Interval in seconds for WebSocket pings that
                 keep the connection to the IPython kernel alive.
+            approve_shell_cmds: Whether to require approval for `!` shell
+                commands. When enabled, each shell command triggers an
+                approval request before execution.
+            require_shell_escape: Whether to block direct process-creation
+                calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
+                `os.posix_spawn*`, `pty.spawn`), forcing shell commands
+                through the `!` handler. Requires `approve_shell_cmds=True`.
+            tool_server_host: Hostname of the tool server (used when
+                `approve_shell_cmds` is `True`).
+            tool_server_port: Port of the tool server (used when
+                `approve_shell_cmds` is `True`).
         """
         self.host = host
         self.port = port
@@ -87,6 +104,10 @@ class KernelClient:
 
         self.images_dir = images_dir or Path("images")
         self.ping_interval = ping_interval
+        self.approve_shell_cmds = approve_shell_cmds
+        self.require_shell_escape = require_shell_escape
+        self.tool_server_host = tool_server_host
+        self.tool_server_port = tool_server_port
 
         self._kernel_id: str | None = None
         self._session_id: str | None = None
@@ -355,49 +376,34 @@ class KernelClient:
         await self.drain(timeout=drain_timeout)
 
     async def _init_kernel(self):
-        init_parts = [
-            cleandoc("""
-                import os as _os
-                %colors nocolor
-                for _k in ('CLICOLOR', 'CLICOLOR_FORCE', 'FORCE_COLOR'):
-                    _os.environ.pop(_k, None)
-            """)
-        ]
-
-        if self.working_dir is not None:
-            working_dir = str(self.working_dir)
-            init_parts.append(
-                cleandoc(f"""
-                    _ipybox_cwd = {working_dir!r}
-                    _os.chdir(_ipybox_cwd)
-                    def _ipybox_restore_cwd(_result=None, _cwd=_ipybox_cwd, _os=_os):
-                        try:
-                            _current_cwd = _os.getcwd()
-                        except FileNotFoundError:
-                            _current_cwd = None
-                        if _current_cwd != _cwd:
-                            _os.chdir(_cwd)
-                            print(f'[ipybox] cwd reset to {{_cwd}}')
-                    get_ipython().events.register('post_run_cell', _ipybox_restore_cwd)
-                    del _ipybox_cwd, _ipybox_restore_cwd
-                """)
-            )
-
-        init_parts.append(
-            cleandoc("""
-                _os.environ['TERM'] = 'dumb'
-                _os.environ['NO_COLOR'] = '1'
-                del _os, _k
-            """)
+        code = build_init_code(
+            working_dir=self.working_dir,
+            approve_shell_cmds=self.approve_shell_cmds,
+            require_shell_escape=self.require_shell_escape,
+            tool_server_host=self.tool_server_host,
+            tool_server_port=self.tool_server_port,
         )
-
-        await self.execute(
-            "\n".join(init_parts),
-            timeout=10,
-        )
+        await self.execute(code, timeout=10)
 
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
         error_value = msg_dict["content"].get("evalue", "")
-        error_trace = "\n".join(msg_dict["content"].get("traceback", []))
+        traceback_lines = msg_dict["content"].get("traceback", [])
+        error_trace = "\n".join(self._rewrite_traceback(traceback_lines))
         raise ExecutionError(f"{error_name}: {error_value}\n{error_trace}")
+
+    @staticmethod
+    def _rewrite_traceback(entries: list[str]) -> list[str]:
+        """Rewrite traceback to hide ipybox internals.
+
+        Drops entries from `_ipybox_`-prefixed functions and replaces
+        `get_ipython().system(...)` / `get_ipython().getoutput(...)`
+        with the `!...` shorthand.
+        """
+        result: list[str] = []
+        for entry in entries:
+            if "_ipybox_" in entry:
+                continue
+            entry = re.sub(r"get_ipython\(\)\.(?:system|getoutput)\(['\"](.+?)['\"]\)", r"!\1", entry)
+            result.append(entry)
+        return result

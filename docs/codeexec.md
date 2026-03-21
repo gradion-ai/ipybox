@@ -1,30 +1,71 @@
 # Code execution
 
+[`CodeExecutor`][ipybox.CodeExecutor] runs Python code, shell commands, and programmatic MCP tool calls in a stateful IPython kernel through a unified execution interface: all three can be combined in a single code block. Both tool calls and shell commands support application-level approval before execution.
+
 ```python
 --8<-- "examples/codexec.py:imports"
 ```
 
-[`CodeExecutor`][ipybox.CodeExecutor] runs Python code in an IPython kernel where variables and definitions persist across executions.
-
 ## Basic execution
 
-Use `execute()` for non-interactive execution where MCP tool calls, if any, are auto-approved:
+Use `execute()` for non-interactive execution where MCP tool calls and shell commands, if any, are auto-approved:
 
 ```python
 --8<-- "examples/codexec.py:basic_execution"
 ```
 
-For application-level approval control, use `stream()` instead.
+For streaming output or application-level approval control, use `stream()` instead.
 
-## Tool call approval
+## Shell commands
 
-When code calls the [generated Python tool API](apigen.md), ipybox suspends execution and yields an `ApprovalRequest`. You must call `accept()` to continue execution:
+Shell commands use IPython's `!` syntax:
+
+```python
+--8<-- "examples/codexec.py:shell_commands"
+```
+
+`!cmd` runs a shell command and prints its output. `result = !cmd` captures the output as a list of lines. Python variables are interpolated into shell commands via `{variable}` syntax. Shell commands and Python code mix freely in a single code block, for example to install packages with `!pip install` and use them immediately.
+
+## Tool calls
+
+ipybox can [generate typed Python APIs](apigen.md) from MCP server tool schemas. The generated code executes within the kernel, while MCP servers run on a separate [tool server](architecture.md).
+
+## Approval
+
+### Tool calls
+
+When code calls a generated tool API, ipybox suspends execution and yields an `ApprovalRequest`. Call `accept()` to continue:
 
 ```python
 --8<-- "examples/codexec.py:basic_approval"
 ```
 
-The approval request includes `tool_name` and `tool_args` so you can inspect what's being called. Calling `reject()` raises a [`CodeExecutionError`][ipybox.CodeExecutionError].
+`ApprovalRequest` includes `tool_name` and `tool_args` for inspection. Calling `reject()` raises a [`CodeExecutionError`][ipybox.CodeExecutionError] containing an `ApprovalRejectedError` traceback from the kernel.
+
+`approve_tool_calls` (default `True`) is set explicitly in the example above. Set it to `False` to skip approval and execute tool calls directly when using `stream()`. The `execute()` method always auto-approves tool calls regardless of this setting.
+
+### Shell commands
+
+Enable `approve_shell_cmds=True` to require application-level approval for shell commands:
+
+```python
+--8<-- "examples/codexec.py:shell_approval"
+```
+
+Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_args={"cmd": "..."}`, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.
+
+#### Preventing bypass
+
+Code could bypass shell command approval through various process-creation APIs (`subprocess`, `os.system()`, `os.exec*()`, `os.spawn*()`, `os.posix_spawn()`, `pty.spawn()`). Set `require_shell_escape=True` to guard these, forcing all shell execution through the `!` syntax where it triggers the approval flow:
+
+```python
+--8<-- "examples/codexec.py:subprocess_blocking"
+```
+
+With `require_shell_escape=True`, direct process-creation calls raise a `RuntimeError`. Shell commands via `!cmd` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
+
+!!! note
+    These guards are Python-level guards that close the most obvious gaps. They catch accidental bypass (e.g., an LLM agent reaching for `subprocess.run`) but are not a security boundary: code running in the kernel can undo guards, call C functions via `ctypes`, or use CPython internal modules. These bypasses can be prevented at the OS level. A future version will add [sandbox](sandbox.md)-level enforcement for shell command approval.
 
 ## Stream output chunks
 
@@ -34,11 +75,11 @@ Enable `chunks=True` to receive output incrementally as it's produced:
 --8<-- "examples/codexec.py:basic_chunks"
 ```
 
-[`CodeExecutionChunk`][ipybox.CodeExecutionChunk] events contain partial output. The final [`CodeExecutionResult`][ipybox.CodeExecutionResult] still contains the complete output.
+[`CodeExecutionChunk`][ipybox.CodeExecutionChunk] events contain partial output. The final [`CodeExecutionResult`][ipybox.CodeExecutionResult] contains the complete, aggregated output.
 
 ## Capturing plots
 
-Plots are automatically captured as PNG files in the `images` directory. Use `images_dir` to customize the location:
+Plots are automatically captured as PNG files. Set `images_dir` to specify the output directory:
 
 ```python
 --8<-- "examples/codexec.py:basic_plotting"
@@ -59,7 +100,7 @@ Configure approval and execution timeouts:
 
 ## Kernel environment
 
-The IPython kernel does not inherit environment variables from the parent process. You can pass them explicitly with `kernel_env`:
+The IPython kernel does not inherit environment variables from the parent process. Pass them with `kernel_env`:
 
 ```python
 --8<-- "examples/codexec.py:kernel_environment"
@@ -71,7 +112,7 @@ The IPython kernel does not inherit environment variables from the parent proces
 
 ## Kernel reset
 
-Clear all variables and definitions by resetting the IPython kernel with `reset()`:
+`reset()` clears all variables and definitions:
 
 ```python
 --8<-- "examples/codexec.py:kernel_reset"
@@ -79,11 +120,11 @@ Clear all variables and definitions by resetting the IPython kernel with `reset(
 
 This also stops any MCP servers started during execution. They restart lazily on their next tool call.
 
-## Working directory
+## Resetting working directory
 
-If `working_dir` is set, the kernel starts there and ipybox restores that
-directory after each execution. When a reset happens, ipybox prints a message
-in the cell output.
+If `working_dir` is set, the kernel starts in that directory and ipybox resets
+it back after each execution if code changed it. When a reset happens, ipybox
+prints a message in the cell output.
 
 ```python
 --8<-- "examples/codexec.py:working_directory_reset"

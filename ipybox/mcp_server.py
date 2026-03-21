@@ -90,7 +90,7 @@ class MCPServer:
             from mcptools.{server_name} import {tool_name}
             result = {tool_name}.run({tool_name}.Params(...))
 
-        - Environment variable placeholders like {API_KEY} in server_params are auto-replaced
+        - Environment variable placeholders like ${API_KEY} in server_params are auto-replaced
         - Re-registering overwrites previous; call reset() to re-import updated tools
         - Generated mcptools/ persists across reset() calls
 
