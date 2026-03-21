@@ -95,10 +95,39 @@ class TestApproveShellCmds:
 
     @pytest.mark.asyncio
     async def test_init_does_not_leak_handler_variables(self, executor_approve: CodeExecutor):
-        for name in ("_ip", "_ipybox_shell_handler", "_ipybox_getoutput_handler"):
+        for name in (
+            "_ip",
+            "_ipybox_shell_handler",
+            "_ipybox_getoutput_handler",
+            "_ipybox_safe_dict",
+        ):
             with pytest.raises(CodeExecutionError) as exc_info:
                 await executor_approve.execute(f"print({name})")
             assert "NameError" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_shell_cmd_rejection(self, executor_approve: CodeExecutor):
+        with pytest.raises(CodeExecutionError) as exc_info:
+            async for item in executor_approve.stream("!echo secret"):
+                match item:
+                    case ApprovalRequest():
+                        await item.reject()
+
+        assert "Rejected" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_shell_cmd_with_undefined_variable(self, executor_approve: CodeExecutor):
+        approvals = []
+        async for item in executor_approve.stream("!echo {undefined_var}"):
+            match item:
+                case ApprovalRequest():
+                    approvals.append(item)
+                    await item.accept()
+                case CodeExecutionResult():
+                    pass
+
+        assert len(approvals) == 1
+        assert "{undefined_var}" in approvals[0].tool_args["cmd"]
 
 
 class TestRequireShellEscape:
@@ -119,6 +148,30 @@ class TestRequireShellEscape:
         with pytest.raises(CodeExecutionError) as exc_info:
             await executor_escape.execute('import os; os.system("echo hi")')
         assert "Direct os.system() calls are not allowed" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_os_execvp_blocked(self, executor_escape: CodeExecutor):
+        with pytest.raises(CodeExecutionError) as exc_info:
+            await executor_escape.execute('import os; os.execvp("echo", ["echo", "hi"])')
+        assert "Direct os.execvp() calls are not allowed" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_os_spawnl_blocked(self, executor_escape: CodeExecutor):
+        with pytest.raises(CodeExecutionError) as exc_info:
+            await executor_escape.execute('import os; os.spawnl(os.P_WAIT, "/bin/echo", "echo", "hi")')
+        assert "Direct os.spawnl() calls are not allowed" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_os_posix_spawn_blocked(self, executor_escape: CodeExecutor):
+        with pytest.raises(CodeExecutionError) as exc_info:
+            await executor_escape.execute('import os; os.posix_spawn("/bin/echo", ["/bin/echo", "hi"], os.environ)')
+        assert "Direct os.posix_spawn() calls are not allowed" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_pty_spawn_blocked(self, executor_escape: CodeExecutor):
+        with pytest.raises(CodeExecutionError) as exc_info:
+            await executor_escape.execute('import pty; pty.spawn(["/bin/echo", "hi"])')
+        assert "Direct pty.spawn() calls are not allowed" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_shell_cmd_still_works(self, executor_escape: CodeExecutor):
@@ -142,6 +195,11 @@ class TestRequireShellEscape:
             "_ipybox_guarded_os_system",
             "_ipybox_orig_popen",
             "_ipybox_orig_os_system",
+            "_ipybox_guard",
+            "_ipybox_name",
+            "_ipybox_orig",
+            "_ipybox_orig_pty_spawn",
+            "_ipybox_guarded_pty_spawn",
         ):
             with pytest.raises(CodeExecutionError) as exc_info:
                 await executor_escape.execute(f"print({name})")

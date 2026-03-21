@@ -75,9 +75,14 @@ class TestBuildInitCodeApproval:
         code = build_init_code(approve_shell_cmds=True)
         assert "return _run(cmd)" in code
 
+    def test_uses_safe_dict_for_format_map(self):
+        code = build_init_code(approve_shell_cmds=True)
+        assert "_ipybox_safe_dict" in code
+        assert "format_map(_SD(_ns))" in code
+
     def test_cleans_up_handler_variables(self):
         code = build_init_code(approve_shell_cmds=True)
-        assert "del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler" in code
+        assert "del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler, _ipybox_safe_dict" in code
 
 
 class TestBuildInitCodeShellEscape:
@@ -104,6 +109,39 @@ class TestBuildInitCodeShellEscape:
         code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
         assert "_ipybox_shell_allowed.set(True)" in code
         assert "_ipybox_shell_allowed.set(False)" in code
+
+    def test_guards_os_exec_family(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        for name in ("execv", "execve", "execvp", "execvpe", "execl", "execle", "execlp", "execlpe"):
+            assert name in code
+
+    def test_guards_os_spawn_family(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        for name in ("spawnv", "spawnve", "spawnvp", "spawnvpe", "spawnl", "spawnle", "spawnlp", "spawnlpe"):
+            assert name in code
+
+    def test_guards_os_posix_spawn(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "posix_spawn" in code
+        assert "posix_spawnp" in code
+
+    def test_guards_pty_spawn(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "_ipybox_guarded_pty_spawn" in code
+        assert "_pty.spawn = _ipybox_guarded_pty_spawn" in code
+        assert "Direct pty.spawn() calls are not allowed" in code
+
+    def test_loop_guard_uses_hasattr(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "hasattr(_os, _ipybox_name)" in code
+
+    def test_cleans_up_loop_variables(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "del _ipybox_name, _ipybox_orig, _ipybox_guard" in code
+
+    def test_cleans_up_pty_variables(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "del _pty, _ipybox_orig_pty_spawn, _ipybox_guarded_pty_spawn" in code
 
     def test_no_guard_without_require_shell_escape(self):
         code = build_init_code(approve_shell_cmds=True, require_shell_escape=False)

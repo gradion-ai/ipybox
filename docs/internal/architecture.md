@@ -15,7 +15,7 @@ The published architecture overview is in `docs/architecture.md`.
 
 - `approve_tool_calls` (default `True`): requires approval for MCP tool calls via `stream()`
 - `approve_shell_cmds` (default `False`): requires approval for `!cmd` shell commands
-- `require_shell_escape` (default `False`): blocks direct `subprocess`/`os.system()` to prevent bypassing shell command approval; requires `approve_shell_cmds=True`
+- `require_shell_escape` (default `False`): blocks direct `subprocess`/`os.system()` calls, forcing through `!` approval; requires `approve_shell_cmds=True`
 
 ## mcpygen Dependency
 
@@ -45,7 +45,7 @@ The following modules have been extracted to the [mcpygen](https://github.com/gr
 2. Handler -> `ApprovalRequestor` -> ToolServer -> `ApprovalClient`
 3. Application receives `ApprovalRequest(tool_name="shell", tool_args={"cmd": "..."})`
 4. If accepted: handler executes original shell command
-5. `require_shell_escape=True`: `ContextVar` guard blocks direct `subprocess.Popen`/`os.system()`, temporarily lifted during handler execution
+5. `require_shell_escape=True`: `ContextVar` guard blocks direct process-creation calls (`subprocess.Popen`, `os.system`, `os.exec*`, `os.spawn*`, `os.posix_spawn*`, `pty.spawn`), temporarily lifted during handler execution
 
 ## Kernel Initialization
 

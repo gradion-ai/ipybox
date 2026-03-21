@@ -148,10 +148,14 @@ class CodeExecutor:
             approve_shell_cmds: Whether to require approval for `!` shell
                 commands. When enabled, each shell command triggers an
                 `ApprovalRequest` before execution.
-            require_shell_escape: Whether to block direct `subprocess` and
-                `os.system` calls, forcing shell commands through the
-                `!` handler. Requires `approve_shell_cmds` to be set.
+            require_shell_escape: Whether to block direct process-creation
+                calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
+                `os.posix_spawn*`, `pty.spawn`), forcing shell commands
+                through the `!` handler. Requires `approve_shell_cmds=True`.
         """
+        if require_shell_escape and not approve_shell_cmds:
+            raise ValueError("require_shell_escape=True requires approve_shell_cmds=True")
+
         self.tool_server_host = tool_server_host
         self.tool_server_port = tool_server_port or find_free_port()
 

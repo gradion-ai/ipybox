@@ -56,13 +56,16 @@ Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_arg
 
 #### Preventing bypass
 
-Code can bypass shell command approval by calling `subprocess.run()`, `subprocess.Popen()`, or `os.system()` directly. Set `require_shell_escape=True` to prevent this, forcing all shell execution through the `!` shell escape syntax:
+Code could bypass shell command approval through various process-creation APIs (`subprocess`, `os.system()`, `os.exec*()`, `os.spawn*()`, `os.posix_spawn()`, `pty.spawn()`). Set `require_shell_escape=True` to guard these, forcing all shell execution through the `!` syntax where it triggers the approval flow:
 
 ```python
 --8<-- "examples/codexec.py:subprocess_blocking"
 ```
 
-With `require_shell_escape=True`, direct subprocess and `os.system()` calls raise a `RuntimeError`. Shell commands via `!cmd` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
+With `require_shell_escape=True`, direct process-creation calls raise a `RuntimeError`. Shell commands via `!cmd` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
+
+!!! note
+    These guards are Python-level guards that close the most obvious gaps. They catch accidental bypass (e.g., an LLM agent reaching for `subprocess.run`) but are not a security boundary: code running in the kernel can undo guards, call C functions via `ctypes`, or use CPython internal modules. These bypasses can be prevented at the OS level. A future version will add [sandbox](sandbox.md)-level enforcement for shell command approval.
 
 ## Stream output chunks
 

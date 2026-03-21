@@ -89,9 +89,10 @@ class KernelClient:
             approve_shell_cmds: Whether to require approval for `!` shell
                 commands. When enabled, each shell command triggers an
                 approval request before execution.
-            require_shell_escape: Whether to block direct `subprocess` and
-                `os.system` calls, forcing shell commands through the
-                `!` handler. Requires `approve_shell_cmds` to be set.
+            require_shell_escape: Whether to block direct process-creation
+                calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
+                `os.posix_spawn*`, `pty.spawn`), forcing shell commands
+                through the `!` handler. Requires `approve_shell_cmds=True`.
             tool_server_host: Hostname of the tool server (used when
                 `approve_shell_cmds` is `True`).
             tool_server_port: Port of the tool server (used when

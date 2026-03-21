@@ -31,13 +31,16 @@ del _ContextVar
 
 _HANDLER_INSTALL = """\
 _ip = get_ipython()
-def _ipybox_shell_handler(cmd, _run=_ip.system):
+class _ipybox_safe_dict(dict):
+    def __missing__(self, key):
+        return '{{' + key + '}}'
+def _ipybox_shell_handler(cmd, _run=_ip.system, _ns=_ip.user_ns, _SD=_ipybox_safe_dict):
 {handler_body}
-def _ipybox_getoutput_handler(cmd, _run=_ip.getoutput):
+def _ipybox_getoutput_handler(cmd, _run=_ip.getoutput, _ns=_ip.user_ns, _SD=_ipybox_safe_dict):
 {handler_body}
 _ip.system = _ipybox_shell_handler
 _ip.getoutput = _ipybox_getoutput_handler
-del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler
+del _ip, _ipybox_shell_handler, _ipybox_getoutput_handler, _ipybox_safe_dict
 """
 
 _SUBPROCESS_GUARD = """\
@@ -57,18 +60,40 @@ def _ipybox_guarded_os_system(cmd):
 _os.system = _ipybox_guarded_os_system
 del _subprocess, _ipybox_orig_popen, _ipybox_guarded_popen
 del _ipybox_orig_os_system, _ipybox_guarded_os_system
+for _ipybox_name in ('execv', 'execve', 'execl', 'execle', 'execvp', 'execvpe', 'execlp', 'execlpe',
+                      'spawnv', 'spawnve', 'spawnvp', 'spawnvpe', 'spawnl', 'spawnle', 'spawnlp', 'spawnlpe',
+                      'posix_spawn', 'posix_spawnp'):
+    if hasattr(_os, _ipybox_name):
+        _ipybox_orig = getattr(_os, _ipybox_name)
+        def _ipybox_guard(*args, _orig=_ipybox_orig, _name=_ipybox_name, **kwargs):
+            if not _ipybox_shell_allowed.get():
+                raise RuntimeError(f'Direct os.{_name}() calls are not allowed. Use ! syntax.')
+            return _orig(*args, **kwargs)
+        setattr(_os, _ipybox_name, _ipybox_guard)
+del _ipybox_name, _ipybox_orig, _ipybox_guard
+try:
+    import pty as _pty
+    _ipybox_orig_pty_spawn = _pty.spawn
+    def _ipybox_guarded_pty_spawn(*args, **kwargs):
+        if not _ipybox_shell_allowed.get():
+            raise RuntimeError('Direct pty.spawn() calls are not allowed. Use ! syntax.')
+        return _ipybox_orig_pty_spawn(*args, **kwargs)
+    _pty.spawn = _ipybox_guarded_pty_spawn
+    del _pty, _ipybox_orig_pty_spawn, _ipybox_guarded_pty_spawn
+except ImportError:
+    pass
 """
 
 _APPROVAL_HANDLER = """\
 from mcpygen import ApprovalRequestor as _AR
-_cmd = cmd.format_map(get_ipython().user_ns)
+_cmd = cmd.format_map(_SD(_ns))
 _AR('ipybox', {host!r}, {port}).request_sync('shell', {{'cmd': _cmd}})
 return _run(cmd)
 """
 
 _APPROVAL_HANDLER_ESCAPE = """\
 from mcpygen import ApprovalRequestor as _AR
-_cmd = cmd.format_map(get_ipython().user_ns)
+_cmd = cmd.format_map(_SD(_ns))
 _AR('ipybox', {host!r}, {port}).request_sync('shell', {{'cmd': _cmd}})
 _ipybox_shell_allowed.set(True)
 try:
@@ -98,9 +123,10 @@ def build_init_code(
         working_dir: Working directory to restore after each cell execution.
         approve_shell_cmds: Whether to require approval for `!` shell
             commands via `ApprovalRequestor`.
-        require_shell_escape: Whether to block direct `subprocess` and
-            `os.system` calls, forcing shell commands through the `!`
-            handler. Requires `approve_shell_cmds` to be set.
+        require_shell_escape: Whether to block direct process-creation
+            calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
+            `os.posix_spawn*`, `pty.spawn`), forcing shell commands
+            through the `!` handler. Requires `approve_shell_cmds=True`.
         tool_server_host: Hostname of the tool server (used when
             `approve_shell_cmds` is `True`).
         tool_server_port: Port of the tool server (used when
