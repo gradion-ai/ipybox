@@ -117,7 +117,7 @@ class TestApproveShellCmds:
                     result = item
 
         assert len(approvals) == 1
-        assert approvals[0].tool_name == "shell"
+        assert approvals[0].tool_name == "shell_magic"
         assert "echo hello" in approvals[0].tool_args["cmd"]
         assert result.text is not None
         assert "hello" in result.text
@@ -134,7 +134,7 @@ class TestApproveShellCmds:
                     result = item
 
         assert len(approvals) == 1
-        assert approvals[0].tool_name == "shell"
+        assert approvals[0].tool_name == "shell_magic"
         assert "echo hello" in approvals[0].tool_args["cmd"]
         assert result.text is not None
         assert "hello" in result.text

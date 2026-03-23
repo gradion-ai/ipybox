@@ -106,13 +106,13 @@ finally:
 
 _BASH_MAGIC_HANDLER = """\
 from mcpygen import ApprovalRequestor as _AR
-_AR('ipybox', {host!r}, {port}).request_sync('shell', {{'cmd': cell}})
+_AR('ipybox', {host!r}, {port}).request_sync('shell_magic', {{'cmd': cell}})
 return _orig(line, cell)
 """
 
 _BASH_MAGIC_HANDLER_ESCAPE = """\
 from mcpygen import ApprovalRequestor as _AR
-_AR('ipybox', {host!r}, {port}).request_sync('shell', {{'cmd': cell}})
+_AR('ipybox', {host!r}, {port}).request_sync('shell_magic', {{'cmd': cell}})
 _ipybox_magic_allowed.set()
 try:
     return _orig(line, cell)

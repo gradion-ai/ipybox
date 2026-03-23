@@ -72,7 +72,7 @@ The following example executes a code block that calls an MCP tool and runs a sh
 --8<-- "examples/quickstart.py:approval"
 ```
 
-Both approval types yield an `ApprovalRequest`. The `tool_name` field distinguishes them: `"shell"` for shell commands, the MCP tool name for tool calls. Call `accept()` to continue or `reject()` to block execution.
+Both approval types yield an `ApprovalRequest`. The `tool_name` field distinguishes them: `"shell"` for `!` commands, `"shell_magic"` for `%%bash`/`%%sh` cell magics, and the MCP tool name for tool calls. Call `accept()` to continue or `reject()` to block execution.
 
 ## Next steps
 
