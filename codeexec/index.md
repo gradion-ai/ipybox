@@ -51,6 +51,25 @@ async with CodeExecutor() as executor:
 
 `!cmd` runs a shell command and prints its output. `result = !cmd` captures the output as a list of lines. Python variables are interpolated into shell commands via `{variable}` syntax. Shell commands and Python code mix freely in a single code block, for example to install packages with `!pip install` and use them immediately.
 
+## Cell magics
+
+For multi-line shell scripts, use `%%bash` or `%%sh` cell magics:
+
+```
+code = """
+%%bash
+for i in 1 2 3; do
+  echo $i
+done
+"""
+
+async with CodeExecutor() as executor:
+    result = await executor.execute(code)
+    assert result.text == "1\n2\n3"
+```
+
+`%%bash` must be the first line of the code block and passes the remaining lines to bash as a script. `%%sh` works the same way with `sh`. Unlike `!cmd`, cell magics cannot be mixed with Python code and do not support Python variable interpolation.
+
 ## Tool calls
 
 ipybox can [generate typed Python APIs](https://gradion-ai.github.io/ipybox/apigen/index.md) from MCP server tool schemas. The generated code executes within the kernel, while MCP servers run on a separate [tool server](https://gradion-ai.github.io/ipybox/architecture/index.md).
@@ -105,9 +124,27 @@ async with CodeExecutor(approve_shell_cmds=True) as executor:
 
 Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_args={"cmd": "..."}`, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.
 
+`%%bash` and `%%sh` cell magics also trigger approval when `approve_shell_cmds=True`. The `tool_args["cmd"]` contains the cell body:
+
+```
+code = """
+%%bash
+echo hello from bash
+"""
+
+async with CodeExecutor(approve_shell_cmds=True) as executor:
+    async for item in executor.stream(code):
+        match item:
+            case ApprovalRequest(tool_name="shell", tool_args=args):
+                assert "echo hello from bash" in args["cmd"]
+                await item.accept()
+            case CodeExecutionResult():
+                assert item.text == "hello from bash"
+```
+
 #### Preventing bypass
 
-Code could bypass shell command approval through various process-creation APIs (`subprocess`, `os.system()`, `os.exec*()`, `os.spawn*()`, `os.posix_spawn()`, `pty.spawn()`). Set `require_shell_escape=True` to guard these, forcing all shell execution through the `!` syntax where it triggers the approval flow:
+Code could bypass shell command approval through various process-creation APIs (`subprocess`, `os.system()`, `os.exec*()`, `os.spawn*()`, `os.posix_spawn()`, `pty.spawn()`). Set `require_shell_escape=True` to guard these, forcing all shell execution through `!cmd` or `%%bash`/`%%sh` where it triggers the approval flow:
 
 ```
 async with CodeExecutor(approve_shell_cmds=True, require_shell_escape=True) as executor:
@@ -126,7 +163,7 @@ async with CodeExecutor(approve_shell_cmds=True, require_shell_escape=True) as e
                 assert item.text == "hello"
 ```
 
-With `require_shell_escape=True`, direct process-creation calls raise a `RuntimeError`. Shell commands via `!cmd` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
+With `require_shell_escape=True`, direct process-creation calls raise a `RuntimeError`. Shell commands via `!cmd` and `%%bash`/`%%sh` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
 
 Note
 

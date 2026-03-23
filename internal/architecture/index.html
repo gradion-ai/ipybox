@@ -1089,10 +1089,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#shell-commands" class="md-nav__link">
+  <a href="#shell-commands-cmd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shell commands
+        Shell commands (!cmd)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cell-magics-bashsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cell magics (%%bash/%%sh)
       
     </span>
   </a>
@@ -1160,7 +1171,7 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <h2 id="codeexecutor-parameters">CodeExecutor Parameters</h2>
 <ul>
 <li><code>approve_tool_calls</code> (default <code>True</code>): requires approval for MCP tool calls via <code>stream()</code></li>
-<li><code>approve_shell_cmds</code> (default <code>False</code>): requires approval for <code>!cmd</code> shell commands</li>
+<li><code>approve_shell_cmds</code> (default <code>False</code>): requires approval for <code>!cmd</code> shell commands and <code>%%bash</code>/<code>%%sh</code> cell magics</li>
 <li><code>require_shell_escape</code> (default <code>False</code>): blocks direct <code>subprocess</code>/<code>os.system()</code> calls, forcing through <code>!</code> approval; requires <code>approve_shell_cmds=True</code></li>
 </ul>
 <h2 id="mcpygen-dependency">mcpygen Dependency</h2>
@@ -1183,7 +1194,7 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <li>If accepted: ToolServer executes the MCP tool on the MCP server</li>
 <li>Result returned by generated wrapper function</li>
 </ol>
-<h3 id="shell-commands">Shell commands</h3>
+<h3 id="shell-commands-cmd">Shell commands (<code>!cmd</code>)</h3>
 <ol>
 <li><code>!cmd</code> in IPython triggers custom handler installed by <code>build_init_code()</code></li>
 <li>Handler -&gt; <code>ApprovalRequestor</code> -&gt; ToolServer -&gt; <code>ApprovalClient</code></li>
@@ -1191,8 +1202,16 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <li>If accepted: handler executes original shell command</li>
 <li><code>require_shell_escape=True</code>: <code>ContextVar</code> guard blocks direct process-creation calls (<code>subprocess.Popen</code>, <code>os.system</code>, <code>os.exec*</code>, <code>os.spawn*</code>, <code>os.posix_spawn*</code>, <code>pty.spawn</code>), temporarily lifted during handler execution</li>
 </ol>
+<h3 id="cell-magics-bashsh">Cell magics (<code>%%bash</code>/<code>%%sh</code>)</h3>
+<ol>
+<li><code>%%bash</code> or <code>%%sh</code> triggers magic wrapper installed by <code>build_init_code()</code></li>
+<li>Wrapper -&gt; <code>ApprovalRequestor</code> -&gt; ToolServer -&gt; <code>ApprovalClient</code></li>
+<li>Application receives <code>ApprovalRequest(tool_name="shell", tool_args={"cmd": "&lt;cell body&gt;"})</code></li>
+<li>If accepted: wrapper calls original magic, which runs the script via <code>asyncio.create_subprocess_exec</code> on a background thread</li>
+<li><code>require_shell_escape=True</code>: a <code>threading.Event</code> (<code>_ipybox_magic_allowed</code>) is used instead of <code>ContextVar</code> because IPython 9.x runs the subprocess on a background thread where <code>ContextVar</code> does not propagate. The event is set before calling the original magic and cleared in a <code>finally</code> block. Subprocess guards check both the <code>ContextVar</code> and the event.</li>
+</ol>
 <h2 id="kernel-initialization">Kernel Initialization</h2>
-<p><code>build_init_code()</code> composes optional init sections: env setup, cwd restore hook, shell approval handlers, subprocess guards. All internals use <code>_ipybox_</code> prefix, cleaned up after init. <code>KernelClient._rewrite_traceback()</code> hides these from error output.</p>
+<p><code>build_init_code()</code> composes optional init sections: env setup, cwd restore hook, shell approval handlers, bash magic handlers, subprocess guards. All internals use <code>_ipybox_</code> prefix, cleaned up after init. <code>KernelClient._rewrite_traceback()</code> hides these from error output.</p>
 <h2 id="code-generation">Code Generation</h2>
 <p><code>generate_mcp_sources()</code> connects to an MCP server, discovers tools, and generates:
 - One module per tool with <code>Params</code> (Pydantic), optional <code>Result</code>, and <code>run()</code> function

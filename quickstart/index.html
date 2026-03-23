@@ -1276,7 +1276,7 @@
     <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </code></pre></div>
-<p>Shell commands use IPython's <code>!</code> syntax and mix freely with Python code. <code>result = !cmd</code> captures shell output into a Python variable. Python variables are interpolated into shell commands via <code>{variable}</code> syntax.</p>
+<p>Shell commands use IPython's <code>!</code> syntax and mix freely with Python code. <code>result = !cmd</code> captures shell output into a Python variable. Python variables are interpolated into shell commands via <code>{variable}</code> syntax. For multi-line shell scripts, use <code>%%bash</code> or <code>%%sh</code> cell magics.</p>
 <h2 id="programmatic-mcp-tool-calling">Programmatic MCP tool calling</h2>
 <p>ipybox can generate typed Python APIs from MCP server tool schemas via <a href="https://gradion-ai.github.io/mcpygen/">mcpygen</a>. The generated APIs can be imported and called like regular Python functions.</p>
 <p>This example uses the <a href="https://github.com/brave/brave-search-mcp-server">Brave Search MCP server</a>. Sign up for a free API key at <a href="https://api.search.brave.com">api.search.brave.com</a> and set it as an environment variable:</p>
@@ -1312,7 +1312,7 @@
 <li><a class="autorefs autorefs-internal" href="../api/code_executor/#ipybox.CodeExecutionResult"><code>CodeExecutionResult</code></a> with the final output</li>
 </ul>
 <h2 id="approval">Approval</h2>
-<p>Both MCP tool calls and shell commands can require application-level approval before execution. <code>approve_tool_calls</code> (default <code>True</code>) requires approval for MCP tool calls. <code>approve_shell_cmds</code> (default <code>False</code>) requires approval for shell commands.</p>
+<p>Both MCP tool calls and shell commands can require application-level approval before execution. <code>approve_tool_calls</code> (default <code>True</code>) requires approval for MCP tool calls. <code>approve_shell_cmds</code> (default <code>False</code>) requires approval for <code>!cmd</code> shell commands and <code>%%bash</code>/<code>%%sh</code> cell magics.</p>
 <p>The following example executes a code block that calls an MCP tool and runs a shell command, both requiring approval:</p>
 <div class="highlight"><pre><span></span><code><span class="n">SEARCH_AND_ECHO</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">from mcptools.brave_search.brave_image_search import Params, Result, run</span>

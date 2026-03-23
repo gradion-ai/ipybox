@@ -1673,8 +1673,9 @@ before execution. When <code>True</code>, each tool call yields an
             <td>
               <div class="doc-md-description">
                 <p>Whether to require approval for <code>!</code> shell
-commands. When enabled, each shell command triggers an
-<code>ApprovalRequest</code> before execution.</p>
+commands and <code>%%bash</code>/<code>%%sh</code> cell magics. When enabled,
+each shell command triggers an <code>ApprovalRequest</code> before
+execution.</p>
               </div>
             </td>
             <td>

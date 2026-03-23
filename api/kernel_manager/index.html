@@ -1995,8 +1995,9 @@ keep the connection to the IPython kernel alive.</p>
             <td>
               <div class="doc-md-description">
                 <p>Whether to require approval for <code>!</code> shell
-commands. When enabled, each shell command triggers an
-approval request before execution.</p>
+commands and <code>%%bash</code>/<code>%%sh</code> cell magics. When enabled,
+each shell command triggers an approval request before
+execution.</p>
               </div>
             </td>
             <td>
@@ -2015,7 +2016,8 @@ approval request before execution.</p>
                 <p>Whether to block direct process-creation
 calls (<code>subprocess</code>, <code>os.system</code>, <code>os.exec*</code>, <code>os.spawn*</code>,
 <code>os.posix_spawn*</code>, <code>pty.spawn</code>), forcing shell commands
-through the <code>!</code> handler. Requires <code>approve_shell_cmds=True</code>.</p>
+through the <code>!</code> handler or <code>%%bash</code>/<code>%%sh</code> cell magics.
+Requires <code>approve_shell_cmds=True</code>.</p>
               </div>
             </td>
             <td>

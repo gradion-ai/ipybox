@@ -576,6 +576,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cell-magics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cell magics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tool-calls" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1274,6 +1285,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cell-magics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cell magics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tool-calls" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1465,6 +1487,20 @@
     <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
 </code></pre></div>
 <p><code>!cmd</code> runs a shell command and prints its output. <code>result = !cmd</code> captures the output as a list of lines. Python variables are interpolated into shell commands via <code>{variable}</code> syntax. Shell commands and Python code mix freely in a single code block, for example to install packages with <code>!pip install</code> and use them immediately.</p>
+<h2 id="cell-magics">Cell magics</h2>
+<p>For multi-line shell scripts, use <code>%%bash</code> or <code>%%sh</code> cell magics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="si">%%</span><span class="s2">bash</span>
+<span class="s2">for i in 1 2 3; do</span>
+<span class="s2">  echo $i</span>
+<span class="s2">done</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;1</span><span class="se">\n</span><span class="s2">2</span><span class="se">\n</span><span class="s2">3&quot;</span>
+</code></pre></div>
+<p><code>%%bash</code> must be the first line of the code block and passes the remaining lines to bash as a script. <code>%%sh</code> works the same way with <code>sh</code>. Unlike <code>!cmd</code>, cell magics cannot be mixed with Python code and do not support Python variable interpolation.</p>
 <h2 id="tool-calls">Tool calls</h2>
 <p>ipybox can <a href="../apigen/">generate typed Python APIs</a> from MCP server tool schemas. The generated code executes within the kernel, while MCP servers run on a separate <a href="../architecture/">tool server</a>.</p>
 <h2 id="approval">Approval</h2>
@@ -1505,8 +1541,23 @@
                 <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
 </code></pre></div>
 <p>Each <code>!cmd</code> triggers an <code>ApprovalRequest</code> with <code>tool_name="shell"</code> and <code>tool_args={"cmd": "..."}</code>, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.</p>
+<p><code>%%bash</code> and <code>%%sh</code> cell magics also trigger approval when <code>approve_shell_cmds=True</code>. The <code>tool_args["cmd"]</code> contains the cell body:</p>
+<div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="si">%%</span><span class="s2">bash</span>
+<span class="s2">echo hello from bash</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approve_shell_cmds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="s2">&quot;echo hello from bash&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;cmd&quot;</span><span class="p">]</span>
+                <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello from bash&quot;</span>
+</code></pre></div>
 <h4 id="preventing-bypass">Preventing bypass</h4>
-<p>Code could bypass shell command approval through various process-creation APIs (<code>subprocess</code>, <code>os.system()</code>, <code>os.exec*()</code>, <code>os.spawn*()</code>, <code>os.posix_spawn()</code>, <code>pty.spawn()</code>). Set <code>require_shell_escape=True</code> to guard these, forcing all shell execution through the <code>!</code> syntax where it triggers the approval flow:</p>
+<p>Code could bypass shell command approval through various process-creation APIs (<code>subprocess</code>, <code>os.system()</code>, <code>os.exec*()</code>, <code>os.spawn*()</code>, <code>os.posix_spawn()</code>, <code>pty.spawn()</code>). Set <code>require_shell_escape=True</code> to guard these, forcing all shell execution through <code>!cmd</code> or <code>%%bash</code>/<code>%%sh</code> where it triggers the approval flow:</p>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approve_shell_cmds</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">require_shell_escape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
     <span class="c1"># Direct subprocess calls are blocked to prevent bypassing approval</span>
     <span class="k">try</span><span class="p">:</span>
@@ -1522,7 +1573,7 @@
             <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>
                 <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello&quot;</span>
 </code></pre></div>
-<p>With <code>require_shell_escape=True</code>, direct process-creation calls raise a <code>RuntimeError</code>. Shell commands via <code>!cmd</code> still work and go through the approval channel. Requires <code>approve_shell_cmds=True</code>.</p>
+<p>With <code>require_shell_escape=True</code>, direct process-creation calls raise a <code>RuntimeError</code>. Shell commands via <code>!cmd</code> and <code>%%bash</code>/<code>%%sh</code> still work and go through the approval channel. Requires <code>approve_shell_cmds=True</code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>These guards are Python-level guards that close the most obvious gaps. They catch accidental bypass (e.g., an LLM agent reaching for <code>subprocess.run</code>) but are not a security boundary: code running in the kernel can undo guards, call C functions via <code>ctypes</code>, or use CPython internal modules. These bypasses can be prevented at the OS level. A future version will add <a href="../sandbox/">sandbox</a>-level enforcement for shell command approval.</p>

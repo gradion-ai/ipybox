@@ -35,7 +35,7 @@ async with CodeExecutor() as executor:
     print(result.text)
 ```
 
-Shell commands use IPython's `!` syntax and mix freely with Python code. `result = !cmd` captures shell output into a Python variable. Python variables are interpolated into shell commands via `{variable}` syntax.
+Shell commands use IPython's `!` syntax and mix freely with Python code. `result = !cmd` captures shell output into a Python variable. Python variables are interpolated into shell commands via `{variable}` syntax. For multi-line shell scripts, use `%%bash` or `%%sh` cell magics.
 
 ## Programmatic MCP tool calling
 
@@ -88,7 +88,7 @@ async with CodeExecutor() as executor:
 
 ## Approval
 
-Both MCP tool calls and shell commands can require application-level approval before execution. `approve_tool_calls` (default `True`) requires approval for MCP tool calls. `approve_shell_cmds` (default `False`) requires approval for shell commands.
+Both MCP tool calls and shell commands can require application-level approval before execution. `approve_tool_calls` (default `True`) requires approval for MCP tool calls. `approve_shell_cmds` (default `False`) requires approval for `!cmd` shell commands and `%%bash`/`%%sh` cell magics.
 
 The following example executes a code block that calls an MCP tool and runs a shell command, both requiring approval:
 
