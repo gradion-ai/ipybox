@@ -106,6 +106,98 @@ class TestApproveShellCmds:
             assert "NameError" in str(exc_info.value)
 
     @pytest.mark.asyncio
+    async def test_bash_magic_triggers_approval(self, executor_approve: CodeExecutor):
+        approvals = []
+        async for item in executor_approve.stream("%%bash\necho hello"):
+            match item:
+                case ApprovalRequest():
+                    approvals.append(item)
+                    await item.accept()
+                case CodeExecutionResult():
+                    result = item
+
+        assert len(approvals) == 1
+        assert approvals[0].tool_name == "shell"
+        assert "echo hello" in approvals[0].tool_args["cmd"]
+        assert result.text is not None
+        assert "hello" in result.text
+
+    @pytest.mark.asyncio
+    async def test_sh_magic_triggers_approval(self, executor_approve: CodeExecutor):
+        approvals = []
+        async for item in executor_approve.stream("%%sh\necho hello"):
+            match item:
+                case ApprovalRequest():
+                    approvals.append(item)
+                    await item.accept()
+                case CodeExecutionResult():
+                    result = item
+
+        assert len(approvals) == 1
+        assert approvals[0].tool_name == "shell"
+        assert "echo hello" in approvals[0].tool_args["cmd"]
+        assert result.text is not None
+        assert "hello" in result.text
+
+    @pytest.mark.asyncio
+    async def test_bash_magic_multiline(self, executor_approve: CodeExecutor):
+        code = "%%bash\necho line1\necho line2"
+        approvals = []
+        async for item in executor_approve.stream(code):
+            match item:
+                case ApprovalRequest():
+                    approvals.append(item)
+                    await item.accept()
+                case CodeExecutionResult():
+                    result = item
+
+        assert len(approvals) == 1
+        assert "echo line1" in approvals[0].tool_args["cmd"]
+        assert "echo line2" in approvals[0].tool_args["cmd"]
+        assert result.text is not None
+        assert "line1" in result.text
+        assert "line2" in result.text
+
+    @pytest.mark.asyncio
+    async def test_bash_magic_rejection(self, executor_approve: CodeExecutor):
+        with pytest.raises(CodeExecutionError) as exc_info:
+            async for item in executor_approve.stream("%%bash\necho secret"):
+                match item:
+                    case ApprovalRequest():
+                        await item.reject()
+
+        assert "Rejected" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_bash_magic_with_python_before_is_syntax_error(self, executor_approve: CodeExecutor):
+        code = "x = 42\n%%bash\necho hello"
+        with pytest.raises(CodeExecutionError) as exc_info:
+            await executor_approve.execute(code)
+        assert "SyntaxError" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_bash_magic_body_is_not_python(self, executor_approve: CodeExecutor):
+        code = "%%bash\necho hello\nprint('python')"
+        with pytest.raises(CodeExecutionError) as exc_info:
+            async for item in executor_approve.stream(code):
+                match item:
+                    case ApprovalRequest():
+                        await item.accept()
+        assert "CalledProcessError" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_init_does_not_leak_magic_variables(self, executor_approve: CodeExecutor):
+        for name in (
+            "_ipybox_cell_magics",
+            "_ipybox_magic_name",
+            "_ipybox_orig_magic",
+            "_ipybox_magic_wrapper",
+        ):
+            with pytest.raises(CodeExecutionError) as exc_info:
+                await executor_approve.execute(f"print({name})")
+            assert "NameError" in str(exc_info.value)
+
+    @pytest.mark.asyncio
     async def test_shell_cmd_rejection(self, executor_approve: CodeExecutor):
         with pytest.raises(CodeExecutionError) as exc_info:
             async for item in executor_approve.stream("!echo secret"):
@@ -187,6 +279,36 @@ class TestRequireShellEscape:
         assert len(approvals) == 1
         assert result.text is not None
         assert "hello" in result.text
+
+    @pytest.mark.asyncio
+    async def test_bash_magic_still_works(self, executor_escape: CodeExecutor):
+        approvals = []
+        async for item in executor_escape.stream("%%bash\necho hello"):
+            match item:
+                case ApprovalRequest():
+                    approvals.append(item)
+                    await item.accept()
+                case CodeExecutionResult():
+                    result = item
+
+        assert len(approvals) == 1
+        assert result.text is not None
+        assert "hello" in result.text
+
+    @pytest.mark.asyncio
+    async def test_bash_magic_does_not_leak_allowed_state(self, executor_escape: CodeExecutor):
+        # First, run an approved %%bash to set/clear the magic_allowed event
+        async for item in executor_escape.stream("%%bash\necho ok"):
+            match item:
+                case ApprovalRequest():
+                    await item.accept()
+                case CodeExecutionResult():
+                    pass
+
+        # Then verify subprocess.run is still blocked
+        with pytest.raises(CodeExecutionError) as exc_info:
+            await executor_escape.execute('import subprocess; subprocess.run(["echo", "hi"])')
+        assert "Direct subprocess calls are not allowed" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_init_does_not_leak_guard_variables(self, executor_escape: CodeExecutor):

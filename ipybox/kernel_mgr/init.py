@@ -25,8 +25,10 @@ del _ipybox_cwd, _ipybox_restore_cwd
 
 _SHELL_ESCAPE_GUARD = """\
 from contextvars import ContextVar as _ContextVar
+import threading as _threading
 _ipybox_shell_allowed = _ContextVar('_ipybox_shell_allowed', default=False)
-del _ContextVar
+_ipybox_magic_allowed = _threading.Event()
+del _ContextVar, _threading
 """
 
 _HANDLER_INSTALL = """\
@@ -48,13 +50,13 @@ import subprocess as _subprocess
 _ipybox_orig_popen = _subprocess.Popen
 class _ipybox_guarded_popen(_ipybox_orig_popen):
     def __init__(self, *args, **kwargs):
-        if not _ipybox_shell_allowed.get():
+        if not _ipybox_shell_allowed.get() and not _ipybox_magic_allowed.is_set():
             raise RuntimeError('Direct subprocess calls are not allowed. Use ! syntax.')
         super().__init__(*args, **kwargs)
 _subprocess.Popen = _ipybox_guarded_popen
 _ipybox_orig_os_system = _os.system
 def _ipybox_guarded_os_system(cmd):
-    if not _ipybox_shell_allowed.get():
+    if not _ipybox_shell_allowed.get() and not _ipybox_magic_allowed.is_set():
         raise RuntimeError('Direct os.system() calls are not allowed. Use ! syntax.')
     return _ipybox_orig_os_system(cmd)
 _os.system = _ipybox_guarded_os_system
@@ -66,7 +68,7 @@ for _ipybox_name in ('execv', 'execve', 'execl', 'execle', 'execvp', 'execvpe', 
     if hasattr(_os, _ipybox_name):
         _ipybox_orig = getattr(_os, _ipybox_name)
         def _ipybox_guard(*args, _orig=_ipybox_orig, _name=_ipybox_name, **kwargs):
-            if not _ipybox_shell_allowed.get():
+            if not _ipybox_shell_allowed.get() and not _ipybox_magic_allowed.is_set():
                 raise RuntimeError(f'Direct os.{_name}() calls are not allowed. Use ! syntax.')
             return _orig(*args, **kwargs)
         setattr(_os, _ipybox_name, _ipybox_guard)
@@ -75,7 +77,7 @@ try:
     import pty as _pty
     _ipybox_orig_pty_spawn = _pty.spawn
     def _ipybox_guarded_pty_spawn(*args, **kwargs):
-        if not _ipybox_shell_allowed.get():
+        if not _ipybox_shell_allowed.get() and not _ipybox_magic_allowed.is_set():
             raise RuntimeError('Direct pty.spawn() calls are not allowed. Use ! syntax.')
         return _ipybox_orig_pty_spawn(*args, **kwargs)
     _pty.spawn = _ipybox_guarded_pty_spawn
@@ -102,6 +104,34 @@ finally:
     _ipybox_shell_allowed.set(False)
 """
 
+_BASH_MAGIC_HANDLER = """\
+from mcpygen import ApprovalRequestor as _AR
+_AR('ipybox', {host!r}, {port}).request_sync('shell', {{'cmd': cell}})
+return _orig(line, cell)
+"""
+
+_BASH_MAGIC_HANDLER_ESCAPE = """\
+from mcpygen import ApprovalRequestor as _AR
+_AR('ipybox', {host!r}, {port}).request_sync('shell', {{'cmd': cell}})
+_ipybox_magic_allowed.set()
+try:
+    return _orig(line, cell)
+finally:
+    _ipybox_magic_allowed.clear()
+"""
+
+_BASH_MAGIC_INSTALL = """\
+_ipybox_cell_magics = get_ipython().magics_manager.magics['cell']
+_ipybox_magic_wrapper = None
+for _ipybox_magic_name in ('bash', 'sh'):
+    _ipybox_orig_magic = _ipybox_cell_magics.get(_ipybox_magic_name)
+    if _ipybox_orig_magic is not None:
+        def _ipybox_magic_wrapper(line, cell, _orig=_ipybox_orig_magic):
+{handler_body}
+        _ipybox_cell_magics[_ipybox_magic_name] = _ipybox_magic_wrapper
+del _ipybox_cell_magics, _ipybox_magic_name, _ipybox_orig_magic, _ipybox_magic_wrapper
+"""
+
 _TERMINAL_ENV = """\
 _os.environ['TERM'] = 'dumb'
 _os.environ['NO_COLOR'] = '1'
@@ -122,7 +152,8 @@ def build_init_code(
     Args:
         working_dir: Working directory to restore after each cell execution.
         approve_shell_cmds: Whether to require approval for `!` shell
-            commands via `ApprovalRequestor`.
+            commands and `%%bash`/`%%sh` cell magics via
+            `ApprovalRequestor`.
         require_shell_escape: Whether to block direct process-creation
             calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
             `os.posix_spawn*`, `pty.spawn`), forcing shell commands
@@ -141,10 +172,14 @@ def build_init_code(
         if require_shell_escape:
             parts.append(_SHELL_ESCAPE_GUARD)
             handler = _APPROVAL_HANDLER_ESCAPE.format(host=tool_server_host, port=tool_server_port)
+            magic_handler = _BASH_MAGIC_HANDLER_ESCAPE.format(host=tool_server_host, port=tool_server_port)
         else:
             handler = _APPROVAL_HANDLER.format(host=tool_server_host, port=tool_server_port)
+            magic_handler = _BASH_MAGIC_HANDLER.format(host=tool_server_host, port=tool_server_port)
         handler_body = textwrap.indent(handler.strip(), "    ")
         parts.append(_HANDLER_INSTALL.format(handler_body=handler_body))
+        magic_handler_body = textwrap.indent(magic_handler.strip(), " " * 12)
+        parts.append(_BASH_MAGIC_INSTALL.format(handler_body=magic_handler_body))
         if require_shell_escape:
             parts.append(_SUBPROCESS_GUARD)
 

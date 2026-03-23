@@ -146,8 +146,9 @@ class CodeExecutor:
                 before execution. When `True`, each tool call yields an
                 `ApprovalRequest` that must be accepted or rejected.
             approve_shell_cmds: Whether to require approval for `!` shell
-                commands. When enabled, each shell command triggers an
-                `ApprovalRequest` before execution.
+                commands and `%%bash`/`%%sh` cell magics. When enabled,
+                each shell command triggers an `ApprovalRequest` before
+                execution.
             require_shell_escape: Whether to block direct process-creation
                 calls (`subprocess`, `os.system`, `os.exec*`, `os.spawn*`,
                 `os.posix_spawn*`, `pty.spawn`), forcing shell commands
