@@ -51,7 +51,7 @@ The following modules have been extracted to the [mcpygen](https://github.com/gr
 
 1. `%%bash` or `%%sh` triggers magic wrapper installed by `build_init_code()`
 2. Wrapper -> `ApprovalRequestor` -> ToolServer -> `ApprovalClient`
-3. Application receives `ApprovalRequest(tool_name="shell", tool_args={"cmd": "<cell body>"})`
+3. Application receives `ApprovalRequest(tool_name="shell_magic", tool_args={"cmd": "<cell body>"})`
 4. If accepted: wrapper calls original magic, which runs the script via `asyncio.create_subprocess_exec` on a background thread
 5. `require_shell_escape=True`: a `threading.Event` (`_ipybox_magic_allowed`) is used instead of `ContextVar` because IPython 9.x runs the subprocess on a background thread where `ContextVar` does not propagate. The event is set before calling the original magic and cleared in a `finally` block. Subprocess guards check both the `ContextVar` and the event.
 

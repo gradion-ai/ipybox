@@ -90,7 +90,7 @@ async def approval():
     ) as executor:
         async for item in executor.stream(SEARCH_AND_ECHO):
             match item:
-                case ApprovalRequest(tool_name="shell", tool_args=args):
+                case ApprovalRequest(tool_name="shell" | "shell_magic", tool_args=args):
                     print(f"Shell: {args['cmd']}")
                     await item.accept()
                 case ApprovalRequest(tool_name=name, tool_args=args):

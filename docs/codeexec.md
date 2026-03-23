@@ -64,7 +64,7 @@ Enable `approve_shell_cmds=True` to require application-level approval for shell
 
 Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_args={"cmd": "..."}`, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.
 
-`%%bash` and `%%sh` cell magics also trigger approval when `approve_shell_cmds=True`. The `tool_args["cmd"]` contains the cell body:
+`%%bash` and `%%sh` cell magics also trigger approval when `approve_shell_cmds=True`, with `tool_name="shell_magic"` and `tool_args={"cmd": "..."}` containing the cell body:
 
 ```python
 --8<-- "examples/codexec.py:bash_magic_approval"

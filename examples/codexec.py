@@ -190,7 +190,7 @@ async def bash_magic_approval():
     async with CodeExecutor(approve_shell_cmds=True) as executor:
         async for item in executor.stream(code):
             match item:
-                case ApprovalRequest(tool_name="shell", tool_args=args):
+                case ApprovalRequest(tool_name="shell_magic", tool_args=args):
                     assert "echo hello from bash" in args["cmd"]
                     await item.accept()
                 case CodeExecutionResult():
