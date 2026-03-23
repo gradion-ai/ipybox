@@ -14,7 +14,7 @@ The published architecture overview is in `docs/architecture.md`.
 ## CodeExecutor Parameters
 
 - `approve_tool_calls` (default `True`): requires approval for MCP tool calls via `stream()`
-- `approve_shell_cmds` (default `False`): requires approval for `!cmd` shell commands
+- `approve_shell_cmds` (default `False`): requires approval for `!cmd` shell commands and `%%bash`/`%%sh` cell magics
 - `require_shell_escape` (default `False`): blocks direct `subprocess`/`os.system()` calls, forcing through `!` approval; requires `approve_shell_cmds=True`
 
 ## mcpygen Dependency
@@ -39,7 +39,7 @@ The following modules have been extracted to the [mcpygen](https://github.com/gr
 5. If accepted: ToolServer executes the MCP tool on the MCP server
 6. Result returned by generated wrapper function
 
-### Shell commands
+### Shell commands (`!cmd`)
 
 1. `!cmd` in IPython triggers custom handler installed by `build_init_code()`
 2. Handler -> `ApprovalRequestor` -> ToolServer -> `ApprovalClient`
@@ -47,9 +47,17 @@ The following modules have been extracted to the [mcpygen](https://github.com/gr
 4. If accepted: handler executes original shell command
 5. `require_shell_escape=True`: `ContextVar` guard blocks direct process-creation calls (`subprocess.Popen`, `os.system`, `os.exec*`, `os.spawn*`, `os.posix_spawn*`, `pty.spawn`), temporarily lifted during handler execution
 
+### Cell magics (`%%bash`/`%%sh`)
+
+1. `%%bash` or `%%sh` triggers magic wrapper installed by `build_init_code()`
+2. Wrapper -> `ApprovalRequestor` -> ToolServer -> `ApprovalClient`
+3. Application receives `ApprovalRequest(tool_name="shell", tool_args={"cmd": "<cell body>"})`
+4. If accepted: wrapper calls original magic, which runs the script via `asyncio.create_subprocess_exec` on a background thread
+5. `require_shell_escape=True`: a `threading.Event` (`_ipybox_magic_allowed`) is used instead of `ContextVar` because IPython 9.x runs the subprocess on a background thread where `ContextVar` does not propagate. The event is set before calling the original magic and cleared in a `finally` block. Subprocess guards check both the `ContextVar` and the event.
+
 ## Kernel Initialization
 
-`build_init_code()` composes optional init sections: env setup, cwd restore hook, shell approval handlers, subprocess guards. All internals use `_ipybox_` prefix, cleaned up after init. `KernelClient._rewrite_traceback()` hides these from error output.
+`build_init_code()` composes optional init sections: env setup, cwd restore hook, shell approval handlers, bash magic handlers, subprocess guards. All internals use `_ipybox_` prefix, cleaned up after init. `KernelClient._rewrite_traceback()` hides these from error output.
 
 ## Code Generation
 

@@ -165,6 +165,39 @@ async def shell_commands():
     # --8<-- [end:shell_commands]
 
 
+async def bash_magic():
+    # --8<-- [start:bash_magic]
+    code = """
+    %%bash
+    for i in 1 2 3; do
+      echo $i
+    done
+    """
+
+    async with CodeExecutor() as executor:
+        result = await executor.execute(code)
+        assert result.text == "1\n2\n3"
+    # --8<-- [end:bash_magic]
+
+
+async def bash_magic_approval():
+    # --8<-- [start:bash_magic_approval]
+    code = """
+    %%bash
+    echo hello from bash
+    """
+
+    async with CodeExecutor(approve_shell_cmds=True) as executor:
+        async for item in executor.stream(code):
+            match item:
+                case ApprovalRequest(tool_name="shell", tool_args=args):
+                    assert "echo hello from bash" in args["cmd"]
+                    await item.accept()
+                case CodeExecutionResult():
+                    assert item.text == "hello from bash"
+    # --8<-- [end:bash_magic_approval]
+
+
 async def shell_approval():
     # --8<-- [start:shell_approval]
     code = """
@@ -212,6 +245,8 @@ async def main():
     await working_directory_reset()
     await working_directory_persistent()
     await shell_commands()
+    await bash_magic()
+    await bash_magic_approval()
     await shell_approval()
     await subprocess_blocking()
 

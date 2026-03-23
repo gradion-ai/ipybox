@@ -152,3 +152,56 @@ class TestBuildInitCodeShellEscape:
         code = build_init_code(require_shell_escape=True)
         assert "_ipybox_shell_allowed" not in code
         assert "_ipybox_guarded_popen" not in code
+
+    def test_subprocess_guard_checks_magic_allowed(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "_ipybox_magic_allowed.is_set()" in code
+
+
+class TestBuildInitCodeBashMagic:
+    """Tests for the %%bash/%%sh cell magic approval handler."""
+
+    def test_installs_magic_wrapper(self):
+        code = build_init_code(approve_shell_cmds=True)
+        assert "_ipybox_magic_wrapper" in code
+        assert "_ipybox_cell_magics" in code
+
+    def test_magic_handler_contains_approval_requestor(self):
+        code = build_init_code(
+            approve_shell_cmds=True,
+            tool_server_host="myhost",
+            tool_server_port=9999,
+        )
+        # The magic handler section should also contain ApprovalRequestor
+        # with the correct host/port (already covered by the shell handler,
+        # but verify it appears in the magic wrapper context too)
+        assert "_ipybox_magic_wrapper" in code
+        assert "ApprovalRequestor" in code
+
+    def test_magic_handler_calls_orig(self):
+        code = build_init_code(approve_shell_cmds=True)
+        assert "return _orig(line, cell)" in code
+
+    def test_iterates_bash_and_sh(self):
+        code = build_init_code(approve_shell_cmds=True)
+        assert "'bash'" in code
+        assert "'sh'" in code
+
+    def test_cleans_up_magic_variables(self):
+        code = build_init_code(approve_shell_cmds=True)
+        assert "del _ipybox_cell_magics, _ipybox_magic_name, _ipybox_orig_magic, _ipybox_magic_wrapper" in code
+
+    def test_no_magic_handler_by_default(self):
+        code = build_init_code()
+        assert "_ipybox_magic_wrapper" not in code
+        assert "_ipybox_cell_magics" not in code
+
+    def test_escape_sets_magic_allowed(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "_ipybox_magic_allowed.set()" in code
+        assert "_ipybox_magic_allowed.clear()" in code
+
+    def test_escape_uses_threading_event(self):
+        code = build_init_code(approve_shell_cmds=True, require_shell_escape=True)
+        assert "threading" in code
+        assert "_ipybox_magic_allowed" in code

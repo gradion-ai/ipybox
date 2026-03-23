@@ -26,6 +26,16 @@ Shell commands use IPython's `!` syntax:
 
 `!cmd` runs a shell command and prints its output. `result = !cmd` captures the output as a list of lines. Python variables are interpolated into shell commands via `{variable}` syntax. Shell commands and Python code mix freely in a single code block, for example to install packages with `!pip install` and use them immediately.
 
+## Cell magics
+
+For multi-line shell scripts, use `%%bash` or `%%sh` cell magics:
+
+```python
+--8<-- "examples/codexec.py:bash_magic"
+```
+
+`%%bash` must be the first line of the code block and passes the remaining lines to bash as a script. `%%sh` works the same way with `sh`. Unlike `!cmd`, cell magics cannot be mixed with Python code and do not support Python variable interpolation.
+
 ## Tool calls
 
 ipybox can [generate typed Python APIs](apigen.md) from MCP server tool schemas. The generated code executes within the kernel, while MCP servers run on a separate [tool server](architecture.md).
@@ -54,15 +64,21 @@ Enable `approve_shell_cmds=True` to require application-level approval for shell
 
 Each `!cmd` triggers an `ApprovalRequest` with `tool_name="shell"` and `tool_args={"cmd": "..."}`, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.
 
+`%%bash` and `%%sh` cell magics also trigger approval when `approve_shell_cmds=True`. The `tool_args["cmd"]` contains the cell body:
+
+```python
+--8<-- "examples/codexec.py:bash_magic_approval"
+```
+
 #### Preventing bypass
 
-Code could bypass shell command approval through various process-creation APIs (`subprocess`, `os.system()`, `os.exec*()`, `os.spawn*()`, `os.posix_spawn()`, `pty.spawn()`). Set `require_shell_escape=True` to guard these, forcing all shell execution through the `!` syntax where it triggers the approval flow:
+Code could bypass shell command approval through various process-creation APIs (`subprocess`, `os.system()`, `os.exec*()`, `os.spawn*()`, `os.posix_spawn()`, `pty.spawn()`). Set `require_shell_escape=True` to guard these, forcing all shell execution through `!cmd` or `%%bash`/`%%sh` where it triggers the approval flow:
 
 ```python
 --8<-- "examples/codexec.py:subprocess_blocking"
 ```
 
-With `require_shell_escape=True`, direct process-creation calls raise a `RuntimeError`. Shell commands via `!cmd` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
+With `require_shell_escape=True`, direct process-creation calls raise a `RuntimeError`. Shell commands via `!cmd` and `%%bash`/`%%sh` still work and go through the approval channel. Requires `approve_shell_cmds=True`.
 
 !!! note
     These guards are Python-level guards that close the most obvious gaps. They catch accidental bypass (e.g., an LLM agent reaching for `subprocess.run`) but are not a security boundary: code running in the kernel can undo guards, call C functions via `ctypes`, or use CPython internal modules. These bypasses can be prevented at the OS level. A future version will add [sandbox](sandbox.md)-level enforcement for shell command approval.

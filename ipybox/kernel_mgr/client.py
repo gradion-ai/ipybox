@@ -405,5 +405,10 @@ class KernelClient:
             if "_ipybox_" in entry:
                 continue
             entry = re.sub(r"get_ipython\(\)\.(?:system|getoutput)\(['\"](.+?)['\"]\)", r"!\1", entry)
+            entry = re.sub(
+                r"get_ipython\(\)\.run_cell_magic\(['\"](\w+)['\"],\s*['\"][^'\"]*['\"],\s*['\"](.+?)['\"]\)",
+                r"%%\1\n\2",
+                entry,
+            )
             result.append(entry)
         return result

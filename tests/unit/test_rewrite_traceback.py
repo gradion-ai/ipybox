@@ -35,3 +35,13 @@ class TestRewriteTraceback:
 
     def test_empty_input(self):
         assert KernelClient._rewrite_traceback([]) == []
+
+    def test_replaces_run_cell_magic_with_double_percent(self):
+        entries = ["get_ipython().run_cell_magic('bash', '', 'echo hello\\n')"]
+        result = KernelClient._rewrite_traceback(entries)
+        assert result == ["%%bash\necho hello\\n"]
+
+    def test_replaces_sh_cell_magic(self):
+        entries = ["get_ipython().run_cell_magic('sh', '', 'ls -la\\n')"]
+        result = KernelClient._rewrite_traceback(entries)
+        assert result == ["%%sh\nls -la\\n"]
