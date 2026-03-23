@@ -172,9 +172,6 @@ class TestBuildInitCodeBashMagic:
             tool_server_host="myhost",
             tool_server_port=9999,
         )
-        # The magic handler section should also contain ApprovalRequestor
-        # with the correct host/port (already covered by the shell handler,
-        # but verify it appears in the magic wrapper context too)
         assert "_ipybox_magic_wrapper" in code
         assert "ApprovalRequestor" in code
 
