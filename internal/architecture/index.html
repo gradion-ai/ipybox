@@ -1206,7 +1206,7 @@ The published architecture overview is in <code>docs/architecture.md</code>.</p>
 <ol>
 <li><code>%%bash</code> or <code>%%sh</code> triggers magic wrapper installed by <code>build_init_code()</code></li>
 <li>Wrapper -&gt; <code>ApprovalRequestor</code> -&gt; ToolServer -&gt; <code>ApprovalClient</code></li>
-<li>Application receives <code>ApprovalRequest(tool_name="shell", tool_args={"cmd": "&lt;cell body&gt;"})</code></li>
+<li>Application receives <code>ApprovalRequest(tool_name="shell_magic", tool_args={"cmd": "&lt;cell body&gt;"})</code></li>
 <li>If accepted: wrapper calls original magic, which runs the script via <code>asyncio.create_subprocess_exec</code> on a background thread</li>
 <li><code>require_shell_escape=True</code>: a <code>threading.Event</code> (<code>_ipybox_magic_allowed</code>) is used instead of <code>ContextVar</code> because IPython 9.x runs the subprocess on a background thread where <code>ContextVar</code> does not propagate. The event is set before calling the original magic and cleared in a <code>finally</code> block. Subprocess guards check both the <code>ContextVar</code> and the event.</li>
 </ol>

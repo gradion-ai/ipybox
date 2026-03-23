@@ -1541,7 +1541,7 @@
                 <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;hello world&quot;</span>
 </code></pre></div>
 <p>Each <code>!cmd</code> triggers an <code>ApprovalRequest</code> with <code>tool_name="shell"</code> and <code>tool_args={"cmd": "..."}</code>, using the same approval interface as tool calls. Variable interpolation happens before the approval request, so the application sees the fully expanded command.</p>
-<p><code>%%bash</code> and <code>%%sh</code> cell magics also trigger approval when <code>approve_shell_cmds=True</code>. The <code>tool_args["cmd"]</code> contains the cell body:</p>
+<p><code>%%bash</code> and <code>%%sh</code> cell magics also trigger approval when <code>approve_shell_cmds=True</code>, with <code>tool_name="shell_magic"</code> and <code>tool_args={"cmd": "..."}</code> containing the cell body:</p>
 <div class="highlight"><pre><span></span><code><span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="si">%%</span><span class="s2">bash</span>
 <span class="s2">echo hello from bash</span>
@@ -1550,7 +1550,7 @@
 <span class="k">async</span> <span class="k">with</span> <span class="n">CodeExecutor</span><span class="p">(</span><span class="n">approve_shell_cmds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
         <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
-            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell_magic&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
                 <span class="k">assert</span> <span class="s2">&quot;echo hello from bash&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;cmd&quot;</span><span class="p">]</span>
                 <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
             <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">():</span>

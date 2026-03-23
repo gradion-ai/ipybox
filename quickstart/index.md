@@ -108,7 +108,7 @@ async with CodeExecutor(
 ) as executor:
     async for item in executor.stream(SEARCH_AND_ECHO):
         match item:
-            case ApprovalRequest(tool_name="shell", tool_args=args):
+            case ApprovalRequest(tool_name="shell" | "shell_magic", tool_args=args):
                 print(f"Shell: {args['cmd']}")
                 await item.accept()
             case ApprovalRequest(tool_name=name, tool_args=args):
@@ -118,7 +118,7 @@ async with CodeExecutor(
                 print(text)
 ```
 
-Both approval types yield an `ApprovalRequest`. The `tool_name` field distinguishes them: `"shell"` for shell commands, the MCP tool name for tool calls. Call `accept()` to continue or `reject()` to block execution.
+Both approval types yield an `ApprovalRequest`. The `tool_name` field distinguishes them: `"shell"` for `!` commands, `"shell_magic"` for `%%bash`/`%%sh` cell magics, and the MCP tool name for tool calls. Call `accept()` to continue or `reject()` to block execution.
 
 ## Next steps
 

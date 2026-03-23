@@ -1327,7 +1327,7 @@
 <span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">SEARCH_AND_ECHO</span><span class="p">):</span>
         <span class="k">match</span> <span class="n">item</span><span class="p">:</span>
-            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="s2">&quot;shell&quot;</span> <span class="o">|</span> <span class="s2">&quot;shell_magic&quot;</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shell: </span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;cmd&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">await</span> <span class="n">item</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
             <span class="k">case</span> <span class="n">ApprovalRequest</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tool_args</span><span class="o">=</span><span class="n">args</span><span class="p">):</span>
@@ -1336,7 +1336,7 @@
             <span class="k">case</span> <span class="n">CodeExecutionResult</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 </code></pre></div>
-<p>Both approval types yield an <code>ApprovalRequest</code>. The <code>tool_name</code> field distinguishes them: <code>"shell"</code> for shell commands, the MCP tool name for tool calls. Call <code>accept()</code> to continue or <code>reject()</code> to block execution.</p>
+<p>Both approval types yield an <code>ApprovalRequest</code>. The <code>tool_name</code> field distinguishes them: <code>"shell"</code> for <code>!</code> commands, <code>"shell_magic"</code> for <code>%%bash</code>/<code>%%sh</code> cell magics, and the MCP tool name for tool calls. Call <code>accept()</code> to continue or <code>reject()</code> to block execution.</p>
 <h2 id="next-steps">Next steps</h2>
 <ul>
 <li><a href="../codeexec/">Code Execution</a> - Shell commands, mixing, approval, and streaming</li>
