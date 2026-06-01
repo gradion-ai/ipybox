@@ -1124,12 +1124,13 @@
 <li><code>test_code_exec_helpers.py</code>: execution budget, stream worker</li>
 <li><code>test_kernel_gateway.py</code>: KernelGateway subprocess configuration</li>
 <li><code>test_kernel_init.py</code>: <code>build_init_code()</code> output sections and variable cleanup</li>
+<li><code>test_kernel_init_timeout.py</code>: <code>kernel_init_timeout</code> wiring through KernelClient and CodeExecutor</li>
 <li><code>test_rewrite_traceback.py</code>: <code>_ipybox_</code> filtering, <code>get_ipython().system()</code> rewriting</li>
 </ul>
 <h2 id="integration-tests">Integration tests</h2>
 <ul>
 <li><code>test_code_exec.py</code>: CodeExecutor end-to-end (execution, streaming, approval, rejection, timeouts)</li>
-<li><code>test_kernel_init.py</code>: ANSI stripping, variable cleanup</li>
+<li><code>test_kernel_init.py</code>: ANSI stripping, variable cleanup, <code>kernel_init_timeout</code> behavior</li>
 <li><code>test_kernel_mgr.py</code>: KernelClient and KernelGateway integration</li>
 <li><code>test_shell_cmds.py</code>: shell command approval and subprocess blocking</li>
 <li><code>test_mcp_server.py</code>: MCPServer functionality</li>

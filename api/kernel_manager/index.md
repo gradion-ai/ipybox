@@ -91,6 +91,7 @@ KernelClient(
     require_shell_escape: bool = False,
     tool_server_host: str = "localhost",
     tool_server_port: int = 0,
+    kernel_init_timeout: float = 10,
 )
 ```
 
@@ -117,17 +118,18 @@ async with KernelClient(host="localhost", port=8888) as client:
 
 Parameters:
 
-| Name                   | Type    | Description                                                                                                                                                                                                                            | Default                                                                                                                                                                 |
-| ---------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `host`                 | `str`   | Hostname or IP address of the kernel gateway.                                                                                                                                                                                          | `'localhost'`                                                                                                                                                           |
-| `port`                 | `int`   | Port number of the kernel gateway.                                                                                                                                                                                                     | `8888`                                                                                                                                                                  |
-| `working_dir`          | \`Path  | None\`                                                                                                                                                                                                                                 | Working directory to set in the IPython kernel and restore after each cell execution. If None, ipybox leaves the kernel working directory unchanged between executions. |
-| `images_dir`           | \`Path  | None\`                                                                                                                                                                                                                                 | Directory for saving images generated during code execution. Defaults to images in the current directory.                                                               |
-| `ping_interval`        | `float` | Interval in seconds for WebSocket pings that keep the connection to the IPython kernel alive.                                                                                                                                          | `10`                                                                                                                                                                    |
-| `approve_shell_cmds`   | `bool`  | Whether to require approval for ! shell commands and %%bash/%%sh cell magics. When enabled, each shell command triggers an approval request before execution.                                                                          | `False`                                                                                                                                                                 |
-| `require_shell_escape` | `bool`  | Whether to block direct process-creation calls (subprocess, os.system, os.exec\*, os.spawn\*, os.posix_spawn\*, pty.spawn), forcing shell commands through the ! handler or %%bash/%%sh cell magics. Requires approve_shell_cmds=True. | `False`                                                                                                                                                                 |
-| `tool_server_host`     | `str`   | Hostname of the tool server (used when approve_shell_cmds is True).                                                                                                                                                                    | `'localhost'`                                                                                                                                                           |
-| `tool_server_port`     | `int`   | Port of the tool server (used when approve_shell_cmds is True).                                                                                                                                                                        | `0`                                                                                                                                                                     |
+| Name                   | Type    | Description                                                                                                                                                                                                                                                            | Default                                                                                                                                                                 |
+| ---------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `host`                 | `str`   | Hostname or IP address of the kernel gateway.                                                                                                                                                                                                                          | `'localhost'`                                                                                                                                                           |
+| `port`                 | `int`   | Port number of the kernel gateway.                                                                                                                                                                                                                                     | `8888`                                                                                                                                                                  |
+| `working_dir`          | \`Path  | None\`                                                                                                                                                                                                                                                                 | Working directory to set in the IPython kernel and restore after each cell execution. If None, ipybox leaves the kernel working directory unchanged between executions. |
+| `images_dir`           | \`Path  | None\`                                                                                                                                                                                                                                                                 | Directory for saving images generated during code execution. Defaults to images in the current directory.                                                               |
+| `ping_interval`        | `float` | Interval in seconds for WebSocket pings that keep the connection to the IPython kernel alive.                                                                                                                                                                          | `10`                                                                                                                                                                    |
+| `approve_shell_cmds`   | `bool`  | Whether to require approval for ! shell commands and %%bash/%%sh cell magics. When enabled, each shell command triggers an approval request before execution.                                                                                                          | `False`                                                                                                                                                                 |
+| `require_shell_escape` | `bool`  | Whether to block direct process-creation calls (subprocess, os.system, os.exec\*, os.spawn\*, os.posix_spawn\*, pty.spawn), forcing shell commands through the ! handler or %%bash/%%sh cell magics. Requires approve_shell_cmds=True.                                 | `False`                                                                                                                                                                 |
+| `tool_server_host`     | `str`   | Hostname of the tool server (used when approve_shell_cmds is True).                                                                                                                                                                                                    | `'localhost'`                                                                                                                                                           |
+| `tool_server_port`     | `int`   | Port of the tool server (used when approve_shell_cmds is True).                                                                                                                                                                                                        | `0`                                                                                                                                                                     |
+| `kernel_init_timeout`  | `float` | Maximum time in seconds to wait for kernel initialization to complete during connect. Raise this if kernel startup intermittently times out under load, for example on busy CI runners or when many kernels start in parallel. Can be overridden per call via connect. | `10`                                                                                                                                                                    |
 
 ### kernel_id
 
@@ -146,23 +148,29 @@ Raises:
 ### connect
 
 ```
-connect(retries: int = 10, retry_interval: float = 1.0)
+connect(
+    retries: int = 10,
+    retry_interval: float = 1.0,
+    kernel_init_timeout: float | None = None,
+)
 ```
 
 Creates an IPython kernel and connects to it.
 
 Parameters:
 
-| Name             | Type    | Description                                  | Default |
-| ---------------- | ------- | -------------------------------------------- | ------- |
-| `retries`        | `int`   | Number of connection retries.                | `10`    |
-| `retry_interval` | `float` | Delay between connection retries in seconds. | `1.0`   |
+| Name                  | Type    | Description                                  | Default                                                                                                                                        |
+| --------------------- | ------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `retries`             | `int`   | Number of connection retries.                | `10`                                                                                                                                           |
+| `retry_interval`      | `float` | Delay between connection retries in seconds. | `1.0`                                                                                                                                          |
+| `kernel_init_timeout` | \`float | None\`                                       | Maximum time in seconds to wait for kernel initialization to complete. If None, the kernel_init_timeout configured in the constructor is used. |
 
 Raises:
 
-| Type           | Description                                            |
-| -------------- | ------------------------------------------------------ |
-| `RuntimeError` | If connection cannot be established after all retries. |
+| Type           | Description                                                            |
+| -------------- | ---------------------------------------------------------------------- |
+| `RuntimeError` | If connection cannot be established after all retries.                 |
+| `TimeoutError` | If kernel initialization does not complete within kernel_init_timeout. |
 
 ### disconnect
 
