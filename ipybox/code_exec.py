@@ -103,6 +103,7 @@ class CodeExecutor:
         images_dir: Path | None = None,
         approval_timeout: float | None = None,
         connect_timeout: float = 30,
+        kernel_init_timeout: float = 10,
         sandbox: bool = False,
         sandbox_config: Path | None = None,
         log_level: str = "WARNING",
@@ -133,6 +134,10 @@ class CodeExecutor:
                 approval request is not accepted or rejected within this time,
                 the tool call fails. If `None`, no timeout is applied.
             connect_timeout: Timeout in seconds for starting MCP servers.
+            kernel_init_timeout: Maximum time in seconds to wait for IPython
+                kernel initialization to complete during startup. Raise this if
+                kernel startup intermittently times out under load, for example
+                on busy CI runners or when many executors start in parallel.
             sandbox: Whether to run the kernel gateway inside Anthropic's
                 [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime).
                 When enabled, IPython kernels run in a secure sandbox with no
@@ -171,6 +176,7 @@ class CodeExecutor:
 
         self.approval_timeout = approval_timeout
         self.connect_timeout = connect_timeout
+        self.kernel_init_timeout = kernel_init_timeout
 
         self.sandbox = sandbox
         self.sandbox_config = sandbox_config
@@ -377,6 +383,7 @@ class CodeExecutor:
                     require_shell_escape=self.require_shell_escape,
                     tool_server_host=self.tool_server_host,
                     tool_server_port=self.tool_server_port,
+                    kernel_init_timeout=self.kernel_init_timeout,
                 ) as client:
                     yield client
 

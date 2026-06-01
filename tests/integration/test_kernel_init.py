@@ -1,5 +1,6 @@
 """Tests for kernel initialization behavior."""
 
+import asyncio
 import re
 
 import pytest
@@ -76,3 +77,35 @@ class TestKernelInitialization:
             with pytest.raises(ExecutionError) as exc_info:
                 await client_with_working_dir.execute(f"print({name})")
             assert "NameError" in str(exc_info.value)
+
+
+class TestKernelInitTimeout:
+    @pytest.mark.asyncio
+    async def test_connect_succeeds_with_constructor_timeout(self, gateway, tmp_path):
+        async with KernelClient(
+            host=gateway.host,
+            port=gateway.port,
+            images_dir=tmp_path / "images",
+            kernel_init_timeout=60,
+        ) as client:
+            assert client.kernel_init_timeout == 60
+            result = await client.execute("print('ok')")
+            assert result.text == "ok"
+
+    @pytest.mark.asyncio
+    async def test_connect_times_out_with_tiny_constructor_timeout(self, gateway):
+        client = KernelClient(host=gateway.host, port=gateway.port, kernel_init_timeout=0.001)
+        try:
+            with pytest.raises(asyncio.TimeoutError):
+                await client.connect()
+        finally:
+            await client.disconnect()
+
+    @pytest.mark.asyncio
+    async def test_connect_argument_overrides_constructor_timeout(self, gateway):
+        client = KernelClient(host=gateway.host, port=gateway.port, kernel_init_timeout=60)
+        try:
+            with pytest.raises(asyncio.TimeoutError):
+                await client.connect(kernel_init_timeout=0.001)
+        finally:
+            await client.disconnect()

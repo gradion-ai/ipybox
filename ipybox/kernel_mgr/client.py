@@ -74,6 +74,7 @@ class KernelClient:
         require_shell_escape: bool = False,
         tool_server_host: str = "localhost",
         tool_server_port: int = 0,
+        kernel_init_timeout: float = 10,
     ):
         """
         Args:
@@ -99,6 +100,12 @@ class KernelClient:
                 `approve_shell_cmds` is `True`).
             tool_server_port: Port of the tool server (used when
                 `approve_shell_cmds` is `True`).
+            kernel_init_timeout: Maximum time in seconds to wait for kernel
+                initialization to complete during
+                [`connect`][ipybox.kernel_mgr.client.KernelClient.connect].
+                Raise this if kernel startup intermittently times out under
+                load, for example on busy CI runners or when many kernels
+                start in parallel. Can be overridden per call via `connect`.
         """
         self.host = host
         self.port = port
@@ -110,6 +117,7 @@ class KernelClient:
         self.require_shell_escape = require_shell_escape
         self.tool_server_host = tool_server_host
         self.tool_server_port = tool_server_port
+        self.kernel_init_timeout = kernel_init_timeout
 
         self._kernel_id: str | None = None
         self._session_id: str | None = None
@@ -145,15 +153,20 @@ class KernelClient:
     def kernel_ws_url(self):
         return f"ws://{self.host}:{self.port}/api/kernels/{self.kernel_id}/channels?session_id={self._session_id}"
 
-    async def connect(self, retries: int = 10, retry_interval: float = 1.0):
+    async def connect(self, retries: int = 10, retry_interval: float = 1.0, kernel_init_timeout: float | None = None):
         """Creates an IPython kernel and connects to it.
 
         Args:
             retries: Number of connection retries.
             retry_interval: Delay between connection retries in seconds.
+            kernel_init_timeout: Maximum time in seconds to wait for kernel
+                initialization to complete. If `None`, the `kernel_init_timeout`
+                configured in the constructor is used.
 
         Raises:
             RuntimeError: If connection cannot be established after all retries.
+            asyncio.TimeoutError: If kernel initialization does not complete
+                within `kernel_init_timeout`.
         """
         for _ in range(retries):
             try:
@@ -177,7 +190,7 @@ class KernelClient:
         # timeout during _init_kernel
         await asyncio.sleep(0.2)
 
-        await self._init_kernel()
+        await self._init_kernel(kernel_init_timeout)
 
     async def disconnect(self):
         """Disconnects from and deletes the running IPython kernel."""
@@ -377,7 +390,7 @@ class KernelClient:
         await asyncio.sleep(settle_delay)
         await self.drain(timeout=drain_timeout)
 
-    async def _init_kernel(self):
+    async def _init_kernel(self, timeout: float | None = None):
         code = build_init_code(
             working_dir=self.working_dir,
             approve_shell_cmds=self.approve_shell_cmds,
@@ -385,7 +398,7 @@ class KernelClient:
             tool_server_host=self.tool_server_host,
             tool_server_port=self.tool_server_port,
         )
-        await self.execute(code, timeout=10)
+        await self.execute(code, timeout=timeout if timeout is not None else self.kernel_init_timeout)
 
     def _raise_error(self, msg_dict):
         error_name = msg_dict["content"].get("ename", "Unknown Error")
